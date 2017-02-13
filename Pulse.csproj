@@ -41,6 +41,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Aggregates\Aggregate.cs" />
+    <Compile Include="Aggregates\AggregateAvg.cs" />
+    <Compile Include="Aggregates\AggregateCollection.cs" />
+    <Compile Include="Aggregates\AggregateCorrelation.cs" />
+    <Compile Include="Aggregates\AggregateCount.cs" />
+    <Compile Include="Aggregates\AggregateCountNull.cs" />
+    <Compile Include="Aggregates\AggregateCountStar.cs" />
+    <Compile Include="Aggregates\AggregateCovariance.cs" />
+    <Compile Include="Aggregates\AggregateFirst.cs" />
+    <Compile Include="Aggregates\AggregateIntercept.cs" />
+    <Compile Include="Aggregates\AggregateLast.cs" />
+    <Compile Include="Aggregates\AggregateLookup.cs" />
+    <Compile Include="Aggregates\AggregateMax.cs" />
+    <Compile Include="Aggregates\AggregateMaxOf.cs" />
+    <Compile Include="Aggregates\AggregateMin.cs" />
+    <Compile Include="Aggregates\AggregateMinOf.cs" />
+    <Compile Include="Aggregates\AggregateSlope.cs" />
+    <Compile Include="Aggregates\AggregateStdevP.cs" />
+    <Compile Include="Aggregates\AggregateStdevS.cs" />
+    <Compile Include="Aggregates\AggregateStream\AggregateStream.cs" />
+    <Compile Include="Aggregates\AggregateSum.cs" />
+    <Compile Include="Aggregates\AggregateVarP.cs" />
+    <Compile Include="Aggregates\AggregateVarS.cs" />
     <Compile Include="Data\BTrees\BPlusTree.cs" />
     <Compile Include="Data\BTrees\BPlusTreePage.cs" />
     <Compile Include="Data\Cells\Cell.cs" />
@@ -52,8 +75,8 @@
     <Compile Include="Data\Keys\KeyComparer.cs" />
     <Compile Include="Data\Pages\PageUID.cs" />
     <Compile Include="Data\Pages\SortedPage.cs" />
-    <Compile Include="Data\Streams\Records\RecordBuilder.cs" />
-    <Compile Include="Data\Streams\Records\RecordComparer.cs" />
+    <Compile Include="Data\Records\RecordBuilder.cs" />
+    <Compile Include="Data\Records\RecordComparer.cs" />
     <Compile Include="Data\Streams\IndexDataReadStream.cs" />
     <Compile Include="Data\Streams\IndexKeyReadStream.cs" />
     <Compile Include="Data\Streams\VanillaReadStream.cs" />
@@ -67,7 +90,7 @@
     <Compile Include="Data\Cells\CellMatrix.cs" />
     <Compile Include="Data\Cells\RandomCell.cs" />
     <Compile Include="Data\Pages\Page.cs" />
-    <Compile Include="Data\Streams\Records\Record.cs" />
+    <Compile Include="Data\Records\Record.cs" />
     <Compile Include="Data\Streams\ReadStream.cs" />
     <Compile Include="Data\Structures\FloatingQueue.cs" />
     <Compile Include="Data\Structures\Heap.cs" />
@@ -76,6 +99,7 @@
     <Compile Include="Data\Tables\DreamTables\ClusteredDreamTable.cs" />
     <Compile Include="Data\Tables\DreamTables\DreamTable.cs" />
     <Compile Include="Data\Tables\DreamTables\HeapDreamTable.cs" />
+    <Compile Include="Data\Tables\IColumns.cs" />
     <Compile Include="Data\Tables\IElementHeader.cs" />
     <Compile Include="Data\Tables\ScribeTables\ClusteredScribeTable.cs" />
     <Compile Include="Data\Tables\ScribeTables\HeapScribeTable.cs" />
@@ -86,11 +110,16 @@
     <Compile Include="Data\Tables\TableHeader.cs" />
     <Compile Include="Expressions\Expression.cs" />
     <Compile Include="Expressions\ExpressionAffinity.cs" />
+    <Compile Include="Expressions\ExpressionCollection.cs" />
     <Compile Include="Expressions\ExpressionConstant.cs" />
     <Compile Include="Expressions\ExpressionFieldRef.cs" />
+    <Compile Include="Expressions\ExpressionFilter.cs" />
+    <Compile Include="Expressions\ExpressionFunction.cs" />
     <Compile Include="Expressions\ExpressionMatrixRef.cs" />
     <Compile Include="Expressions\ExpressionScalarRef.cs" />
     <Compile Include="Expressions\FieldResolver.cs" />
+    <Compile Include="Expressions\AcceptorStream.cs" />
+    <Compile Include="Expressions\IExpressionLookup.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -98,7 +127,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Aggregates\" />
     <Folder Include="Query\Aggregate\" />
     <Folder Include="Query\Join\" />
     <Folder Include="Query\Select\" />

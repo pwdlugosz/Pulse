@@ -17,12 +17,16 @@ namespace Pulse.Expressions
 
         private int _HeapRef;
         private int _MatrixRef;
+        private int _FieldSize;
+        private CellAffinity _FieldAffinity;
 
-        public ExpressionMatrixRef(Expression Parent, int HeapRef, int MatrixRef)
+        public ExpressionMatrixRef(Expression Parent, int HeapRef, int MatrixRef, CellAffinity FieldAffinity, int FieldSize)
             : base(Parent, ExpressionAffinity.Matrix)
         {
             this._HeapRef = HeapRef;
             this._MatrixRef = MatrixRef;
+            this._FieldAffinity = FieldAffinity;
+            this._FieldSize = FieldSize;
         }
 
         public int HeapRef
@@ -36,19 +40,26 @@ namespace Pulse.Expressions
         }
 
         // Overrides //
+        public override string Unparse(FieldResolver Variants)
+        {
+            string row = this._ChildNodes.Count >= 1 ? this._ChildNodes[0].Unparse(Variants) : "0";
+            string col = this._ChildNodes.Count >= 2 ? this._ChildNodes[1].Unparse(Variants) : "0";
+            return Variants.GetMatrixName(this._HeapRef, this._MatrixRef) + "[" + row + "," + col + "]";
+        }
+
         public override Expression CloneOfMe()
         {
-            return new ExpressionScalarRef(this._ParentNode, this._HeapRef, this._MatrixRef);
+            return new ExpressionMatrixRef(this._ParentNode, this._HeapRef, this._MatrixRef, this._FieldAffinity, this._FieldSize);
         }
 
-        public override int ExpressionSize(FieldResolver Variants)
+        public override int ExpressionSize()
         {
-            return Variants.GetScalar(this._HeapRef, this._MatrixRef).DataCost;
+            return this._FieldSize;
         }
 
-        public override CellAffinity ReturnAffinity(FieldResolver Variants)
+        public override CellAffinity ExpressionReturnAffinity()
         {
-            return Variants.GetMatrix(this._HeapRef, this._MatrixRef).Affinity;
+            return this._FieldAffinity;
         }
 
         public override Cell Evaluate(FieldResolver Variants)

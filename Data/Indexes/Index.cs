@@ -53,7 +53,7 @@ namespace Pulse.Data
             this._IndexColumns = Header.IndexColumns;
             BPlusTreePage root = BPlusTreePage.Mutate(this._Storage.GetPage(Header.RootPageID), Header.IndexColumns);
             Schema s = BPlusTree.NonClusteredIndexColumns(this._Parent.Columns, Header.IndexColumns);
-            this._Tree = new BPlusTree(Storage, s, Key.Build(this._IndexColumns.Count), root, Header);
+            this._Tree = new BPlusTree(Storage, s, Key.Build(this._IndexColumns.Count), root, Header, false);
 
         }
 
@@ -71,7 +71,7 @@ namespace Pulse.Data
             this._Parent = Parent;
             this._IndexColumns = IndexColumns;
             Schema s = BPlusTree.NonClusteredIndexColumns(this._Parent.Columns, this._IndexColumns);
-            this._Tree = new BPlusTree(this._Storage, s, this._IndexColumns, null, this._Header);
+            this._Tree = new BPlusTree(this._Storage, s, this._IndexColumns, null, this._Header, false);
 
         }
 

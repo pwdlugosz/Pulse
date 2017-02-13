@@ -31,7 +31,15 @@ namespace Pulse.Data
          * 28-4: CheckSum
          * 32-4: PageType
          * 36-4: DataDiskCost
-         * 40-24: Dead space (NOT IN USE)
+         * 40-4: X0
+         * 44-4: X1
+         * 48-4: X2
+         * 52-4: X3
+         * 56-1: B0
+         * 57-1: B1
+         * 58-1: B2
+         * 59-1: B3
+         * 60-4: Dead space
          * 
          */
         public const int HASH_KEY = 1;
@@ -49,6 +57,10 @@ namespace Pulse.Data
         public const int OFFSET_X1 = 44;
         public const int OFFSET_X2 = 48;
         public const int OFFSET_X3 = 52;
+        public const int OFFSET_B0 = 56;
+        public const int OFFSET_B1 = 57;
+        public const int OFFSET_B2 = 58;
+        public const int OFFSET_B3 = 59;
         public const int OFFSET_RECORD_TABLE = 64;
         public const int SIZE_ELEMENT = 4;
 
@@ -90,6 +102,10 @@ namespace Pulse.Data
         protected int _X1 = 0;
         protected int _X2 = 0;
         protected int _X3 = 0;
+        protected byte _B0 = 0;
+        protected byte _B1 = 0;
+        protected byte _B2 = 0;
+        protected byte _B3 = 0;
 
         protected List<Record> _Elements;
 
@@ -663,6 +679,30 @@ namespace Pulse.Data
             get { return this._X3; }
         }
 
+        internal byte B0
+        {
+            get { return this._B0; }
+            set { this._B0 = value; }
+        }
+
+        internal byte B1
+        {
+            get { return this._B1; }
+            set { this._B1 = value; }
+        }
+
+        internal byte B2
+        {
+            get { return this._B2; }
+            set { this._B2 = value; }
+        }
+
+        internal byte B3
+        {
+            get { return this._B3; }
+            set { this._B3 = value; }
+        }
+
         /// <summary>
         /// If true, this page is stored in the page cache, false otherwise; this is used by internal processes to make sure any changes made to the page get saved back to disk
         /// </summary>
@@ -705,19 +745,19 @@ namespace Pulse.Data
             int CheckSum = BitConverter.ToInt32(Buffer, (int)Location + OFFSET_CHECKSUM);
             int PageType = BitConverter.ToInt32(Buffer, (int)Location + OFFSET_TYPE);
             int DataDiskCost = BitConverter.ToInt32(Buffer, (int)Location + OFFSET_DISK_COST);
-            int x0 = BitConverter.ToInt32(Buffer, (int)Location + OFFSET_X0);
-            int x1 = BitConverter.ToInt32(Buffer, (int)Location + OFFSET_X1);
-            int x2 = BitConverter.ToInt32(Buffer, (int)Location + OFFSET_X2);
-            int x3 = BitConverter.ToInt32(Buffer, (int)Location + OFFSET_X3);
             Location += HEADER_SIZE;
 
             Page element = new Page(Size, PageID, LastPageID, NextPageID, FieldCount, DataDiskCost);
             element._CheckSum = CheckSum;
             element._Type = PageType;
-            element._X0 = x0;
-            element._X1 = x1;
-            element._X2 = x2;
-            element._X3 = x3;
+            element._X0 = BitConverter.ToInt32(Buffer, (int)Location + OFFSET_X0);
+            element._X1 = BitConverter.ToInt32(Buffer, (int)Location + OFFSET_X1);
+            element._X2 = BitConverter.ToInt32(Buffer, (int)Location + OFFSET_X2);
+            element._X3 = BitConverter.ToInt32(Buffer, (int)Location + OFFSET_X3);
+            element._B0 = Buffer[(int)Location + OFFSET_B0];
+            element._B1 = Buffer[(int)Location + OFFSET_B1];
+            element._B2 = Buffer[(int)Location + OFFSET_B2];
+            element._B3 = Buffer[(int)Location + OFFSET_B3];
 
             // Read in records //
             for (int k = 0; k < Count; k++)
@@ -853,6 +893,10 @@ namespace Pulse.Data
             Array.Copy(BitConverter.GetBytes(Element._X1), 0, Buffer, Location + OFFSET_X1, SIZE_ELEMENT);
             Array.Copy(BitConverter.GetBytes(Element._X2), 0, Buffer, Location + OFFSET_X2, SIZE_ELEMENT);
             Array.Copy(BitConverter.GetBytes(Element._X3), 0, Buffer, Location + OFFSET_X3, SIZE_ELEMENT);
+            Buffer[Location + OFFSET_B0] = Element._B0;
+            Buffer[Location + OFFSET_B1] = Element._B1;
+            Buffer[Location + OFFSET_B2] = Element._B2;
+            Buffer[Location + OFFSET_B3] = Element._B3;
             Location += HEADER_SIZE;
 
             // Start writting the record data //

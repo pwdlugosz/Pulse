@@ -12,7 +12,7 @@ namespace Pulse.Data
     /// <summary>
     /// This is the base class for all tables
     /// </summary>
-    public abstract class Table
+    public abstract class Table : IColumns
     {
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Pulse.Data
         /// <summary>
         /// Adds an index to the table
         /// </summary>
-        /// <param name="Name"></param>
+        /// <param name="Alias"></param>
         /// <param name="Value"></param>
         public virtual void CreateIndex(string Name, Key IndexColumns)
         {
@@ -104,7 +104,7 @@ namespace Pulse.Data
         /// <summary>
         /// Get's an index from the table
         /// </summary>
-        /// <param name="Name"></param>
+        /// <param name="Alias"></param>
         /// <returns></returns>
         public virtual Index GetIndex(string Name)
         {

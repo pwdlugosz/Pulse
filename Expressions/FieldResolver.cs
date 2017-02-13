@@ -140,6 +140,11 @@ namespace Pulse.Expressions
             return this._Scalars[tidx][fidx];
         }
 
+        public string GetScalarName(int HeapPointer, int ScalarPointer)
+        {
+            return this._Scalars[HeapPointer].Name(ScalarPointer);
+        }
+
         // Get matrixes //
         public CellMatrix GetMatrix(int HeapPointer, int MatrixPointer)
         {
@@ -151,6 +156,11 @@ namespace Pulse.Expressions
             int tidx = this._Scalars.GetPointer(Alias);
             int fidx = this._Scalars[tidx].GetPointer(MatrixName);
             return this._Matrixes[tidx][fidx];
+        }
+
+        public string GetMatrixName(int HeapPointer, int ScalarPointer)
+        {
+            return this._Matrixes[HeapPointer].Name(ScalarPointer);
         }
 
 

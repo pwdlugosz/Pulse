@@ -33,7 +33,7 @@ namespace Pulse.Data
         /// This method should be used for creating a brand new table object
         /// </summary>
         /// <param name="Host"></param>
-        /// <param name="Name"></param>
+        /// <param name="Alias"></param>
         /// <param name="Dir"></param>
         /// <param name="Columns"></param>
         /// <param name="PageSize"></param>

@@ -26,8 +26,9 @@ namespace Pulse.Data
 
         // This overrides:
         // _X0 = parent page ID
-        // _X1 = (1 == is leaf, 0 == is branch)
-        // _X2 = is highest
+        // _B0 = (1 == is leaf, 0 == is branch)
+        // _B1 = is highest
+        // _B2 = is unique
 
         private RecordMatcher _StrongMatcher; // Matches all key columns + page id for the branch nodes
         private RecordMatcher _WeakMatcher; // Only matches key columns;
@@ -37,11 +38,12 @@ namespace Pulse.Data
         private Key _OriginalKeyColumns; // Used only for generating
         private int _RefColumn = 0;
 
-        public BPlusTreePage(int PageSize, int PageID, int LastPageID, int NextPageID, int FieldCount, int DataDiskCost, Key KeyColumns, bool IsLeaf)
+        public BPlusTreePage(int PageSize, int PageID, int LastPageID, int NextPageID, int FieldCount, int DataDiskCost, Key KeyColumns, bool IsLeaf, bool Unique)
             : base(PageSize, PageID, LastPageID, NextPageID, FieldCount, DataDiskCost)
         {
 
             this.IsLeaf = IsLeaf;
+            this.IsUnique = Unique;
             this._OriginalKeyColumns = KeyColumns;
             this._StrongKeyColumns = IsLeaf ? KeyColumns : BranchObjectiveClone(KeyColumns, false);
             if (this.IsLeaf)
@@ -80,10 +82,15 @@ namespace Pulse.Data
         {
 
             int idx = this._Elements.BinarySearch(Element, this._StrongMatcher);
+            if (idx >= 0 && this.IsUnique)
+            {
+                throw new BPlusTree.DuplicateKeyException(string.Format("Key '{0}' exists on page '{1}' at position '{2}'", Record.Split(Element, this._WeakKeyColumns).ToString(), this.PageID, idx));
+            }
             if (idx < 0) idx = ~idx;
 
             if (idx == this.Count && !this.IsHighest)
                 throw new Exception("Cannot add a higher record to this page");
+
             this._Elements.Insert(idx, Element);
 
         }
@@ -110,14 +117,20 @@ namespace Pulse.Data
 
         public bool IsLeaf
         {
-            get { return this._X1 == 1; }
-            set { this._X1 = (value ? 1 : 0); }
+            get { return this._B0 == 1; }
+            set { this._B0 = (byte)(value ? 1 : 0); }
         }
 
         public bool IsHighest
         {
-            get { return this._X2 == 1; }
-            set { this._X2 = (value ? 1 : 0); }
+            get { return this._B1 == 1; }
+            set { this._B1 = (byte)(value ? 1 : 0); }
+        }
+
+        public bool IsUnique
+        {
+            get { return this._B2 == 1; }
+            set { this._B2 = (byte)(value ? 1 : 0); }
         }
 
         public Key StrongKeyColumns
@@ -152,7 +165,7 @@ namespace Pulse.Data
 
         public BPlusTreePage GenerateXPage(int PageID, int LastPageID, int NextPageID)
         {
-            BPlusTreePage x = new BPlusTreePage(this.PageSize, PageID, LastPageID, NextPageID, this._FieldCount, this._DataDiskCost, this._OriginalKeyColumns, this.IsLeaf);
+            BPlusTreePage x = new BPlusTreePage(this.PageSize, PageID, LastPageID, NextPageID, this._FieldCount, this._DataDiskCost, this._OriginalKeyColumns, this.IsLeaf, this.IsUnique);
             x.IsLeaf = this.IsLeaf;
             return x;
         }
@@ -212,7 +225,14 @@ namespace Pulse.Data
             // Find the insertion point //
             Record k = Composite(Key, PageID);
             int idx = this._Elements.BinarySearch(k, this._StrongMatcher);
-            if (idx < 0) idx = ~idx;
+            if (idx >= 0 && this.IsUnique)
+            {
+                throw new BPlusTree.DuplicateKeyException(string.Format("Key '{0}' exists on page '{1}' at position '{2}'", Key.ToString(), this.PageID, idx));
+            }
+            else if (idx < 0)
+            {
+                idx = ~idx;
+            }
 
             // InsertKey as usual //
             this._Elements.Insert(idx, k);
@@ -451,11 +471,15 @@ namespace Pulse.Data
             if (Primitive is BPlusTreePage)
                 return Primitive as BPlusTreePage;
 
-            BPlusTreePage x = new BPlusTreePage(Primitive.PageSize, Primitive.PageID, Primitive.LastPageID, Primitive.NextPageID, Primitive.FieldCount, Primitive.DataDiskCost, KeyColumns, Primitive.X1 == 1);
+            BPlusTreePage x = new BPlusTreePage(Primitive.PageSize, Primitive.PageID, Primitive.LastPageID, Primitive.NextPageID, Primitive.FieldCount, Primitive.DataDiskCost, KeyColumns, Primitive.B0 == 1, Primitive.B2 == 1);
             x._X0 = Primitive.X0;
             x._X1 = Primitive.X1;
             x._X2 = Primitive.X2;
             x._X3 = Primitive.X3;
+            x._B0 = Primitive.B0;
+            x._B1 = Primitive.B1;
+            x._B2 = Primitive.B2;
+            x._B3 = Primitive.B3;
             x._Elements = Primitive.Cache;
 
             return x;

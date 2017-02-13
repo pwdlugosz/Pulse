@@ -23,17 +23,22 @@ namespace Pulse.Expressions
         }
 
         // Overrides //
+        public override string Unparse(FieldResolver Variants)
+        {
+            return this._Value.valueSTRING;
+        }
+
         public override Expression CloneOfMe()
         {
             return new ExpressionConstant(this._ParentNode, this._Value);
         }
 
-        public override int ExpressionSize(FieldResolver Variants)
+        public override int ExpressionSize()
         {
             return this._Value.DataCost;
         }
 
-        public override CellAffinity ReturnAffinity(FieldResolver Variants)
+        public override CellAffinity ExpressionReturnAffinity()
         {
             return this._Value.Affinity;
         }

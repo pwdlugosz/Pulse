@@ -8,7 +8,7 @@ namespace Pulse.Data
 {
 
     /// <summary>
-    /// Represents a collection of Name, Type, Type PageSize, and Nullness; this forms the basis of horse structured datasets
+    /// Represents a collection of Alias, Type, Type PageSize, and Nullness; this forms the basis of horse structured datasets
     /// </summary>
     public sealed class Schema
     {
@@ -237,7 +237,7 @@ namespace Pulse.Data
         /// <summary>
         /// Finds the index of the column in the schema; the seek is not case sensative
         /// </summary>
-        /// <param name="Name">A column name</param>
+        /// <param name="Alias">A column name</param>
         /// <returns>An integer index of the column; -1 if the column does not exist</returns>
         public int ColumnIndex(string Name)
         {
@@ -266,7 +266,7 @@ namespace Pulse.Data
         /// <summary>
         /// Checks to see if the column exists
         /// </summary>
-        /// <param name="Name">A column name</param>
+        /// <param name="Alias">A column name</param>
         /// <returns>True if the column exists; false if the column does not</returns>
         public bool Contains(string Name)
         {
@@ -288,7 +288,7 @@ namespace Pulse.Data
         /// <summary>
         /// Gets a column's affinity
         /// </summary>
-        /// <param name="Name">A column name</param>
+        /// <param name="Alias">A column name</param>
         /// <returns>A cell affinity</returns>
         public CellAffinity ColumnAffinity(string Name)
         {
@@ -310,7 +310,7 @@ namespace Pulse.Data
         /// <summary>
         /// Gets a column's nullness
         /// </summary>
-        /// <param name="Name">A column name</param>
+        /// <param name="Alias">A column name</param>
         /// <returns>True if the column can be nulled, false otherwise</returns>
         public bool ColumnNull(string Name)
         {
@@ -332,7 +332,7 @@ namespace Pulse.Data
         /// <summary>
         /// Gets a column's size
         /// </summary>
-        /// <param name="Name">A column name</param>
+        /// <param name="Alias">A column name</param>
         /// <returns>The column's type's size</returns>
         public int ColumnSize(string Name)
         {
@@ -343,7 +343,7 @@ namespace Pulse.Data
         /// <summary>
         /// Adds a column to the schema; will throw an exception if a column name passed already exists in the schema
         /// </summary>
-        /// <param name="Name">The column name</param>
+        /// <param name="Alias">The column name</param>
         /// <param name="Affinity">The column affinity</param>
         /// <param name="Nullable">A boolean, true means the column can be nulls, false means the column cannot be null</param>
         /// <param name="PageSize">The size in bytes; this will be ignored if the affinity is not variable (not string or blob)</param>
@@ -379,7 +379,7 @@ namespace Pulse.Data
         /// <summary>
         /// Adds a column to the schema; will throw an exception if a column name passed already exists in the schema; assumes the column is nullable
         /// </summary>
-        /// <param name="Name">The column name</param>
+        /// <param name="Alias">The column name</param>
         /// <param name="Affinity">The column affinity</param>
         /// <param name="PageSize">The size in bytes; this will be ignored if the affinity is not variable (not string or blob)</param>
         public void Add(string Name, CellAffinity Affinity, int Size)
@@ -390,7 +390,7 @@ namespace Pulse.Data
         /// <summary>
         /// Adds a column to the schema; will throw an exception if a column name passed already exists in the schema; assumes the column is nullable; assumes a default type size
         /// </summary>
-        /// <param name="Name">The column name</param>
+        /// <param name="Alias">The column name</param>
         /// <param name="Affinity">The column affinity</param>
         public void Add(string Name, CellAffinity Affinity)
         {
@@ -400,7 +400,7 @@ namespace Pulse.Data
         /// <summary>
         /// Adds a columns based on a text expression
         /// </summary>
-        /// <param name="Expression">A text expression [Name] [Type].[PageSize] [Nullable]</param>
+        /// <param name="Expression">A text expression [Alias] [Type].[PageSize] [Nullable]</param>
         public void Add(string Expression)
         {
 

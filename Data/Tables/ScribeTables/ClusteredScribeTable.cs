@@ -35,7 +35,7 @@ namespace Pulse.Data
             BPlusTreePage root = BPlusTreePage.Mutate(this.GetPage(Header.RootPageID), k);
 
             // Cluster //
-            this._Cluster = new BPlusTree(this, this.Columns, k, root, this.Header);
+            this._Cluster = new BPlusTree(this, this.Columns, k, root, this.Header, false);
 
             this._TableType = "CLUSTER_SCRIBE";
 
@@ -45,7 +45,7 @@ namespace Pulse.Data
         /// This method should be used for creating a brand new table object
         /// </summary>
         /// <param name="Host"></param>
-        /// <param name="Name"></param>
+        /// <param name="Alias"></param>
         /// <param name="Dir"></param>
         /// <param name="Columns"></param>
         /// <param name="PageSize"></param>
@@ -54,7 +54,7 @@ namespace Pulse.Data
             : base(Host, Name, Dir, Columns, PageSize)
         {
 
-            this._Cluster = BPlusTree.CreateClusteredIndex(this, ClusterColumns);
+            this._Cluster = BPlusTree.CreateClusteredIndex(this, ClusterColumns, false);
             this._TableType = "CLUSTER_SCRIBE";
             this._Header.SortKey = ClusterColumns;
 
@@ -64,7 +64,7 @@ namespace Pulse.Data
         /// This method should be used for creating a brand new table object
         /// </summary>
         /// <param name="Host"></param>
-        /// <param name="Name"></param>
+        /// <param name="Alias"></param>
         /// <param name="Dir"></param>
         /// <param name="Columns"></param>
         /// <param name="ClusterColumns"></param>
@@ -126,7 +126,7 @@ namespace Pulse.Data
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="Name"></param>
+        /// <param name="Alias"></param>
         /// <param name="IndexColumns"></param>
         public override void CreateIndex(string Name, Key IndexColumns)
         {

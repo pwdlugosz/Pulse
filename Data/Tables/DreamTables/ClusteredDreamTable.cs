@@ -19,7 +19,7 @@ namespace Pulse.Data
         public ClusteredDreamTable(Host Host, string Name, Schema Columns, Key IndexColumns, int PageSize)
             : base(Host, Name, Columns, PageSize, TableState.ReadWrite)
         {
-            this._Cluster = BPlusTree.CreateClusteredIndex(this, IndexColumns);
+            this._Cluster = BPlusTree.CreateClusteredIndex(this, IndexColumns, false);
             this._MaxRecords = DreamTable.MAX_MEMORY / Columns.RecordDiskCost;
             this._TableType = "CLUSTER_DREAM";
         }
@@ -90,7 +90,7 @@ namespace Pulse.Data
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="Name"></param>
+        /// <param name="Alias"></param>
         /// <param name="IndexColumns"></param>
         public override void CreateIndex(string Name, Key IndexColumns)
         {

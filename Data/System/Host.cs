@@ -35,6 +35,7 @@ namespace Pulse.Data
         private Heap<Cell> _Scalars;
         private Heap<CellMatrix> _Matrixes;
         private Heap<string> _Connections;
+        private RandomCell _RNG;
 
         public Host()
         {
@@ -48,6 +49,9 @@ namespace Pulse.Data
             this._Matrixes = new Heap<CellMatrix>();
             this._Connections = new Heap<string>();
             this._Connections.Allocate(TEMP, TempDir);
+
+            this._RNG = new RandomCell();
+            
 
         }
 
@@ -74,6 +78,17 @@ namespace Pulse.Data
         public Heap<CellMatrix> Matrixes
         {
             get { return this._Matrixes; }
+        }
+
+        // Random Number Generator //
+        public RandomCell BaseRNG
+        {
+            get { return this._RNG; }
+        }
+
+        public void SetSeed(int Seed)
+        {
+            this._RNG = new RandomCell(Seed);
         }
 
         // Connection Support //

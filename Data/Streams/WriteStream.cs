@@ -10,7 +10,7 @@ namespace Pulse.Data
     /// <summary>
     /// The base class for all record writers
     /// </summary>
-    public abstract class WriteStream
+    public abstract class WriteStream : IColumns
     {
 
         /// <summary>

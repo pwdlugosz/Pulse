@@ -12,7 +12,7 @@ namespace Pulse.Data
 
         /*
             Index table record:
-            Name: 36 (32 chars + 4 length)
+            Alias: 36 (32 chars + 4 length)
             PageSize: 4 bytes
             OriginPageID: 4 bytes
             TerminalPageID: 4 bytes

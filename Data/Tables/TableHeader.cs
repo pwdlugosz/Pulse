@@ -282,7 +282,7 @@ namespace Pulse.Data
         {
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(string.Format("Name: {0}", this.Name));
+            sb.AppendLine(string.Format("Alias: {0}", this.Name));
             sb.AppendLine(string.Format("Directory: {0}", this.Directory ?? "<Memory Only>"));
             sb.AppendLine(string.Format("Extension: {0}", this.Extension ?? "<Memory Only>"));
             sb.AppendLine(string.Format("Path: {0}", this.Path));
@@ -313,7 +313,7 @@ namespace Pulse.Data
                 sb.AppendLine("Indexes:");
                 foreach (IndexHeader ih in this.IndexHeaders)
                 {
-                    sb.AppendLine(string.Format("\tName: {0}", ih.Name));
+                    sb.AppendLine(string.Format("\tAlias: {0}", ih.Name));
                     sb.AppendLine(string.Format("\tKeys: {0}", Schema.Split(this.Columns, ih.IndexColumns).ToNameString(',')));
                     sb.AppendLine(string.Format("\tOrigin Page: {0}", ih.OriginPageID));
                     sb.AppendLine(string.Format("\tTerminal Page: {0}", ih.TerminalPageID));
@@ -347,7 +347,7 @@ namespace Pulse.Data
             TableHeader h = new TableHeader();
             int Len = 0;
 
-            // Name //
+            // Alias //
             Len = BitConverter.ToInt32(Buffer, Location + OFFSET_NAME_LEN);
             h.Name = ASCIIEncoding.ASCII.GetString(Buffer, Location + OFFSET_NAME, Len);
 
@@ -506,7 +506,7 @@ namespace Pulse.Data
         /// <summary>
         /// Creates a header for a dream table
         /// </summary>
-        /// <param name="Name"></param>
+        /// <param name="Alias"></param>
         /// <param name="Columns"></param>
         /// <param name="PageSize"></param>
         /// <returns></returns>
@@ -519,7 +519,7 @@ namespace Pulse.Data
         /// Gets the file name of a v1 rye dataset
         /// </summary>
         /// <param name="Dir"></param>
-        /// <param name="Name"></param>
+        /// <param name="Alias"></param>
         /// <returns></returns>
         public static string DeriveV1Path(string Dir, string Name)
         {

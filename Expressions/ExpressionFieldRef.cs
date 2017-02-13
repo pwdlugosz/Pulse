@@ -16,12 +16,16 @@ namespace Pulse.Expressions
 
         private int _HeapRef;
         private int _ColumnRef;
+        private int _FieldSize;
+        private CellAffinity _FieldAffinity;
 
-        public ExpressionFieldRef(Expression Parent, int HeapRef, int ColumnRef)
+        public ExpressionFieldRef(Expression Parent, int HeapRef, int ColumnRef, CellAffinity FieldAffinity, int FieldSize)
             : base(Parent, ExpressionAffinity.Field)
         {
             this._HeapRef = HeapRef;
             this._ColumnRef = ColumnRef;
+            this._FieldAffinity = FieldAffinity;
+            this._FieldSize = FieldSize;
         }
 
         public int HeapRef
@@ -35,19 +39,24 @@ namespace Pulse.Expressions
         }
 
         // Overrides //
+        public override string Unparse(FieldResolver Variants)
+        {
+            return Variants.GetFieldName(this._HeapRef, this._ColumnRef);
+        }
+
         public override Expression CloneOfMe()
         {
-            return new ExpressionFieldRef(this._ParentNode, this._HeapRef, this._ColumnRef);
+            return new ExpressionFieldRef(this._ParentNode, this._HeapRef, this._ColumnRef, this._FieldAffinity, this._FieldSize);
         }
 
-        public override int ExpressionSize(FieldResolver Variants)
+        public override int ExpressionSize()
         {
-            return Variants.GetFieldSize(this._HeapRef, this._ColumnRef);
+            return this._FieldSize;
         }
 
-        public override CellAffinity ReturnAffinity(FieldResolver Variants)
+        public override CellAffinity ExpressionReturnAffinity()
         {
-            return Variants.GetFieldAffinity(this._HeapRef, this._ColumnRef);
+            return this._FieldAffinity;
         }
 
         public override Cell Evaluate(FieldResolver Variants)

@@ -164,6 +164,11 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// Checks if the type can be converted to a Pulse type
+        /// </summary>
+        /// <param name="T"></param>
+        /// <returns></returns>
         public static bool IsValidType(Type T)
         {
 
@@ -186,6 +191,11 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// Casts a generic type to a pulse type
+        /// </summary>
+        /// <param name="T"></param>
+        /// <returns></returns>
         public static CellAffinity Render(Type T)
         {
 
@@ -208,6 +218,15 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// Checks if a datatype is either INT or NUM
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
+        public static bool IsNumeric(CellAffinity A)
+        {
+            return A == CellAffinity.INT || A == CellAffinity.DOUBLE;
+        }
 
     }
 

@@ -33,12 +33,13 @@ namespace Pulse.Data
         /// </summary>
         /// <param name="Storage"></param>
         /// <param name="IndexColumns"></param>
-        public BPlusTree(Table Storage, Schema ParentSchema, Key IndexColumns, BPlusTreePage Root, IElementHeader Header)
+        public BPlusTree(Table Storage, Schema ParentSchema, Key IndexColumns, BPlusTreePage Root, IElementHeader Header, bool IsUnique)
         {
 
             this._Storage = Storage;
             this._Header = Header;
             this._IndexColumns = IndexColumns;
+            this.IsUnique = IsUnique;
             if (Root == null)
             {
                 this._Root = this.NewRootAsLeaf();
@@ -632,7 +633,7 @@ namespace Pulse.Data
             Schema s = Schema.Split(this._Storage.Columns, this._IndexColumns);
             s.Add("@IDX", CellAffinity.INT);
 
-            BPlusTreePage NewRoot = new BPlusTreePage(this._Storage.PageSize, this._Storage.GenerateNewPageID, -1, -1, s.Count, s.RecordDiskCost, this._IndexColumns, false);
+            BPlusTreePage NewRoot = new BPlusTreePage(this._Storage.PageSize, this._Storage.GenerateNewPageID, -1, -1, s.Count, s.RecordDiskCost, this._IndexColumns, false, this.IsUnique);
             NewRoot.ParentPageID = -1;
             NewRoot.IsHighest = true;
             this._Header.RootPageID = NewRoot.PageID;
@@ -650,7 +651,7 @@ namespace Pulse.Data
 
             Schema s = this._Storage.Columns;
 
-            BPlusTreePage NewRoot = new BPlusTreePage(this._Storage.PageSize, this._Storage.GenerateNewPageID, -1, -1, s.Count, s.RecordDiskCost, this._IndexColumns, true);
+            BPlusTreePage NewRoot = new BPlusTreePage(this._Storage.PageSize, this._Storage.GenerateNewPageID, -1, -1, s.Count, s.RecordDiskCost, this._IndexColumns, true, this.IsUnique);
             NewRoot.ParentPageID = -1;
             NewRoot.IsHighest = true;
             this._Header.RootPageID = NewRoot.PageID;
@@ -666,7 +667,7 @@ namespace Pulse.Data
             using (StreamWriter writer = new StreamWriter(Path))
             {
 
-                writer.WriteLine(string.Format("Name: {0}", this._Header.Name));
+                writer.WriteLine(string.Format("Alias: {0}", this._Header.Name));
                 writer.WriteLine(string.Format("OriginPageID: {0}", this._Header.OriginPageID));
                 writer.WriteLine(string.Format("TerminalPageID: {0}", this._Header.TerminalPageID));
                 writer.WriteLine(string.Format("RootPageID: {0}", this._Header.RootPageID));
@@ -808,9 +809,9 @@ namespace Pulse.Data
         }
 
         // Statics //
-        public static BPlusTree CreateClusteredIndex(Table Parent, Key IndexColumns)
+        public static BPlusTree CreateClusteredIndex(Table Parent, Key IndexColumns, bool IsUnique)
         {
-            return new BPlusTree(Parent, Parent.Columns, IndexColumns, null, Parent.Header);
+            return new BPlusTree(Parent, Parent.Columns, IndexColumns, null, Parent.Header, IsUnique);
         }
 
         public static BPlusTree OpenClusteredIndex(Table Parent)
@@ -820,7 +821,7 @@ namespace Pulse.Data
                 throw new ArgumentException("Cannot open a clustered index; no such index exists");
             Key k = Parent.Header.SortKey;
             BPlusTreePage root = BPlusTreePage.Mutate(Parent.GetPage(Parent.Header.RootPageID), k);
-            return new BPlusTree(Parent, Parent.Columns, k, root, Parent.Header);
+            return new BPlusTree(Parent, Parent.Columns, k, root, Parent.Header, Parent.Header.IsPrimaryKey);
 
         }
 
@@ -830,7 +831,7 @@ namespace Pulse.Data
             Key k = Key.Build(IndexColumns.Count);
             Schema s = Schema.Split(StorageAndParent.Columns, IndexColumns);
             s.Add("@PTR", CellAffinity.INT, true, 8);
-            return new BPlusTree(StorageAndParent, s, k, null, StorageAndParent.Header);
+            return new BPlusTree(StorageAndParent, s, k, null, StorageAndParent.Header, false);
 
         }
 
@@ -841,7 +842,7 @@ namespace Pulse.Data
             Schema s = Schema.Split(StorageAndParent.Columns, Header.IndexColumns);
             s.Add("@PTR", CellAffinity.INT, true, 8);
             BPlusTreePage root = BPlusTreePage.Mutate(StorageAndParent.GetPage(Header.RootPageID), Header.IndexColumns);
-            return new BPlusTree(StorageAndParent, s, k, root, Header);
+            return new BPlusTree(StorageAndParent, s, k, root, Header, false);
 
         }
 
