@@ -117,8 +117,17 @@ namespace Pulse.Data
 
         public bool IsLeaf
         {
-            get { return this._B0 == 1; }
-            set { this._B0 = (byte)(value ? 1 : 0); }
+            get 
+            { 
+                return this._B0 == 1; 
+            }
+            set 
+            {
+                if (value)
+                    this._B0 = 1;
+                else
+                    this._B0 = 0;
+            }
         }
 
         public bool IsHighest
@@ -358,7 +367,7 @@ namespace Pulse.Data
             if (idx < 0)
             {
                 if (!Exact) idx = ~idx;
-                return idx;
+                return this.GetPageID(idx);
             }
 
             // If we really don't care about anything, then return the index //
@@ -467,6 +476,9 @@ namespace Pulse.Data
         // Statics //
         public static BPlusTreePage Mutate(Page Primitive, Key KeyColumns)
         {
+
+            if (Primitive.PageType != XPAGE_TYPE)
+                throw new Exception("Cannot convert to B+Tree");
 
             if (Primitive is BPlusTreePage)
                 return Primitive as BPlusTreePage;

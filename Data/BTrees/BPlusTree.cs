@@ -175,6 +175,7 @@ namespace Pulse.Data
             BPlusTreePage x = this._Root;
             while (true)
             {
+
                 int PageID = x.SearchBranch(Key, BPlusTreePage.BPlusTreeSearchType.FirstElement, false);
                 x = this.GetPage(PageID);
                 if (x.IsLeaf)
@@ -322,11 +323,11 @@ namespace Pulse.Data
         {
 
             // Check if it exists only if this is unqiue //
-            if (this.IsUnique)
-            {
-                if (this.Exists(Record.Split(Element, this._IndexColumns)))
-                    throw new DuplicateKeyException(string.Format("Key exists {0}", Record.Split(Element, this._IndexColumns)));
-            }
+            //if (this.IsUnique)
+            //{
+            //    if (this.Exists(Record.Split(Element, this._IndexColumns)))
+            //        throw new DuplicateKeyException(string.Format("Key exists {0}", Record.Split(Element, this._IndexColumns)));
+            //}
 
             // Finde the leaf node to insert into //
             BPlusTreePage node = this.SeekPage(Element);
@@ -619,7 +620,8 @@ namespace Pulse.Data
         /// <returns></returns>
         private BPlusTreePage GetPage(int PageID)
         {
-            return BPlusTreePage.Mutate(this._Storage.GetPage(PageID), this._IndexColumns);
+            Page p = this._Storage.GetPage(PageID);
+            return BPlusTreePage.Mutate(p, this._IndexColumns);
         }
 
         // New Root Methods //

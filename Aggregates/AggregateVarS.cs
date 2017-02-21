@@ -13,8 +13,8 @@ namespace Pulse.Aggregates
     public class AggregateVarS : Aggregate
     {
 
-        private Expression _Value;
-        private Expression _Weight;
+        protected Expression _Value;
+        protected Expression _Weight;
 
         public AggregateVarS(Expression Value, Expression Weight, Filter Filter)
             : base(Filter)
@@ -43,6 +43,11 @@ namespace Pulse.Aggregates
             return 4;
         }
 
+        public override Schema WorkSchema()
+        {
+            return new Schema("A DOUBLE, B DOUBLE, C DOUBLE, D DOUBLE");
+        }
+
         public override CellAffinity AggregateAffinity()
         {
             return CellAffinity.DOUBLE;
@@ -55,7 +60,7 @@ namespace Pulse.Aggregates
 
         public override Aggregate CloneOfMe()
         {
-            return new AggregateVarS(this._Value, this._Weight, this._Filter);
+            return new AggregateVarS(this._Value.CloneOfMe(), this._Weight.CloneOfMe(), this._Filter.CloneOfMe());
         }
 
         public override void Initialize(Record Work, int Offset)

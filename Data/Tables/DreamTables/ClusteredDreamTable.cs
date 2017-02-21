@@ -16,16 +16,23 @@ namespace Pulse.Data
         protected BPlusTree _Cluster;
         protected int _MaxRecords;
 
-        public ClusteredDreamTable(Host Host, string Name, Schema Columns, Key IndexColumns, int PageSize)
+        public ClusteredDreamTable(Host Host, string Name, Schema Columns, Key IndexColumns, bool IsUnique, int PageSize)
             : base(Host, Name, Columns, PageSize, TableState.ReadWrite)
         {
             this._Cluster = BPlusTree.CreateClusteredIndex(this, IndexColumns, false);
             this._MaxRecords = DreamTable.MAX_MEMORY / Columns.RecordDiskCost;
             this._TableType = "CLUSTER_DREAM";
+            this._Header.SortKey = IndexColumns;
+            this._Header.IsPrimaryKey = IsUnique;
+        }
+
+        public ClusteredDreamTable(Host Host, string Name, Schema Columns, Key IndexColumns, bool IsUnique)
+            : this(Host, Name, Columns, IndexColumns, IsUnique, Page.DEFAULT_SIZE)
+        {
         }
 
         public ClusteredDreamTable(Host Host, string Name, Schema Columns, Key IndexColumns)
-            : this(Host, Name, Columns, IndexColumns, Page.DEFAULT_SIZE)
+            : this(Host, Name, Columns, IndexColumns, false, Page.DEFAULT_SIZE)
         {
         }
 
@@ -52,6 +59,16 @@ namespace Pulse.Data
         public override void Insert(Record Value)
         {
             this._Cluster.Insert(Value);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Alias"></param>
+        /// <param name="IndexColumns"></param>
+        public override void CreateIndex(string Name, Key IndexColumns)
+        {
+            throw new Exception("Cannot create indexes on clustered tables");
         }
 
         /// <summary>
@@ -87,16 +104,6 @@ namespace Pulse.Data
 
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="Alias"></param>
-        /// <param name="IndexColumns"></param>
-        public override void CreateIndex(string Name, Key IndexColumns)
-        {
-            throw new Exception("Cannot create indexes on clustered tables");
-        }
-
         // Methods not implemented //
         /// <summary>
         /// Splits a table into N sub tables
@@ -110,5 +117,6 @@ namespace Pulse.Data
         }
 
     }
+
 
 }

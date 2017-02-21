@@ -17,6 +17,11 @@ namespace Pulse.Aggregates
         {
         }
 
+        public override Aggregate CloneOfMe()
+        {
+            return new AggregateIntercept(this._ValueX.CloneOfMe(), this._ValueY.CloneOfMe(), this._Weight.CloneOfMe(), this._Filter.CloneOfMe());
+        }
+
         public override Cell Evaluate(Record Work, int Offset)
         {
 

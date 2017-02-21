@@ -133,21 +133,32 @@ namespace Pulse.Data
 
         }
 
-        public ClusteredScribeTable CreateTable(string Alias, string Name, Schema Columns, Key ClusterColumns, int PageSize)
+        public ClusteredScribeTable CreateTable(string Alias, string Name, Schema Columns, Key ClusterColumns, bool IsUnique, int PageSize)
         {
-            ClusteredScribeTable t = new ClusteredScribeTable(this, Name, this._Connections[Alias], Columns, ClusterColumns, PageSize);
+            ClusteredScribeTable t = new ClusteredScribeTable(this, Name, this._Connections[Alias], Columns, ClusterColumns, IsUnique, PageSize);
+            return t;
+        }
+
+        public ClusteredScribeTable CreateTable(string Alias, string Name, Schema Columns, Key ClusterColumns, bool IsUnique)
+        {
+            ClusteredScribeTable t = new ClusteredScribeTable(this, Name, this._Connections[Alias], Columns, ClusterColumns, IsUnique, Page.DEFAULT_SIZE);
             return t;
         }
 
         public ClusteredScribeTable CreateTable(string Alias, string Name, Schema Columns, Key ClusterColumns)
         {
-            ClusteredScribeTable t = new ClusteredScribeTable(this, Name, this._Connections[Alias], Columns, ClusterColumns, Page.DEFAULT_SIZE);
+            ClusteredScribeTable t = new ClusteredScribeTable(this, Name, this._Connections[Alias], Columns, ClusterColumns, false, Page.DEFAULT_SIZE);
             return t;
         }
 
         public HeapScribeTable CreateTable(string Alias, string Name, Schema Columns)
         {
             return new HeapScribeTable(this, Name, this._Connections[Alias], Columns, Page.DEFAULT_SIZE);
+        }
+
+        public DictionaryScribeTable CreateTable(string Alias, string Name, Schema KeyColumns, Schema ValueColumns)
+        {
+            return new DictionaryScribeTable(this, Name, this._Connections[Alias], KeyColumns, ValueColumns, Page.DEFAULT_SIZE);
         }
 
         public HeapDreamTable Dream(string Name, Schema Columns)
@@ -158,6 +169,11 @@ namespace Pulse.Data
         public ClusteredDreamTable Dream(string Name, Schema Columns, Key IndexColumns)
         {
             return new ClusteredDreamTable(this, Name, Columns, IndexColumns);
+        }
+
+        public DictionaryDreamTable Dream(string Name, Schema KeyColumns, Schema ValueColumns)
+        {
+            return new DictionaryDreamTable(this, Name, KeyColumns, ValueColumns, Page.DEFAULT_SIZE);
         }
 
         // Directories //
@@ -200,7 +216,7 @@ namespace Pulse.Data
             get
             {
                 Guid x = Guid.NewGuid();
-                return x.ToString().Replace("-", "");
+                return "TEMP_" + x.ToString().Replace("-", "");
             }
         }
 

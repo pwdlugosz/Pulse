@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 namespace Pulse.Data
 {
 
+    /// <summary>
+    /// Represents a table whose only purpose is to temporarily store data
+    /// </summary>
     public sealed class ScribeShellTable : ScribeTable
     {
 

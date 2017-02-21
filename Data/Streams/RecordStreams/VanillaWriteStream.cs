@@ -23,9 +23,9 @@ namespace Pulse.Data
             this._Parent = Data;
         }
 
-        public override Schema Columns
+        public override Table Source
         {
-            get { return this._Parent.Columns; }
+            get { return this._Parent; }
         }
 
         public override void Close()

@@ -42,6 +42,11 @@ namespace Pulse.Aggregates
         {
             return 2;
         }
+        
+        public override Schema WorkSchema()
+        {
+            return new Schema("A DOUBLE, B DOUBLE");
+        }
 
         public override CellAffinity AggregateAffinity()
         {
@@ -55,7 +60,7 @@ namespace Pulse.Aggregates
 
         public override Aggregate CloneOfMe()
         {
-            return new AggregateAvg(this._Value, this._Weight, this._Filter);
+            return new AggregateAvg(this._Value.CloneOfMe(), this._Weight.CloneOfMe(), this._Filter.CloneOfMe());
         }
 
         public override void Initialize(Record Work, int Offset)

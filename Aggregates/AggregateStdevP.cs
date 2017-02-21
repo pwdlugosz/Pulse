@@ -13,9 +13,6 @@ namespace Pulse.Aggregates
     public class AggregateStdevP : AggregateVarP
     {
 
-        private Expression _Value;
-        private Expression _Weight;
-
         public AggregateStdevP(Expression Value, Expression Weight, Filter Filter)
             : base(Value, Weight, Filter)
         {
@@ -38,7 +35,7 @@ namespace Pulse.Aggregates
 
         public override Aggregate CloneOfMe()
         {
-            return new AggregateStdevP(this._Value, this._Weight, this._Filter);
+            return new AggregateStdevP(this._Value.CloneOfMe(), this._Weight.CloneOfMe(), this._Filter.CloneOfMe());
         }
 
         public override Cell Evaluate(Record Work, int Offset)

@@ -158,6 +158,26 @@ namespace Pulse.Data
         }
 
         /// <summary>
+        /// Attempts to select a record, if it fails to find the record, returns null
+        /// </summary>
+        /// <param name="Position"></param>
+        /// <returns></returns>
+        public virtual Record TrySelect(RecordKey Position)
+        {
+            
+            if (this._Header.PageCount <= Position.PAGE_ID)
+                return null;
+
+            Page p = this.GetPage(Position.PAGE_ID);
+
+            if (Position.ROW_ID >= p.Count)
+                return null;
+
+            return p.Select(Position.ROW_ID);
+
+        }
+
+        /// <summary>
         /// Opens a read stream
         /// </summary>
         /// <returns></returns>

@@ -12,9 +12,9 @@ namespace Pulse.Aggregates
     public class AggregateCovariance : Aggregate
     {
 
-        private Expression _ValueX;
-        private Expression _ValueY;
-        private Expression _Weight;
+        protected Expression _ValueX;
+        protected Expression _ValueY;
+        protected Expression _Weight;
 
         public AggregateCovariance(Expression ValueX, Expression ValueY, Expression Weight, Filter Filter)
             : base(Filter)
@@ -29,6 +29,11 @@ namespace Pulse.Aggregates
             return 6;
         }
 
+        public override Schema WorkSchema()
+        {
+            return new Schema("A DOUBLE, B DOUBLE, C DOUBLE, D DOUBLE, E DOUBLE, F DOUBLE");
+        }
+
         public override CellAffinity AggregateAffinity()
         {
             return CellAffinity.DOUBLE;
@@ -41,7 +46,7 @@ namespace Pulse.Aggregates
 
         public override Aggregate CloneOfMe()
         {
-            return new AggregateCovariance(this._ValueX, this._ValueY, this._Weight, this._Filter);
+            return new AggregateCovariance(this._ValueX.CloneOfMe(), this._ValueY.CloneOfMe(), this._Weight.CloneOfMe(), this._Filter.CloneOfMe());
         }
 
         public override void Initialize(Record Work, int Offset)

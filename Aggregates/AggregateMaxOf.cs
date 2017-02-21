@@ -34,6 +34,14 @@ namespace Pulse.Aggregates
             return 2;
         }
 
+        public override Schema WorkSchema()
+        {
+            Schema s = new Schema();
+            s.Add("A", this._Key.ExpressionReturnAffinity(), this._Key.ExpressionSize());
+            s.Add("B", this._Value.ExpressionReturnAffinity(), this._Value.ExpressionSize());
+            return s;
+        }
+
         public override CellAffinity AggregateAffinity()
         {
             return this._Value.ExpressionReturnAffinity();
@@ -46,12 +54,12 @@ namespace Pulse.Aggregates
 
         public override Aggregate CloneOfMe()
         {
-            return new AggregateMaxOf(this._Key, this._Value, this._Filter);
+            return new AggregateMaxOf(this._Key.CloneOfMe(), this._Value.CloneOfMe(), this._Filter.CloneOfMe());
         }
 
         public override void Initialize(Record Work, int Offset)
         {
-            Work[Offset] = new Cell(this._Key.ExpressionSize());
+            Work[Offset] = Cell.MinValue(this._Key.ExpressionReturnAffinity(), this._Key.ExpressionSize());
             Work[Offset + 1] = new Cell(this.AggregateAffinity());
         }
 

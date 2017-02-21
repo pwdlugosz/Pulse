@@ -60,7 +60,9 @@
     <Compile Include="Aggregates\AggregateSlope.cs" />
     <Compile Include="Aggregates\AggregateStdevP.cs" />
     <Compile Include="Aggregates\AggregateStdevS.cs" />
-    <Compile Include="Aggregates\AggregateStream\AggregateStream.cs" />
+    <Compile Include="Data\Tables\DreamTables\DictionaryDreamTable.cs" />
+    <Compile Include="Data\Tables\DreamTables\DictionaryScribeTable.cs" />
+    <Compile Include="Query\Aggregate\AggregateStream.cs" />
     <Compile Include="Aggregates\AggregateSum.cs" />
     <Compile Include="Aggregates\AggregateVarP.cs" />
     <Compile Include="Aggregates\AggregateVarS.cs" />
@@ -77,11 +79,13 @@
     <Compile Include="Data\Pages\SortedPage.cs" />
     <Compile Include="Data\Records\RecordBuilder.cs" />
     <Compile Include="Data\Records\RecordComparer.cs" />
-    <Compile Include="Data\Streams\IndexDataReadStream.cs" />
-    <Compile Include="Data\Streams\IndexKeyReadStream.cs" />
-    <Compile Include="Data\Streams\VanillaReadStream.cs" />
-    <Compile Include="Data\Streams\VanillaWriteStream.cs" />
-    <Compile Include="Data\Streams\WriteStream.cs" />
+    <Compile Include="Data\Streams\BeaconStream.cs" />
+    <Compile Include="Data\Streams\RecordStreams\IndexDataReadStream.cs" />
+    <Compile Include="Data\Streams\RecordStreams\IndexKeyReadStream.cs" />
+    <Compile Include="Data\Streams\RecordStreams\VanillaReadStream.cs" />
+    <Compile Include="Data\Streams\RecordStreams\VanillaWriteStream.cs" />
+    <Compile Include="Data\Streams\RecordStreams\WriteStream.cs" />
+    <Compile Include="Data\Streams\VanillaBeaconStream.cs" />
     <Compile Include="Data\System\Communicator.cs" />
     <Compile Include="Data\System\Host.cs" />
     <Compile Include="Data\Indexes\Index.cs" />
@@ -91,7 +95,7 @@
     <Compile Include="Data\Cells\RandomCell.cs" />
     <Compile Include="Data\Pages\Page.cs" />
     <Compile Include="Data\Records\Record.cs" />
-    <Compile Include="Data\Streams\ReadStream.cs" />
+    <Compile Include="Data\Streams\RecordStreams\ReadStream.cs" />
     <Compile Include="Data\Structures\FloatingQueue.cs" />
     <Compile Include="Data\Structures\Heap.cs" />
     <Compile Include="Data\System\PageManager.cs" />
@@ -117,18 +121,19 @@
     <Compile Include="Expressions\ExpressionFunction.cs" />
     <Compile Include="Expressions\ExpressionMatrixRef.cs" />
     <Compile Include="Expressions\ExpressionScalarRef.cs" />
-    <Compile Include="Expressions\FieldResolver.cs" />
-    <Compile Include="Expressions\AcceptorStream.cs" />
+    <Compile Include="Data\FieldResolver.cs" />
+    <Compile Include="Data\Streams\AcceptorStream.cs" />
     <Compile Include="Expressions\IExpressionLookup.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Query\Aggregate\OrderedAggregateStream.cs" />
+    <Compile Include="Query\Join\JoinRelation.cs" />
+    <Compile Include="Testing\Testers.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Query\Aggregate\" />
-    <Folder Include="Query\Join\" />
     <Folder Include="Query\Select\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

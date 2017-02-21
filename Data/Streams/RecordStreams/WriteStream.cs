@@ -14,11 +14,19 @@ namespace Pulse.Data
     {
 
         /// <summary>
-        /// Gets the columns of the underlying data structure
+        /// Gets the base table
         /// </summary>
-        public abstract Schema Columns
+        public abstract Table Source
         {
             get;
+        }
+
+        /// <summary>
+        /// Gets the columns of the underlying data structure
+        /// </summary>
+        public virtual Schema Columns
+        {
+            get { return this.Source.Columns; }
         }
 
         /// <summary>

@@ -9,6 +9,9 @@ using Pulse.Data;
 namespace Pulse.Aggregates
 {
 
+    /// <summary>
+    /// Represents a collection of aggregates
+    /// </summary>
     public sealed class AggregateCollection : IColumns
     {
 
@@ -19,31 +22,54 @@ namespace Pulse.Aggregates
             this._Aggregates = new Heap<Aggregate>();
         }
 
+        /// <summary>
+        /// Represents the count of columns in the aggregate
+        /// </summary>
         public int Count
         {
             get { return this._Aggregates.Count; }
         }
 
+        /// <summary>
+        /// Represents the total signiture size; this is the size of the work data record
+        /// </summary>
+        /// <returns></returns>
         public int SignitureLength()
         {
             return this._Aggregates.Values.Sum((x) => { return x.SignitureLength(); });
         }
 
+        /// <summary>
+        /// Gets the aggregate at a given index
+        /// </summary>
+        /// <param name="IndexOf"></param>
+        /// <returns></returns>
         public Aggregate this[int IndexOf]
         {
             get { return this._Aggregates[IndexOf]; }
         }
 
+        /// <summary>
+        /// Gets an aggregate given an alias
+        /// </summary>
+        /// <param name="Name"></param>
+        /// <returns></returns>
         public Aggregate this[string Name]
         {
             get { return this._Aggregates[Name]; }
         }
 
-        public IEnumerable<Aggregate> Expressions
+        /// <summary>
+        /// Gets all aggregates as a collection
+        /// </summary>
+        public IEnumerable<Aggregate> Aggregates
         {
             get { return this._Aggregates.Values; }
         }
 
+        /// <summary>
+        /// Gets the columns associated
+        /// </summary>
         public Schema Columns
         {
             get
@@ -59,6 +85,44 @@ namespace Pulse.Aggregates
             }
         }
 
+        /// <summary>
+        /// Gets the columns for all the work data
+        /// </summary>
+        public Schema WorkColumns
+        {
+            get
+            {
+
+                Schema s = new Schema();
+
+                // For each aggregatge //
+                for (int i = 0; i < this.Count; i++)
+                {
+
+                    // For each work-data element in aggregate //
+                    Schema w = this._Aggregates[i].WorkSchema();
+
+                    for (int j = 0; j < w.Count; j++)
+                    {
+
+                        string name = "A" + i.ToString() + "_W" + j.ToString();
+                        s.Add(name, w.ColumnAffinity(j), w.ColumnSize(j));
+
+                    }
+
+
+                }
+
+                return s;
+
+            }
+        }
+
+        /// <summary>
+        /// Adds a given aggregate to the collection
+        /// </summary>
+        /// <param name="Alias"></param>
+        /// <param name="Value"></param>
         public void Add(string Alias, Aggregate Value)
         {
             Value.AggregateCollectionOffset = this._Aggregates.Values.Sum((x) => { return x.SignitureLength(); });

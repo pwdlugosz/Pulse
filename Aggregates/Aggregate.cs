@@ -57,6 +57,12 @@ namespace Pulse.Aggregates
         public abstract CellAffinity AggregateAffinity();
 
         /// <summary>
+        /// Gets a schema describing the work data elements
+        /// </summary>
+        /// <returns></returns>
+        public abstract Schema WorkSchema();
+
+        /// <summary>
         /// Returns a clone of this aggregate
         /// </summary>
         /// <returns></returns>
@@ -95,6 +101,5 @@ namespace Pulse.Aggregates
         public abstract Cell Evaluate(Record Work, int Offset);
 
     }
-
 
 }

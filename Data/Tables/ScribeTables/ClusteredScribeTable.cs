@@ -50,11 +50,11 @@ namespace Pulse.Data
         /// <param name="Columns"></param>
         /// <param name="PageSize"></param>
         /// <param name="SortKey"></param>
-        public ClusteredScribeTable(Host Host, string Name, string Dir, Schema Columns, Key ClusterColumns, int PageSize)
+        public ClusteredScribeTable(Host Host, string Name, string Dir, Schema Columns, Key ClusterColumns, bool IsUnique, int PageSize)
             : base(Host, Name, Dir, Columns, PageSize)
         {
 
-            this._Cluster = BPlusTree.CreateClusteredIndex(this, ClusterColumns, false);
+            this._Cluster = BPlusTree.CreateClusteredIndex(this, ClusterColumns, IsUnique);
             this._TableType = "CLUSTER_SCRIBE";
             this._Header.SortKey = ClusterColumns;
 
@@ -68,8 +68,21 @@ namespace Pulse.Data
         /// <param name="Dir"></param>
         /// <param name="Columns"></param>
         /// <param name="ClusterColumns"></param>
+        public ClusteredScribeTable(Host Host, string Name, string Dir, Schema Columns, Key ClusterColumns, bool IsUnique)
+            : this(Host, Name, Dir, Columns, ClusterColumns, IsUnique, Page.DEFAULT_SIZE)
+        {
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Host"></param>
+        /// <param name="Name"></param>
+        /// <param name="Dir"></param>
+        /// <param name="Columns"></param>
+        /// <param name="ClusterColumns"></param>
         public ClusteredScribeTable(Host Host, string Name, string Dir, Schema Columns, Key ClusterColumns)
-            : this(Host, Name, Dir, Columns, ClusterColumns, Page.DEFAULT_SIZE)
+            : this(Host, Name, Dir, Columns, ClusterColumns, false, Page.DEFAULT_SIZE)
         {
         }
 
@@ -154,6 +167,7 @@ namespace Pulse.Data
         }
 
     }
+
 
 
 }

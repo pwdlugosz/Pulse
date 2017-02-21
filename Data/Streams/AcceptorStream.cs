@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Pulse.Data;
 
-namespace Pulse.Expressions
+namespace Pulse.Data
 {
 
     /// <summary>
-    /// Acceptors are similar to 
+    /// Acceptors are similar to write streams, but they take field resolvers rather than records
     /// </summary>
     public abstract class AcceptorStream
     {
@@ -17,13 +18,20 @@ namespace Pulse.Expressions
         {
         }
 
-        public abstract ExpressionCollection OutputValues;
-
         public abstract void Accept(FieldResolver Variants);
 
         public abstract long WriteCount();
 
         public abstract void Close();
+
+        public virtual void Consume(BeaconStream Stream)
+        {
+            while (Stream.CanAdvance)
+            {
+                Stream.Advance();
+                this.Accept(Stream.Variants);
+            }
+        }
 
     }
 
