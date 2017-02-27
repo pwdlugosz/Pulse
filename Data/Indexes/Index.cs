@@ -16,27 +16,34 @@ namespace Pulse.Data
         /// <summary>
         /// Represents the base b+tree object
         /// </summary>
-        private BPlusTree _Tree;
+        protected BPlusTree _Tree;
 
         /// <summary>
         /// Represents the table where the index will be stored
         /// </summary>
-        private Table _Storage;
+        protected Table _Storage;
 
         /// <summary>
         /// Represents the table that the index is
         /// </summary>
-        private Table _Parent;
+        protected Table _Parent;
 
         /// <summary>
         /// 
         /// </summary>
-        private Key _IndexColumns;
+        protected Key _IndexColumns;
 
         /// <summary>
         /// 
         /// </summary>
-        private IndexHeader _Header;
+        protected IndexHeader _Header;
+
+        /// <summary>
+        /// Used only by inherited classes
+        /// </summary>
+        protected Index()
+        {
+        }
 
         /// <summary>
         /// Opens an existing index
@@ -102,32 +109,32 @@ namespace Pulse.Data
         }
 
         // Methods //
-        public void Insert(Record Element, RecordKey Key)
+        public virtual void Insert(Record Element, RecordKey Key)
         {
             Record x = Index.GetIndexElement(Element, Key, this._IndexColumns);
             this._Tree.Insert(x);
         }
 
-        public ReadStream OpenReader()
+        public virtual ReadStream OpenReader()
         {
             return new IndexDataReadStream(this._Header, this._Storage, this._Parent);
         }
 
-        public ReadStream OpenReader(Record Key)
+        public virtual ReadStream OpenReader(Record Key)
         {
-            RecordKey l = this._Tree.SeekFirst(Key);
-            RecordKey u = this._Tree.SeekLast(Key);
+            RecordKey l = this._Tree.SeekFirst(Key, false);
+            RecordKey u = this._Tree.SeekLast(Key, false);
             return new IndexDataReadStream(this._Header, this._Storage, this._Parent, l, u);
         }
 
-        public ReadStream OpenReader(Record LKey, Record UKey)
+        public virtual ReadStream OpenReader(Record LKey, Record UKey)
         {
-            RecordKey l = this._Tree.SeekFirst(LKey);
-            RecordKey u = this._Tree.SeekLast(UKey);
+            RecordKey l = this._Tree.SeekFirst(LKey, false);
+            RecordKey u = this._Tree.SeekLast(UKey, false);
             return new IndexDataReadStream(this._Header, this._Storage, this._Parent, l, u);
         }
 
-        public void Calibrate()
+        public virtual void Calibrate()
         {
 
             if (this._Header.RecordCount != 0 || this._Parent.RecordCount == 0)
@@ -164,7 +171,7 @@ namespace Pulse.Data
         {
 
             Schema columns = BPlusTree.NonClusteredIndexColumns(Parent.Columns, IndexColumns);
-            ScribeShellTable storage = new ScribeShellTable(Parent.Host, Host.RandomName, Parent.Host.TempDB, columns, Page.DEFAULT_SIZE);
+            ShellScribeTable storage = new ShellScribeTable(Parent.Host, Host.RandomName, Parent.Host.TempDB, columns, Page.DEFAULT_SIZE);
             return new Index(storage, Parent, Host.RandomName, IndexColumns);
 
         }

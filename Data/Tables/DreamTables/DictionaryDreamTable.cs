@@ -114,7 +114,7 @@ namespace Pulse.Data
         {
 
             // Get the record key //
-            RecordKey x = this._Cluster.SeekFirst(Key);
+            RecordKey x = this._Cluster.SeekFirst(Key, false);
 
             // This should really only trigger if the table is empty; actually, this should never trigger //
             if (x.IsNotFound)

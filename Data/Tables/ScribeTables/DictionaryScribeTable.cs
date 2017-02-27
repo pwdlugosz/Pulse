@@ -15,10 +15,19 @@ namespace Pulse.Data
 
         protected int _KeyCount = 0;
         protected int _ValueCount = 0;
-        protected RecordKey _LastRef = RecordKey.RecordNotFound;
         protected Key _KeyFields;
         protected Key _ValueFields;
 
+        /*
+         * The _LastRef and _LastKey store the last referenced record key and row pointer. This is used to speed up opperations when the dictionary is used as the 
+         * temporary storage for aggregate data. This only optimizes 
+         * -- Often time the program will first request the value, and if it does exist, it will try to update the value; this causes two index seeks that could get
+         *      reduced to one if we check the last key.
+         * -- This also offers a large speed up if we're dealing with ordered or partially ordered data
+         */
+        protected RecordKey _LastRef = RecordKey.RecordNotFound;
+        protected Record _LastKey = null;
+        
         public DictionaryScribeTable(Host Host, TableHeader Header)
             : base(Host, Header)
         {
@@ -37,7 +46,6 @@ namespace Pulse.Data
             this._KeyFields = Data.Key.Build(this._KeyCount);
             this._ValueFields = Data.Key.Build(this._KeyCount, this._ValueCount);
             this._TableType = "DICTIONARY_SCRIBE";
-            Console.WriteLine("K {0} : V {1}", this._KeyCount, this._ValueCount);
         }
 
         // Methods not implemented //   
@@ -105,12 +113,35 @@ namespace Pulse.Data
         public void SetValue(Record Key, Record Value)
         {
 
+            // Get the final record value //
             Record r = Record.Join(Key, Value);
+
+            // Check the last key first //
+            if (this._LastKey != null)
+            {
+                if (Record.Compare(Key, this._LastKey) == 0)
+                {
+                    this._Cluster.Storage.GetPage(this._LastRef.PAGE_ID).Update(r, this._LastRef.ROW_ID);
+                    return;
+                }
+            }
+
+            // Find the page it belongs on //
             BPlusTreePage p = this._Cluster.SeekPage(r);
+
+            // Find the location of the record //
             int idx = p.Search(r);
+
+            // Error out if the value doesnt actually exist //
             if (idx < 0)
                 throw new BPlusTree.DuplicateKeyException("Key not found");
+
+            // Update the record //
             p.Update(r, idx);
+
+            // Save the last reference and the last key //
+            this._LastRef = new RecordKey(p.PageID, idx);
+            this._LastKey = Key;
 
         }
 
@@ -139,8 +170,17 @@ namespace Pulse.Data
         public Record GetKeyValue(Record Key)
         {
 
+            // Check the last key first //
+            if (this._LastKey != null)
+            {
+                if (Record.Compare(Key, this._LastKey) == 0)
+                {
+                    return this._Cluster.Storage.GetPage(this._LastRef.PAGE_ID).Select(this._LastRef.ROW_ID);
+                }
+            }
+
             // Get the record key //
-            RecordKey x = this._Cluster.SeekFirst(Key);
+            RecordKey x = this._Cluster.SeekFirst(Key, true);
 
             // This should really only trigger if the table is empty; actually, this should never trigger //
             if (x.IsNotFound)
@@ -153,7 +193,12 @@ namespace Pulse.Data
 
             // Need to check if we didn't find the actual record //
             if (Record.Compare(y, Key, this._KeyFields) == 0)
+            {
+
+                this._LastRef = x;
+                this._LastKey = Key;
                 return y;
+            }
 
             // Not found //
             return null;

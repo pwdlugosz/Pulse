@@ -112,6 +112,38 @@ namespace Pulse.Data
         }
 
         /// <summary>
+        /// Attempts to find an index matching the columns passed
+        /// </summary>
+        /// <param name="IndexColumns"></param>
+        /// <returns></returns>
+        public virtual Index GetIndex(Key IndexColumns)
+        {
+            return this._Indexes.Optimize(IndexColumns);
+        }
+
+        /// <summary>
+        /// True if indexed by a column set
+        /// </summary>
+        /// <param name="IndexColumns"></param>
+        /// <returns></returns>
+        public virtual bool IsIndexedBy(Key IndexColumns)
+        {
+            return this.GetIndex(IndexColumns) == null;
+        }
+
+        /// <summary>
+        /// Creates a temporary index
+        /// </summary>
+        /// <param name="IndexColumns"></param>
+        /// <returns></returns>
+        public virtual Index CreateTemporyIndex(Key IndexColumns)
+        {
+            Index idx = Index.CreateExternalIndex(this, IndexColumns);
+            this._Host.PageCache.TagTempObject(idx.Storage.Name);
+            return idx;
+        }
+
+        /// <summary>
         /// Splits a table into many tables
         /// </summary>
         /// <param name="PartitionIndex"></param>
@@ -426,7 +458,7 @@ namespace Pulse.Data
 
         }
 
-        // Protected helper //
+        // Protected helpers //
         protected int[] Map(int PartitionCount, int ElementCount)
         {
 

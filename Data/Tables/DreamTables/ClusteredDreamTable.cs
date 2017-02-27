@@ -72,6 +72,28 @@ namespace Pulse.Data
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Name"></param>
+        /// <returns></returns>
+        public override Index GetIndex(string Name)
+        {
+            throw new Exception("Cannot request indexes on clustered tables");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="IndexColumns"></param>
+        /// <returns></returns>
+        public override Index GetIndex(Key IndexColumns)
+        {
+            if (Data.Key.EqualsStrong(IndexColumns, this._Header.SortKey))
+                return new DerivedIndex(this);
+            return null;
+        }
+
+        /// <summary>
         /// Opens a record reader that focuses on a single key
         /// </summary>
         /// <param name="Key"></param>
@@ -81,8 +103,8 @@ namespace Pulse.Data
 
             if (Key.Count != this._Cluster.IndexColumns.Count)
                 return this.OpenReader();
-            RecordKey l = this._Cluster.SeekFirst(Key);
-            RecordKey u = this._Cluster.SeekLast(Key);
+            RecordKey l = this._Cluster.SeekFirst(Key, false);
+            RecordKey u = this._Cluster.SeekLast(Key, false);
             return new VanillaReadStream(this, l, u);
 
         }
@@ -98,8 +120,8 @@ namespace Pulse.Data
 
             if (LKey.Count != UKey.Count || LKey.Count != this._Cluster.IndexColumns.Count)
                 return this.OpenReader();
-            RecordKey lk = this._Cluster.SeekFirst(LKey);
-            RecordKey uk = this._Cluster.SeekLast(UKey);
+            RecordKey lk = this._Cluster.SeekFirst(LKey, false);
+            RecordKey uk = this._Cluster.SeekLast(UKey, false);
             return new VanillaReadStream(this, lk, uk);
 
         }

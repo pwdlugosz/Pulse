@@ -198,6 +198,26 @@ namespace Pulse.Data
             this._Records[TablePointer] = Value;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="TablePointer"></param>
+        /// <returns></returns>
+        public Record GetRecord(int TablePointer)
+        {
+            return this._Records[TablePointer];
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Alias"></param>
+        /// <returns></returns>
+        public Record GetRecord(string Alias)
+        {
+            return this._Records[Alias];
+        }
+
         // Get scalars //
         /// <summary>
         /// Gets a scalar value

@@ -197,8 +197,6 @@ namespace Pulse.Aggregates
 
         }
 
-
-
     }
 
 

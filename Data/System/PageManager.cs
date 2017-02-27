@@ -34,6 +34,7 @@ namespace Pulse.Data
         private Dictionary<PageUID, int> _ScribeWrites;
         private Dictionary<string, DreamTable> _DreamTables;
         private Dictionary<PageUID, Page> _DreamPages;
+        private SortedSet<string> _TempObjects;
 
         // This is the collection that holds pages to be burnt //
         private FloatingQueue<PageUID> _BurnPile;
@@ -41,8 +42,6 @@ namespace Pulse.Data
         // Constructors //
         public PageManager(Host Host, long Capacity)
         {
-            //this._Elements = new Dictionary<string, Entry>(StringComparer.OrdinalIgnoreCase);
-            //this._WoodPile = new BurnQueue<PageUID>(PageUID.DefaultComparer);
 
             this._ScribeTables = new Dictionary<string, ScribeTable>(StringComparer.OrdinalIgnoreCase);
             this._ScribePages = new Dictionary<PageUID, Page>(PageUID.DefaultComparer);
@@ -50,10 +49,11 @@ namespace Pulse.Data
             this._DreamTables = new Dictionary<string, DreamTable>(StringComparer.OrdinalIgnoreCase);
             this._DreamPages = new Dictionary<PageUID, Page>(PageUID.DefaultComparer);
             this._BurnPile = new FloatingQueue<PageUID>(4096, PageUID.DefaultComparer);
+            this._TempObjects = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
 
             this._MaxMemory = Capacity;
             this._Host = Host;
-
+            
         }
 
         public PageManager(Host Host)
@@ -62,16 +62,25 @@ namespace Pulse.Data
         }
 
         // Properties //
+        /// <summary>
+        /// Maximum memory available
+        /// </summary>
         public long MaxMemory
         {
             get { return this._MaxMemory; }
         }
 
+        /// <summary>
+        /// Memory in use
+        /// </summary>
         public long UsedMemory
         {
             get { return this._Memory; }
         }
 
+        /// <summary>
+        /// Memory that's free
+        /// </summary>
         public long FreeMemory
         {
             get { return this._MaxMemory - this._Memory; }
@@ -406,18 +415,36 @@ namespace Pulse.Data
 
         }
 
-        // Freeing Methods //
+        // Other methods //
+        /// <summary>
+        /// Run when the query system shuts down
+        /// </summary>
         public void ShutDown()
         {
 
+            // Handle temp objects first //
+            foreach (string s in this._TempObjects)
+                this.DropTable(s);
+
+            // Dump the scribe tables //
             List<string> keys = this._ScribeTables.Keys.ToList();
             foreach (string s in keys)
                 this.BurnScribeTable(s, true);
 
+            // Dump the dream tables //
             keys = this._DreamTables.Keys.ToList();
             foreach (string s in keys)
                 this.BurnDreamTable(s);
 
+        }
+
+        /// <summary>
+        /// Adds a tempory object
+        /// </summary>
+        /// <param name="Name"></param>
+        public void TagTempObject(string Name)
+        {
+            this._TempObjects.Add(Name);
         }
 
         // Table Drops //
@@ -435,6 +462,10 @@ namespace Pulse.Data
             // Take care of the entry //
             if (this._ScribeTables.ContainsKey(Key))
                 this.BurnScribeTable(Key, false);
+
+            // Check if it's a temp object //
+            if (this._TempObjects.Contains(Key))
+                this._TempObjects.Remove(Key);
 
             // Take care of the file on disk //
             if (File.Exists(Key))

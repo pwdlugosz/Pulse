@@ -90,6 +90,58 @@ namespace Pulse.Data
             get { return new RecordKey(-1, -1); }
         }
 
+        public static bool operator == (RecordKey A, RecordKey B)
+        {
+            if (A.PAGE_ID == B.PAGE_ID && A.ROW_ID == B.ROW_ID)
+                return true;
+            return false;
+        }
+
+        public static bool operator !=(RecordKey A, RecordKey B)
+        {
+            if (A.PAGE_ID == B.PAGE_ID && A.ROW_ID == B.ROW_ID)
+                return false;
+            return true;
+        }
+
+        public static bool operator <(RecordKey A, RecordKey B)
+        {
+            if (A.PAGE_ID == B.PAGE_ID)
+                return A.ROW_ID < B.ROW_ID;
+            return A.PAGE_ID < B.PAGE_ID;
+        }
+
+        public static bool operator <=(RecordKey A, RecordKey B)
+        {
+            if (A.PAGE_ID == B.PAGE_ID)
+                return A.ROW_ID <= B.ROW_ID;
+            return A.PAGE_ID <= B.PAGE_ID;
+        }
+
+        public static bool operator >(RecordKey A, RecordKey B)
+        {
+            if (A.PAGE_ID == B.PAGE_ID)
+                return A.ROW_ID > B.ROW_ID;
+            return A.PAGE_ID > B.PAGE_ID;
+        }
+
+        public static bool operator >=(RecordKey A, RecordKey B)
+        {
+            if (A.PAGE_ID == B.PAGE_ID)
+                return A.ROW_ID >= B.ROW_ID;
+            return A.PAGE_ID >= B.PAGE_ID;
+        }
+
+        public static RecordKey Min(RecordKey A, RecordKey B)
+        {
+            return A < B ? A : B;
+        }
+
+        public static RecordKey Max(RecordKey A, RecordKey B)
+        {
+            return A > B ? A : B;
+        }
+
     }
 
 

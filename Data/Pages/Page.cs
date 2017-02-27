@@ -194,6 +194,16 @@ namespace Pulse.Data
             return new RecordKey(this.PageID, RowID);
         }
 
+        public RecordKey GetFirstKey()
+        {
+            return new RecordKey(this.PageID, 0);
+        }
+
+        public RecordKey GetLastKey()
+        {
+            return new RecordKey(this.PageID, this.Count == 0 ? 0 : this.Count - 1);
+        }
+
         /// <summary>
         /// Finds the first record satisfying a condition
         /// </summary>
@@ -679,24 +689,36 @@ namespace Pulse.Data
             get { return this._X3; }
         }
 
+        /// <summary>
+        /// B0 byte
+        /// </summary>
         internal byte B0
         {
             get { return this._B0; }
             set { this._B0 = value; }
         }
 
+        /// <summary>
+        /// B1 byte
+        /// </summary>
         internal byte B1
         {
             get { return this._B1; }
             set { this._B1 = value; }
         }
 
+        /// <summary>
+        /// B2 byte
+        /// </summary>
         internal byte B2
         {
             get { return this._B2; }
             set { this._B2 = value; }
         }
 
+        /// <summary>
+        /// B3 byte
+        /// </summary>
         internal byte B3
         {
             get { return this._B3; }

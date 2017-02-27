@@ -14,6 +14,16 @@ namespace Pulse.Data
     {
 
         /// <summary>
+        /// True if on the first record of the stream
+        /// </summary>
+        public abstract bool IsFirst { get; }
+
+        /// <summary>
+        /// True if on the last record of the stream
+        /// </summary>
+        public abstract bool IsLast { get; }
+
+        /// <summary>
         /// True if the stream can advance
         /// </summary>
         public abstract bool CanAdvance
@@ -88,6 +98,11 @@ namespace Pulse.Data
         /// </summary>
         /// <returns></returns>
         public abstract long Position();
+
+        /// <summary>
+        /// Resets the stream to the origin
+        /// </summary>
+        public abstract void Reset();
 
         /// <summary>
         /// The current position of the stream expressed as a record key

@@ -28,7 +28,7 @@ namespace Pulse.Data
             this._Lower = LKey;
             this._Upper = UKey;
             this._Storage = Data;
-            if (Data.PageCount == 0)
+            if (this._Storage.PageCount == 0)
             {
                 this._CurrentPage = null;
                 this._CurrentPageID = -1;
@@ -53,11 +53,24 @@ namespace Pulse.Data
         {
         }
 
+        public override bool IsFirst
+        {
+            get { return this._CurrentRecordIndex == this._Lower.ROW_ID && this._CurrentPageID <= this._Lower.PAGE_ID; }
+        }
+
+        public override bool IsLast
+        {
+            get { return this._Upper.ROW_ID == this._CurrentRecordIndex && this._Upper.PAGE_ID <= this._CurrentPageID; }
+        }
+
         public override bool CanAdvance
         {
 
             get
             {
+
+                if (this._Lower.IsNotFound || this._Upper.IsNotFound)
+                    return false;
 
                 if (this._CurrentPage == null)
                     return false;
@@ -89,9 +102,16 @@ namespace Pulse.Data
         public override void Advance()
         {
 
+            this._Ticks++;
+
             this._CurrentRecordIndex++;
+
             if (this._CurrentRecordIndex >= this._CurrentPage.Count)
             {
+
+                if (this._CurrentPageID == this._Upper.PAGE_ID)
+                    return;
+
                 this._CurrentRecordIndex = 0;
                 this._CurrentPageID = this._CurrentPage.NextPageID;
 
@@ -99,8 +119,6 @@ namespace Pulse.Data
                     this._CurrentPage = this._Storage.GetPage(this._CurrentPageID);
 
             }
-
-            this._Ticks++;
 
         }
 
@@ -161,6 +179,25 @@ namespace Pulse.Data
         public override long Position()
         {
             return this._Ticks;
+        }
+
+        public override void Reset()
+        {
+
+            this._Ticks = 0;
+            if (this._Storage.PageCount == 0)
+            {
+                this._CurrentPage = null;
+                this._CurrentPageID = -1;
+                this._CurrentRecordIndex = -1;
+            }
+            else
+            {
+                this._CurrentPage = this._Storage.GetPage(this._Lower.PAGE_ID);
+                this._CurrentPageID = this._CurrentPage.PageID;
+                this._CurrentRecordIndex = this._Lower.ROW_ID;
+            }
+
         }
 
         public static RecordKey OriginKey(Table Parent, IElementHeader Header)

@@ -60,8 +60,9 @@
     <Compile Include="Aggregates\AggregateSlope.cs" />
     <Compile Include="Aggregates\AggregateStdevP.cs" />
     <Compile Include="Aggregates\AggregateStdevS.cs" />
+    <Compile Include="Data\Indexes\DerivedIndex.cs" />
     <Compile Include="Data\Tables\DreamTables\DictionaryDreamTable.cs" />
-    <Compile Include="Data\Tables\DreamTables\DictionaryScribeTable.cs" />
+    <Compile Include="Data\Tables\ScribeTables\DictionaryScribeTable.cs" />
     <Compile Include="Query\Aggregate\AggregateStream.cs" />
     <Compile Include="Aggregates\AggregateSum.cs" />
     <Compile Include="Aggregates\AggregateVarP.cs" />
@@ -127,8 +128,14 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Query\Aggregate\OrderedAggregateStream.cs" />
-    <Compile Include="Query\Join\JoinRelation.cs" />
+    <Compile Include="Query\Join\JoinOptimizer.cs" />
+    <Compile Include="Query\Join\JoinStream.cs" />
+    <Compile Include="Query\Join\NestedLoopJoin.cs" />
+    <Compile Include="Query\Join\QuasiNestedLoopJoinStream.cs" />
+    <Compile Include="Query\Join\SortMergeJoinStream.cs" />
     <Compile Include="Testing\Testers.cs" />
+    <Compile Include="Util\CostCalculator.cs" />
+    <Compile Include="Util\SpecialFunctions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

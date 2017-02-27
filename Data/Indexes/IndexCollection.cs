@@ -74,7 +74,7 @@ namespace Pulse.Data
 
             for (int i = 0; i < this.Count; i++)
             {
-                if (Key.SubsetWeak(this._Indexes[i].IndexColumns, Key))
+                if (Key.EqualsWeak(this._Indexes[i].IndexColumns, Key))
                     return this._Indexes[i];
             }
 

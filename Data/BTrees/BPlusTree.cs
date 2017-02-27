@@ -215,11 +215,13 @@ namespace Pulse.Data
         /// </summary>
         /// <param name="Key"></param>
         /// <returns></returns>
-        public virtual RecordKey SeekFirst(Record Key)
+        public virtual RecordKey SeekFirst(Record Key, bool Exact)
         {
 
             BPlusTreePage x = this.SeekFirstPage(Key);
-            int location = x.SearchLeaf(Key, BPlusTreePage.BPlusTreeSearchType.FirstElement, false);
+            int location = x.SearchLeaf(Key, BPlusTreePage.BPlusTreeSearchType.FirstElement, Exact);
+            if (location < 0)
+                return RecordKey.RecordNotFound;
             while (location == 0 && x.LastPageID != -1)
             {
                 x = this.GetPage(x.LastPageID);
@@ -234,11 +236,13 @@ namespace Pulse.Data
         /// </summary>
         /// <param name="Key"></param>
         /// <returns></returns>
-        public virtual RecordKey SeekLast(Record Key)
+        public virtual RecordKey SeekLast(Record Key, bool Exact)
         {
 
             BPlusTreePage x = this.SeekLastPage(Key);
-            int location = x.SearchLeaf(Key, BPlusTreePage.BPlusTreeSearchType.LastElement, false);
+            int location = x.SearchLeaf(Key, BPlusTreePage.BPlusTreeSearchType.LastElement, Exact);
+            if (location < 0)
+                return RecordKey.RecordNotFound;
             while (location == (x.Count - 1) && x.NextPageID != -1)
             {
                 x = this.GetPage(x.NextPageID);
@@ -247,6 +251,46 @@ namespace Pulse.Data
             return new RecordKey(x.PageID, location);
 
         }
+
+        ///// <summary>
+        ///// Gets the location of the first occurance of the key, returning the RecordKey.RecordNotFound if it doesnt exist
+        ///// </summary>
+        ///// <param name="Key"></param>
+        ///// <returns></returns>
+        //public virtual RecordKey SeekFirstStrict(Record Key)
+        //{
+            
+        //    RecordKey k = this.SeekFirst(Key);
+        //    BPlusTreePage p = this.GetPage(k.PAGE_ID);
+
+        //    if (k.ROW_ID >= p.Count)
+        //        return RecordKey.RecordNotFound;
+        //    else if (Record.Compare(Record.Split(p.Select(k.ROW_ID), p.WeakKeyColumns), Key) != 0)
+        //        return RecordKey.RecordNotFound;
+
+        //    return k;
+
+        //}
+
+        ///// <summary>
+        ///// Gets the location of the last occurance of the key, returning the RecordKey.RecordNotFound if it doesnt exist
+        ///// </summary>
+        ///// <param name="Key"></param>
+        ///// <returns></returns>
+        //public virtual RecordKey SeekLastStrict(Record Key)
+        //{
+
+        //    RecordKey k = this.SeekLast(Key);
+        //    BPlusTreePage p = this.GetPage(k.PAGE_ID);
+
+        //    if (k.ROW_ID >= p.Count)
+        //        return RecordKey.RecordNotFound;
+        //    else if (Record.Compare(Record.Split(p.Select(k.ROW_ID), p.WeakKeyColumns), Key) != 0)
+        //        return RecordKey.RecordNotFound;
+
+        //    return k;
+
+        //}
 
         /// <summary>
         /// Checks if a key exists
