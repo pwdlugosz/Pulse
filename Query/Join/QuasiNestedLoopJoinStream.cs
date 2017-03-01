@@ -21,6 +21,7 @@ namespace Pulse.Query.Join
         protected ReadStream _Right;
         protected Index _RightIndex;
         private bool _TriggerNullMatch = false;
+        protected bool _FirstRun = true;
 
         public QuasiNestedLoopJoinStream(Host Host, FieldResolver Variants, ReadStream LeftStream, Index RightIndex, RecordMatcher JoinPredicate, JoinType Affinity)
             : base(Host, Variants, JoinPredicate, Affinity)
@@ -35,8 +36,8 @@ namespace Pulse.Query.Join
 
             this.Variants.SetValue(LEFT_IDX, this._Left.Read());
             this.Variants.SetValue(RIGHT_IDX, this._TriggerNullMatch ? this._RightIndex.Parent.Columns.NullRecord : this._Right.Read());
-            if (!this.JoinMatchFound())
-                this.Advance();
+            //if (!this.JoinMatchFound())
+            //    this.Advance();
 
         }
 
@@ -48,12 +49,18 @@ namespace Pulse.Query.Join
                     return false;
                 if (this._TriggerNullMatch)
                     return this._Left.CanAdvance;
-                return this._Left.CanAdvance || this._Right.CanAdvance;
+                return !this._Left.IsLast || !this._Right.IsLast; 
             }
         }
 
         public override void JoinAdvance()
         {
+
+            if (this._FirstRun)
+            {
+                this._FirstRun = false;
+                return;
+            }
 
             // Check if we're a null match //
             if (this._TriggerNullMatch)

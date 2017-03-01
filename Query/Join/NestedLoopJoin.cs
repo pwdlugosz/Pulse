@@ -19,6 +19,7 @@ namespace Pulse.Query.Join
         private bool _MatchFound = false; // true = a match was found this cycle, false = match wasnt found this round
         protected ReadStream _Left;
         protected ReadStream _Right;
+        protected bool _FirstRun = true;
 
         public NestedLoopJoinStream(Host Host, FieldResolver Variants, ReadStream LeftStream, ReadStream RightStream, RecordMatcher JoinPredicate, JoinType Affinity)
             : base(Host, Variants, JoinPredicate, Affinity)
@@ -27,23 +28,25 @@ namespace Pulse.Query.Join
             this._Left = LeftStream;
             this._Right = RightStream;
 
-            this.Variants.SetValue(LEFT_IDX, this._Left.Read());
-            this.Variants.SetValue(RIGHT_IDX, this._Right.Read());
-            if (!this.JoinMatchFound())
-                this.Advance();
         }
 
         public override bool CanAdvance
         {
             get 
             { 
-                return this._Left.CanAdvance || this._Right.CanAdvance; 
+                return !this._Left.IsLast || !this._Right.IsLast; 
             }
         }
 
         public override void JoinAdvance()
         {
-            
+
+            if (this._FirstRun)
+            {
+                this._FirstRun = false;
+                return;
+            }
+
             // Check if we can advance the right stream first //
             if (this._Right.CanAdvance)
             {
@@ -68,9 +71,10 @@ namespace Pulse.Query.Join
         public override bool JoinMatchFound()
         {
 
+                
             if (!this._Left.CanAdvance || !this._Right.CanAdvance)
                 return false;
-
+            
             if (this._JoinAffinity == JoinType.INNER || this._JoinAffinity == JoinType.LEFT)
             {
 

@@ -47,7 +47,7 @@ namespace Pulse.Query.Beacons
         public virtual bool Go()
         {
             bool b = this.CanAdvance;
-            this.Advance();
+            if (b) this.Advance();
             return b;
         }
 

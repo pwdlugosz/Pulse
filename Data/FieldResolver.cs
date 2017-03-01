@@ -350,6 +350,18 @@ namespace Pulse.Data
 
         }
 
+        // Statics //
+        public static FieldResolver Build(Host Host, params Table[] Tables)
+        {
+            FieldResolver fr = new FieldResolver(Host);
+            foreach (Table t in Tables)
+            {
+                fr.AddSchema(t.Name, t.Columns);
+            }
+            return fr;
+
+        }
+
 
     }
 

@@ -24,15 +24,19 @@ namespace Pulse
 
             Host Enviro = new Host();
             HeapDreamTable x1 = Pulse.Testing.SampleTables.SampleHeapDreamTable(Enviro, "T1", 10);
-            HeapDreamTable x2 = Pulse.Testing.SampleTables.SampleHeapDreamTable(Enviro, "T2", 10);
+            ClusteredDreamTable x2 = Pulse.Testing.SampleTables.SampleClusteredDreamTable(Enviro, "T2", 10);
             HeapDreamTable x3 = Pulse.Testing.SampleTables.SampleHeapDreamTable(Enviro, "T3", 10);
-            ExpressionCollection exp = new ExpressionCollection(x1.Columns, 0);
+            ExpressionCollection exp = new ExpressionCollection();
+            exp.Add("LEFT", Expression.Field(x1, "KEY", 0));
+            exp.Add("RIGHT", Expression.Field(x1, "KEY", 1));
 
             Query.Acceptors.HostAcceptor screen = new HostAcceptor(Enviro, exp);
 
-            UnionBeaconStream bs = UnionBeaconStream.Union(Enviro, VanilaBeaconStream.Select(x1), VanilaBeaconStream.Select(x2), VanilaBeaconStream.Select(x3));
+            //UnionBeaconStream bs = UnionBeaconStream.Union(Enviro, VanilaBeaconStream.Select(x1), VanilaBeaconStream.Select(x2), VanilaBeaconStream.Select(x3));
             //BeaconStream bs = VanilaBeaconStream.Select(x1);
-
+            //NestedLoopJoinStream bs = new NestedLoopJoinStream(Enviro, FieldResolver.Build(Enviro, x1, x2), x1.OpenReader(), x2.OpenReader(), new RecordMatcher(new Key(0)), JoinStream.JoinType.INNER);
+            QuasiNestedLoopJoinStream bs = new QuasiNestedLoopJoinStream(Enviro, FieldResolver.Build(Enviro, x1, x2), x1.OpenReader(), x2.GetIndex(new Key(0)), new RecordMatcher(new Key(0)), JoinStream.JoinType.INNER);
+            //SortMergeJoinStream bs = new SortMergeJoinStream(Enviro, FieldResolver.Build(Enviro, x1, x2), x1.OpenReader(), x2.OpenReader(), new RecordMatcher(new Key(0)), JoinStream.JoinType.INNER);
 
             screen.Consume(bs);
 

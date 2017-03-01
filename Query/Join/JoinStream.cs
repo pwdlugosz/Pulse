@@ -50,14 +50,22 @@ namespace Pulse.Query.Join
         {
             this._JoinPredicate = JoinPredicate;
             this._JoinAffinity = Affinity;
+            
         }
 
         public override void Advance()
         {
+
+            if (!this.CanAdvance)
+                return;
+
             do
             {
                 this.JoinAdvance();
-            } while (!this.JoinMatchFound() && this.CanAdvance);
+            }
+            while (!this.JoinMatchFound() && this.CanAdvance);
+            
+
         }
 
         public override long Position()

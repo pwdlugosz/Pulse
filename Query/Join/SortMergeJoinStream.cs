@@ -22,6 +22,7 @@ namespace Pulse.Query.Join
         protected int _TupleCount = -1;
         protected bool _InNestedLoop = false;
         protected int _Compare = 0;
+        protected bool _FirstRun = true;
 
         public SortMergeJoinStream(Host Host, FieldResolver Variants, ReadStream LeftStream, ReadStream RightStream, RecordMatcher JoinPredicate, JoinType Affinity)
             : base(Host, Variants, JoinPredicate, Affinity)
@@ -38,12 +39,18 @@ namespace Pulse.Query.Join
         {
             get
             {
-                return this._Left.CanAdvance || this._Right.CanAdvance;
+                return !this._Left.IsLast || !this._Right.IsLast; 
             }
         }
 
         public override void JoinAdvance()
         {
+
+            if (this._FirstRun)
+            {
+                this._FirstRun = false;
+                return;
+            }
 
             // Calculate Compare //
             this.CalculateCompare();
