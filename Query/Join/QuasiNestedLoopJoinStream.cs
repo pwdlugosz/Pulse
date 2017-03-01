@@ -22,8 +22,8 @@ namespace Pulse.Query.Join
         protected Index _RightIndex;
         private bool _TriggerNullMatch = false;
 
-        public QuasiNestedLoopJoinStream(FieldResolver Variants, ReadStream LeftStream, Index RightIndex, RecordMatcher JoinPredicate, JoinType Affinity)
-            : base(Variants, JoinPredicate, Affinity)
+        public QuasiNestedLoopJoinStream(Host Host, FieldResolver Variants, ReadStream LeftStream, Index RightIndex, RecordMatcher JoinPredicate, JoinType Affinity)
+            : base(Host, Variants, JoinPredicate, Affinity)
         {
 
             if (!LeftStream.CanAdvance)

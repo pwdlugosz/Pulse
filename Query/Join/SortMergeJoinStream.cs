@@ -23,8 +23,8 @@ namespace Pulse.Query.Join
         protected bool _InNestedLoop = false;
         protected int _Compare = 0;
 
-        public SortMergeJoinStream(FieldResolver Variants, ReadStream LeftStream, ReadStream RightStream, RecordMatcher JoinPredicate, JoinType Affinity)
-            : base(Variants, JoinPredicate, Affinity)
+        public SortMergeJoinStream(Host Host, FieldResolver Variants, ReadStream LeftStream, ReadStream RightStream, RecordMatcher JoinPredicate, JoinType Affinity)
+            : base(Host, Variants, JoinPredicate, Affinity)
         {
             this._Left = LeftStream;
             this._Right = RightStream;

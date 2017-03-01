@@ -57,7 +57,7 @@ namespace Pulse.Query.Join
 
         public static JoinStream RenderNestedLoopJoinStream(Host Host, Table Left, Table Right, RecordMatcher Predicate, JoinStream.JoinType Type)
         {
-            return new NestedLoopJoinStream(new FieldResolver(Host), Left.OpenReader(), Right.OpenReader(), Predicate, Type);
+            return new NestedLoopJoinStream(Host, new FieldResolver(Host), Left.OpenReader(), Right.OpenReader(), Predicate, Type);
         }
 
         public static JoinStream RenderQuasiNestedLoopJoinStream(Host Host, Table Left, Table Right, RecordMatcher Predicate, JoinStream.JoinType Type)
@@ -66,7 +66,7 @@ namespace Pulse.Query.Join
             Index idx = Right.GetIndex(Predicate.RightKey);
             if (idx == null) idx = Right.CreateTemporyIndex(Predicate.RightKey);
 
-            return new QuasiNestedLoopJoinStream(new FieldResolver(Host), Left.OpenReader(), idx, Predicate, Type);
+            return new QuasiNestedLoopJoinStream(Host, new FieldResolver(Host), Left.OpenReader(), idx, Predicate, Type);
 
         }
 
@@ -78,7 +78,7 @@ namespace Pulse.Query.Join
             Index ridx = Right.GetIndex(Predicate.RightKey);
             if (ridx == null) ridx = Right.CreateTemporyIndex(Predicate.RightKey);
 
-            return new SortMergeJoinStream(new FieldResolver(Host), lidx.OpenReader(), ridx.OpenReader(), Predicate, Type);
+            return new SortMergeJoinStream(Host, new FieldResolver(Host), lidx.OpenReader(), ridx.OpenReader(), Predicate, Type);
 
         }
 

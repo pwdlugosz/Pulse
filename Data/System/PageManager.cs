@@ -301,7 +301,7 @@ namespace Pulse.Data
 
             if (this.DreamTableExists(Table.Key))
             {
-                throw new ElementDoesNotExistException(Table.Key);
+                throw new ElementExistsException(Table.Key);
             }
 
             this._DreamTables.Add(Table.Key, Table);

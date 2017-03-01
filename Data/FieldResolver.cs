@@ -130,6 +130,32 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// Imports the structure of one resolver to another
+        /// </summary>
+        /// <param name="Variants"></param>
+        public void Import(FieldResolver Variants)
+        {
+            
+            for (int i = 0; i < Variants._Columns.Count; i++)
+            {
+                this.AddSchema(Variants._Columns.Name(i), Variants._Columns[i]);
+            }
+
+            for (int i = 0; i < Variants._Scalars.Count; i++)
+            {
+                if (Variants._Scalars.Name(i) != Host.GLOBAL)
+                    this.AddScalars(Variants._Scalars.Name(i), Variants._Scalars[i]);
+            }
+
+            for (int i = 0; i < Variants._Matrixes.Count; i++)
+            {
+                if (Variants._Scalars.Name(i) != Host.GLOBAL)
+                    this.AddMatrixes(Variants._Matrixes.Name(i), Variants._Matrixes[i]);
+            }
+
+        }
+
         // Get fields //
         /// <summary>
         /// Gets a field from the resolver
@@ -218,6 +244,20 @@ namespace Pulse.Data
             return this._Records[Alias];
         }
 
+        /// <summary>
+        /// Sets all the record values in one resolver to another
+        /// </summary>
+        /// <param name="Variants"></param>
+        public void SetValues(FieldResolver Variants)
+        {
+
+            for (int i = 0; i < Variants._Records.Count; i++)
+            {
+                this._Records[i] = Variants._Records[i];
+            }
+
+        }
+
         // Get scalars //
         /// <summary>
         /// Gets a scalar value
@@ -288,6 +328,26 @@ namespace Pulse.Data
         public string GetMatrixName(int HeapPointer, int ScalarPointer)
         {
             return this._Matrixes[HeapPointer].Name(ScalarPointer);
+        }
+
+        // Signitures //
+        /// <summary>
+        /// Checks if both resolvers have the same count of schema and each schema has the same column count; DOES NOT check for field size or data type similarities
+        /// </summary>
+        /// <param name="Variants"></param>
+        /// <returns></returns>
+        public bool CheckColumnSignitures(FieldResolver Variants)
+        {
+
+            if (Variants._Columns.Count != this._Columns.Count)
+                return false;
+            for (int i = 0; i < this._Columns.Count; i++)
+            {
+                if (this._Columns[i].Count != Variants._Columns[i].Count)
+                    return false;
+            }
+            return true;
+
         }
 
 

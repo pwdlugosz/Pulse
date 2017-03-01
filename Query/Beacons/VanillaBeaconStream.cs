@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Pulse.Data;
 
-namespace Pulse.Data
+namespace Pulse.Query.Beacons
 {
 
     /// <summary>
@@ -16,7 +17,7 @@ namespace Pulse.Data
         private ReadStream _stream;
 
         public VanilaBeaconStream(Host Host, ReadStream RecordReader, string Alias)
-            : base(new FieldResolver(Host))
+            : base(Host, new FieldResolver(Host))
         {
             this._stream = RecordReader;
             this.Variants.AddSchema(Alias, RecordReader.Columns);
@@ -24,6 +25,8 @@ namespace Pulse.Data
 
         public override void Advance()
         {
+            if (!this._stream.CanAdvance)
+                return;
             this.Variants.SetValue(0, this._stream.ReadNext());
         }
 
@@ -35,6 +38,11 @@ namespace Pulse.Data
         public override long Position()
         {
             return this._stream.Position();
+        }
+
+        public static BeaconStream Select(Table Element)
+        {
+            return new VanilaBeaconStream(Element.Host, Element.OpenReader(), Element.Name);
         }
 
     }

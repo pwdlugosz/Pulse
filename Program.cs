@@ -8,6 +8,8 @@ using Pulse.Expressions;
 using Pulse.Aggregates;
 using Pulse.Query;
 using Pulse.Query.Join;
+using Pulse.Query.Beacons;
+using Pulse.Query.Acceptors;
 
 namespace Pulse
 {
@@ -16,6 +18,34 @@ namespace Pulse
     {
 
         static void Main(string[] args)
+        {
+
+            System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
+
+            Host Enviro = new Host();
+            HeapDreamTable x1 = Pulse.Testing.SampleTables.SampleHeapDreamTable(Enviro, "T1", 10);
+            HeapDreamTable x2 = Pulse.Testing.SampleTables.SampleHeapDreamTable(Enviro, "T2", 10);
+            HeapDreamTable x3 = Pulse.Testing.SampleTables.SampleHeapDreamTable(Enviro, "T3", 10);
+            ExpressionCollection exp = new ExpressionCollection(x1.Columns, 0);
+
+            Query.Acceptors.HostAcceptor screen = new HostAcceptor(Enviro, exp);
+
+            UnionBeaconStream bs = UnionBeaconStream.Union(Enviro, VanilaBeaconStream.Select(x1), VanilaBeaconStream.Select(x2), VanilaBeaconStream.Select(x3));
+            //BeaconStream bs = VanilaBeaconStream.Select(x1);
+
+
+            screen.Consume(bs);
+
+            Enviro.ShutDown();
+
+            Console.WriteLine("::::::::::::::::::::::::::::::::: Complete :::::::::::::::::::::::::::::::::");
+            Console.WriteLine("Run Time: {0}", sw.Elapsed);
+            string t = Console.ReadLine();
+
+
+        }
+
+        public static void TestJoins()
         {
 
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
@@ -42,9 +72,9 @@ namespace Pulse
             FieldResolver f = new FieldResolver(Enviro);
             f.AddSchema("L", left.Columns);
             f.AddSchema("R", right.Columns);
-            //NestedLoopJoinStream js = new NestedLoopJoinStream(f, left.OpenReader(), right.OpenReader(), new RecordMatcher(new Key(0)), JoinStream.JoinType.LEFT);
-            //QuasiNestedLoopJoinStream js = new QuasiNestedLoopJoinStream(f, left.OpenReader(), new DerivedIndex(right), new RecordMatcher(new Key(0)), JoinStream.JoinType.LEFT);
-            SortMergeJoinStream js = new SortMergeJoinStream(f, left.OpenReader(), right.OpenReader(), new RecordMatcher(new Key(0)), JoinStream.JoinType.LEFT);
+            //NestedLoopJoinStream js = new NestedLoopJoinStream(Enviro, f, left.OpenReader(), right.OpenReader(), new RecordMatcher(new Key(0)), JoinStream.JoinType.LEFT);
+            //QuasiNestedLoopJoinStream js = new QuasiNestedLoopJoinStream(Enviro, f, left.OpenReader(), new DerivedIndex(right), new RecordMatcher(new Key(0)), JoinStream.JoinType.LEFT);
+            SortMergeJoinStream js = new SortMergeJoinStream(Enviro, f, left.OpenReader(), right.OpenReader(), new RecordMatcher(new Key(0)), JoinStream.JoinType.LEFT);
 
             Expression a = new ExpressionFieldRef(null, 0, 0, CellAffinity.INT, 8);
             Expression b = new ExpressionFieldRef(null, 1, 0, CellAffinity.INT, 8);
@@ -67,7 +97,6 @@ namespace Pulse
             Console.WriteLine("::::::::::::::::::::::::::::::::: Complete :::::::::::::::::::::::::::::::::");
             Console.WriteLine("Run Time: {0}", sw.Elapsed);
             string t = Console.ReadLine();
-
 
         }
 

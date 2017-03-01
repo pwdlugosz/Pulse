@@ -25,6 +25,7 @@ namespace Pulse.Data
             this._Header.PageCount++;
             this.SetPage(this._Terminis);
             this._Header.OriginPageID = 0;
+            this._Header.TerminalPageID = 0;
             this._TableType = "HEAP_DREAM";
             this._LastKey = RecordKey.RecordNotFound;
 

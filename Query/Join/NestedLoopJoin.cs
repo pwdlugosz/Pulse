@@ -20,8 +20,8 @@ namespace Pulse.Query.Join
         protected ReadStream _Left;
         protected ReadStream _Right;
 
-        public NestedLoopJoinStream(FieldResolver Variants, ReadStream LeftStream, ReadStream RightStream, RecordMatcher JoinPredicate, JoinType Affinity)
-            : base(Variants, JoinPredicate, Affinity)
+        public NestedLoopJoinStream(Host Host, FieldResolver Variants, ReadStream LeftStream, ReadStream RightStream, RecordMatcher JoinPredicate, JoinType Affinity)
+            : base(Host, Variants, JoinPredicate, Affinity)
         {
 
             this._Left = LeftStream;

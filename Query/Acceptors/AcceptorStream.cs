@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
+using Pulse.Query.Beacons;
 
-namespace Pulse.Data
+namespace Pulse.Query.Acceptors
 {
 
     /// <summary>
@@ -26,9 +27,8 @@ namespace Pulse.Data
 
         public virtual void Consume(BeaconStream Stream)
         {
-            while (Stream.CanAdvance)
+            while (Stream.Go())
             {
-                Stream.Advance();
                 this.Accept(Stream.Variants);
             }
         }

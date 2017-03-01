@@ -184,6 +184,11 @@ namespace Pulse.Data
             get { return this._RightKey; }
         }
 
+        public bool KeysEqual
+        {
+            get { return Key.EqualsStrong(this._LeftKey, this._RightKey); }
+        }
+
     }
 
 

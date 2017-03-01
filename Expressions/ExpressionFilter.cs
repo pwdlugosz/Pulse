@@ -55,6 +55,22 @@ namespace Pulse.Expressions
             }
         }
 
+        public static Filter Create(RecordMatcher Matcher, Record Key)
+        {
+
+            Expression x = null;
+            for (int i = 0; i < Matcher.LeftKey.Count; i++)
+            {
+                Expression y = Expression.EQ(new ExpressionConstant(null, Key[0]), new ExpressionFieldRef(null, 0, Matcher.LeftKey[i], Key[i].Affinity, Key[i].DataCost));
+                if (x == null)
+                    y = x;
+                else
+                    x = Expression.AND(x, y);
+            }
+            return new Filter(x);
+
+        }
+
     }
 
 }

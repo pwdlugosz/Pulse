@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Pulse.Data;
+using Pulse.Expressions;
 
-namespace Pulse.Data
+namespace Pulse.Query.Beacons
 {
 
     /// <summary>
@@ -13,15 +15,22 @@ namespace Pulse.Data
     public abstract class BeaconStream
     {
 
-        public BeaconStream(FieldResolver Variants)
+        public BeaconStream(Host Host, FieldResolver Variants)
         {
             this.Variants = Variants;
+            this.Host = Host;
         }
 
-        public FieldResolver Variants
+        public virtual FieldResolver Variants
         {
             get;
             protected set;
+        }
+
+        public Host Host
+        {
+            get;
+            private set;
         }
 
         public virtual void Advance(int Itterations)
@@ -33,6 +42,13 @@ namespace Pulse.Data
         public abstract bool CanAdvance
         {
             get;
+        }
+
+        public virtual bool Go()
+        {
+            bool b = this.CanAdvance;
+            this.Advance();
+            return b;
         }
 
         public abstract void Advance();

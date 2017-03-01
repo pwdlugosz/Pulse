@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
+using Pulse.Query.Beacons;
 
 namespace Pulse.Query.Join
 {
@@ -44,8 +45,8 @@ namespace Pulse.Query.Join
         protected long _Steps = 0;
         protected JoinType _JoinAffinity;
         
-        public JoinStream(FieldResolver Variants, RecordMatcher JoinPredicate, JoinType Affinity)
-            : base(Variants)
+        public JoinStream(Host Host, FieldResolver Variants, RecordMatcher JoinPredicate, JoinType Affinity)
+            : base(Host, Variants)
         {
             this._JoinPredicate = JoinPredicate;
             this._JoinAffinity = Affinity;

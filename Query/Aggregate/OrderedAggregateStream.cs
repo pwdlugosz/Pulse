@@ -10,7 +10,9 @@ using Pulse.Aggregates;
 namespace Pulse.Query
 {
 
-
+    /// <summary>
+    /// Represents an aggregate stream that's based on a pre-existing index
+    /// </summary>
     public sealed class OrderedAggregateStream : AggregateStream
     {
 

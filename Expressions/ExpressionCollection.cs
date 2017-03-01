@@ -22,7 +22,7 @@ namespace Pulse.Expressions
             : this()
         {
 
-            for (int i = 0; i < this._Expressions.Count; i++)
+            for (int i = 0; i < Columns.Count; i++)
             {
                 ExpressionFieldRef e = new ExpressionFieldRef(null, InnerHeapRef, i, Columns.ColumnAffinity(i), Columns.ColumnSize(i));
                 this.Add(Columns.ColumnName(i), e);
