@@ -13,33 +13,33 @@ namespace Pulse.Data
     public class ClusteredDreamTable : DreamTable
     {
 
-        protected BPlusTree _Cluster;
+        protected Cluster _Cluster;
         protected int _MaxRecords;
 
-        public ClusteredDreamTable(Host Host, string Name, Schema Columns, Key IndexColumns, bool IsUnique, int PageSize)
+        public ClusteredDreamTable(Host Host, string Name, Schema Columns, Key IndexColumns, ClusterState State, int PageSize)
             : base(Host, Name, Columns, PageSize, TableState.ReadWrite)
         {
-            this._Cluster = BPlusTree.CreateClusteredIndex(this, IndexColumns, false);
+            this._Cluster = Cluster.CreateClusteredIndex(this, IndexColumns, State);
             this._MaxRecords = DreamTable.MAX_MEMORY / Columns.RecordDiskCost;
             this._TableType = "CLUSTER_DREAM";
-            this._Header.SortKey = IndexColumns;
-            this._Header.IsPrimaryKey = IsUnique;
+            this._Header.ClusterKey = IndexColumns;
+            this._Header.ClusterKeyState = State;
         }
 
-        public ClusteredDreamTable(Host Host, string Name, Schema Columns, Key IndexColumns, bool IsUnique)
-            : this(Host, Name, Columns, IndexColumns, IsUnique, Page.DEFAULT_SIZE)
+        public ClusteredDreamTable(Host Host, string Name, Schema Columns, Key IndexColumns, ClusterState State)
+            : this(Host, Name, Columns, IndexColumns, State, Page.DEFAULT_SIZE)
         {
         }
 
         public ClusteredDreamTable(Host Host, string Name, Schema Columns, Key IndexColumns)
-            : this(Host, Name, Columns, IndexColumns, false, Page.DEFAULT_SIZE)
+            : this(Host, Name, Columns, IndexColumns, ClusterState.Universal, Page.DEFAULT_SIZE)
         {
         }
 
         /// <summary>
         /// Inner B+Tree
         /// </summary>
-        public BPlusTree BaseTree
+        public Cluster BaseTree
         {
             get { return this._Cluster; }
         }
@@ -88,7 +88,7 @@ namespace Pulse.Data
         /// <returns></returns>
         public override Index GetIndex(Key IndexColumns)
         {
-            if (Data.Key.EqualsStrong(IndexColumns, this._Header.SortKey))
+            if (Data.Key.EqualsStrong(IndexColumns, this._Header.ClusterKey))
                 return new DerivedIndex(this);
             return null;
         }

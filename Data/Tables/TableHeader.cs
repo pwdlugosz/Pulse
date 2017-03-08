@@ -71,7 +71,7 @@ namespace Pulse.Data
             this.TerminalPageID = LastPageID;
             this.Columns = Columns;
             this.PageSize = PageSize;
-            this.SortKey = new Key();
+            this.ClusterKey = new Key();
             this.RootPageID = -1;
             this.IndexHeaders = new List<IndexHeader>(8);
         }
@@ -236,16 +236,16 @@ namespace Pulse.Data
         /// <summary>
         /// The sorted key; if the table is not sorted, the key will have a length of zero; this will never be null
         /// </summary>
-        public Key SortKey
+        public Key ClusterKey
         {
             get;
             set;
         }
 
         /// <summary>
-        /// True if the SortKey is the primary key
+        /// True if the ClusterKey is the primary key
         /// </summary>
-        public bool IsPrimaryKey
+        public ClusterState ClusterKeyState
         {
             get;
             set;
@@ -295,12 +295,12 @@ namespace Pulse.Data
             sb.AppendLine(string.Format("Radix Page: {0}", this.RootPageID));
             sb.AppendLine(string.Format("Max Records Per Page: {0}", this.MaxRecordsPerPage));
             sb.AppendLine(string.Format("Avg Page Fullness: {0}%", Math.Round((double)this.RecordCount / ((double)this.PageCount * (double)this.MaxRecordsPerPage), 3) * 100D));
-            if (this.SortKey.Count != 0)
+            if (this.ClusterKey.Count != 0)
             {
-                sb.AppendLine(this.IsPrimaryKey ? "Primary Key:" : "Sort Index:");
-                for (int i = 0; i < this.SortKey.Count; i++)
+                sb.AppendLine(this.ClusterKeyState.ToString() + " Index:");
+                for (int i = 0; i < this.ClusterKey.Count; i++)
                 {
-                    sb.AppendLine(string.Format("\t{0} : {1}", this.Columns.ColumnName(this.SortKey[i]), this.Columns.ColumnAffinity(i)));
+                    sb.AppendLine(string.Format("\t{0} : {1}", this.Columns.ColumnName(this.ClusterKey[i]), this.Columns.ColumnAffinity(i)));
                 }
             }
             sb.AppendLine("Columns:");
@@ -381,15 +381,15 @@ namespace Pulse.Data
             h.RootPageID = BitConverter.ToInt32(Buffer, Location + OFFSET_ROOT_PAGE_ID);
 
             // Key //
-            h.SortKey = new Key();
-            h.IsPrimaryKey = BitConverter.ToInt32(Buffer, Location + OFFSET_SORT_KEY) == 1; // gets the unique
+            h.ClusterKey = new Key();
+            h.ClusterKeyState = (ClusterState)Buffer[Location + OFFSET_SORT_KEY]; // gets the unique
             int KeyCount = BitConverter.ToInt32(Buffer, Location + OFFSET_SORT_KEY + 4); // gets the key size
             for (int i = 0; i < KeyCount; i++)
             {
                 int loc = Location + OFFSET_SORT_KEY + 8 + 8 * i;
                 int idx = BitConverter.ToInt32(Buffer, loc);
                 KeyAffinity affinity = (KeyAffinity)BitConverter.ToInt32(Buffer, loc + 4);
-                h.SortKey.Add(idx, affinity);
+                h.ClusterKey.Add(idx, affinity);
             }
 
             // Read the index table //
@@ -470,8 +470,8 @@ namespace Pulse.Data
             Array.Copy(BitConverter.GetBytes(Element.RootPageID), 0, Buffer, Location + OFFSET_ROOT_PAGE_ID, LEN_SIZE);
 
             // Write key //
-            Array.Copy(BitConverter.GetBytes((Element.IsPrimaryKey ? (int)1 : (int)0)), 0, Buffer, Location + OFFSET_SORT_KEY, LEN_SIZE);
-            byte[] b = Element.SortKey.Bash();
+            Buffer[Location + OFFSET_SORT_KEY] = (byte)Element.ClusterKeyState;
+            byte[] b = Element.ClusterKey.Bash();
             Array.Copy(b, 0, Buffer, Location + OFFSET_SORT_KEY + 4, b.Length);
 
             // Write the index table //

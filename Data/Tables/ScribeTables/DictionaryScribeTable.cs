@@ -31,7 +31,7 @@ namespace Pulse.Data
         public DictionaryScribeTable(Host Host, TableHeader Header)
             : base(Host, Header)
         {
-            this._KeyCount = Header.SortKey.Count;
+            this._KeyCount = Header.ClusterKey.Count;
             this._ValueCount = this.Columns.Count - this._KeyCount;
             this._KeyFields = Data.Key.Build(this._KeyCount);
             this._ValueFields = Data.Key.Build(this._KeyCount, this._ValueCount);
@@ -39,7 +39,7 @@ namespace Pulse.Data
         }
 
         public DictionaryScribeTable(Host Host, string Name, string Dir, Schema KeyColumns, Schema ValueColumns, int PageSize)
-            : base(Host, Name, Dir, Schema.Join(KeyColumns, ValueColumns), Data.Key.Build(KeyColumns.Count), true, PageSize)
+            : base(Host, Name, Dir, Schema.Join(KeyColumns, ValueColumns), Data.Key.Build(KeyColumns.Count), ClusterState.Unique, PageSize)
         {
             this._KeyCount = KeyColumns.Count;
             this._ValueCount = ValueColumns.Count;
@@ -127,14 +127,14 @@ namespace Pulse.Data
             }
 
             // Find the page it belongs on //
-            BPlusTreePage p = this._Cluster.SeekPage(r);
+            ClusterPage p = this._Cluster.SeekPage(r);
 
             // Find the location of the record //
             int idx = p.Search(r);
 
             // Error out if the value doesnt actually exist //
             if (idx < 0)
-                throw new BPlusTree.DuplicateKeyException("Key not found");
+                throw new Cluster.DuplicateKeyException("Key not found");
 
             // Update the record //
             p.Update(r, idx);

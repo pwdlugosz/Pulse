@@ -8,10 +8,11 @@ using System.IO;
 namespace Pulse.Data
 {
 
+
     /// <summary>
     /// Represents a B+ Tree
     /// </summary>
-    public class BPlusTree
+    public class Cluster
     {
 
         /*
@@ -22,8 +23,9 @@ namespace Pulse.Data
          * 
          */
 
+
         protected Table _Storage;
-        protected BPlusTreePage _Root;
+        protected ClusterPage _Root;
         protected Key _IndexColumns;
         protected Record _MaxRecord;
         protected IElementHeader _Header;
@@ -33,13 +35,13 @@ namespace Pulse.Data
         /// </summary>
         /// <param name="Storage"></param>
         /// <param name="IndexColumns"></param>
-        public BPlusTree(Table Storage, Schema ParentSchema, Key IndexColumns, BPlusTreePage Root, IElementHeader Header, bool IsUnique)
+        public Cluster(Table Storage, Schema ParentSchema, Key IndexColumns, ClusterPage Root, IElementHeader Header, ClusterState State)
         {
 
             this._Storage = Storage;
             this._Header = Header;
             this._IndexColumns = IndexColumns;
-            this.IsUnique = IsUnique;
+            this.State = State;
             if (Root == null)
             {
                 this._Root = this.NewRootAsLeaf();
@@ -51,7 +53,6 @@ namespace Pulse.Data
                 this._Root = Root;
             }
             this._MaxRecord = Schema.Split(ParentSchema, this._IndexColumns).MaxRecord;
-            this.IsUnique = false;
             this.OriginBTreePageID = this.SeekOriginPageID();
             this.TerminalBTreePageID = this.SeekTerminalPageID();
             
@@ -68,7 +69,7 @@ namespace Pulse.Data
         /// <summary>
         /// Gets the root page
         /// </summary>
-        public BPlusTreePage Root
+        public ClusterPage Root
         {
             get { return this._Root; }
         }
@@ -84,7 +85,7 @@ namespace Pulse.Data
         /// <summary>
         /// True if unigue, false otherwise
         /// </summary>
-        public virtual bool IsUnique
+        public virtual ClusterState State
         {
             get;
             set;
@@ -122,7 +123,7 @@ namespace Pulse.Data
         /// </summary>
         /// <param name="Key"></param>
         /// <returns></returns>
-        public virtual BPlusTreePage SeekPage(Record Element)
+        public virtual ClusterPage SeekPage(Record Element)
         {
 
             // If the root page is a leaf node //
@@ -131,7 +132,7 @@ namespace Pulse.Data
 
             // Otherwise, starting at root, find the page //
             Record Key = Record.Split(Element, this._IndexColumns);
-            BPlusTreePage x = this._Root;
+            ClusterPage x = this._Root;
             while (true)
             {
                 int PageID = x.GetPageID(Key);
@@ -142,11 +143,11 @@ namespace Pulse.Data
             }
 
             // ## For debuggin ##
-            //BPlusTreePage x = this._Root;
+            //ClusterPage x = this._Root;
             //while (true)
             //{
             //    int PageID = x.GetPageID(Key);
-            //    BPlusTreePage y = this.GetPage(PageID);
+            //    ClusterPage y = this.GetPage(PageID);
             //    if (y.IsLeaf)
             //    {
             //        return y;
@@ -164,7 +165,7 @@ namespace Pulse.Data
         /// </summary>
         /// <param name="Key"></param>
         /// <returns></returns>
-        public virtual BPlusTreePage SeekFirstPage(Record Key)
+        public virtual ClusterPage SeekFirstPage(Record Key)
         {
 
             // If the root page is a leaf node //
@@ -172,11 +173,11 @@ namespace Pulse.Data
                 return this._Root;
 
             // Otherwise, starting at root, find the page //
-            BPlusTreePage x = this._Root;
+            ClusterPage x = this._Root;
             while (true)
             {
 
-                int PageID = x.SearchBranch(Key, BPlusTreePage.BPlusTreeSearchType.FirstElement, false);
+                int PageID = x.SearchBranch(Key, ClusterPage.BPlusTreeSearchType.FirstElement, false);
                 x = this.GetPage(PageID);
                 if (x.IsLeaf)
                     return x;
@@ -190,7 +191,7 @@ namespace Pulse.Data
         /// </summary>
         /// <param name="Key"></param>
         /// <returns></returns>
-        public virtual BPlusTreePage SeekLastPage(Record Key)
+        public virtual ClusterPage SeekLastPage(Record Key)
         {
 
             // If the root page is a leaf node //
@@ -198,10 +199,10 @@ namespace Pulse.Data
                 return this._Root;
 
             // Otherwise, starting at root, find the page //
-            BPlusTreePage x = this._Root;
+            ClusterPage x = this._Root;
             while (true)
             {
-                int PageID = x.SearchBranch(Key, BPlusTreePage.BPlusTreeSearchType.LastElement, false);
+                int PageID = x.SearchBranch(Key, ClusterPage.BPlusTreeSearchType.LastElement, false);
                 x = this.GetPage(PageID);
                 if (x.IsLeaf)
                     return x;
@@ -218,14 +219,14 @@ namespace Pulse.Data
         public virtual RecordKey SeekFirst(Record Key, bool Exact)
         {
 
-            BPlusTreePage x = this.SeekFirstPage(Key);
-            int location = x.SearchLeaf(Key, BPlusTreePage.BPlusTreeSearchType.FirstElement, Exact);
+            ClusterPage x = this.SeekFirstPage(Key);
+            int location = x.SearchLeaf(Key, ClusterPage.BPlusTreeSearchType.FirstElement, Exact);
             if (location < 0)
                 return RecordKey.RecordNotFound;
             while (location == 0 && x.LastPageID != -1)
             {
                 x = this.GetPage(x.LastPageID);
-                location = x.SearchLeaf(Key, BPlusTreePage.BPlusTreeSearchType.FirstElement, false);
+                location = x.SearchLeaf(Key, ClusterPage.BPlusTreeSearchType.FirstElement, false);
             }
             return new RecordKey(x.PageID, location);
 
@@ -239,14 +240,14 @@ namespace Pulse.Data
         public virtual RecordKey SeekLast(Record Key, bool Exact)
         {
 
-            BPlusTreePage x = this.SeekLastPage(Key);
-            int location = x.SearchLeaf(Key, BPlusTreePage.BPlusTreeSearchType.LastElement, Exact);
+            ClusterPage x = this.SeekLastPage(Key);
+            int location = x.SearchLeaf(Key, ClusterPage.BPlusTreeSearchType.LastElement, Exact);
             if (location < 0)
                 return RecordKey.RecordNotFound;
             while (location == (x.Count - 1) && x.NextPageID != -1)
             {
                 x = this.GetPage(x.NextPageID);
-                location = x.SearchLeaf(Key, BPlusTreePage.BPlusTreeSearchType.LastElement, false);
+                location = x.SearchLeaf(Key, ClusterPage.BPlusTreeSearchType.LastElement, false);
             }
             return new RecordKey(x.PageID, location);
 
@@ -261,7 +262,7 @@ namespace Pulse.Data
         //{
             
         //    RecordKey k = this.SeekFirst(Key);
-        //    BPlusTreePage p = this.GetPage(k.PAGE_ID);
+        //    ClusterPage p = this.GetPage(k.PAGE_ID);
 
         //    if (k.ROW_ID >= p.Count)
         //        return RecordKey.RecordNotFound;
@@ -281,7 +282,7 @@ namespace Pulse.Data
         //{
 
         //    RecordKey k = this.SeekLast(Key);
-        //    BPlusTreePage p = this.GetPage(k.PAGE_ID);
+        //    ClusterPage p = this.GetPage(k.PAGE_ID);
 
         //    if (k.ROW_ID >= p.Count)
         //        return RecordKey.RecordNotFound;
@@ -305,7 +306,7 @@ namespace Pulse.Data
                 return this._Root.KeyExists(Key);
 
             // Otherwise, starting at root, find the page //
-            BPlusTreePage x = this._Root;
+            ClusterPage x = this._Root;
             while (true)
             {
                 int PageID = x.GetPageID(Key);
@@ -327,7 +328,7 @@ namespace Pulse.Data
             if (this.Root.IsLeaf)
                 return this.Root.PageID;
 
-            BPlusTreePage p = this.Root;
+            ClusterPage p = this.Root;
             while (true)
             {
                 p = this.GetPage(p.GetPageID(0));
@@ -347,7 +348,7 @@ namespace Pulse.Data
             if (this.Root.IsLeaf)
                 return this.Root.PageID;
 
-            BPlusTreePage p = this.Root;
+            ClusterPage p = this.Root;
             while (true)
             {
                 int id = p.GetPageID(p.Count - 1); // Note that the last record is always MAX_RECORD, so we want the second to last
@@ -374,7 +375,7 @@ namespace Pulse.Data
             //}
 
             // Finde the leaf node to insert into //
-            BPlusTreePage node = this.SeekPage(Element);
+            ClusterPage node = this.SeekPage(Element);
 
             // Actually insert the value //
             this.InsertValue(node, Element);
@@ -391,14 +392,14 @@ namespace Pulse.Data
         /// <param name="Node">A branch node to append</param>
         /// <param name="Key">The key value of the index</param>
         /// <param name="PageID">The page id linking to the key</param>
-        private void InsertKey(BPlusTreePage Node, Record Key, int PageID)
+        private void InsertKey(ClusterPage Node, Record Key, int PageID)
         {
 
             if (Node.IsLeaf)
                 throw new Exception("Node passed must be a branch node");
 
             // Get the child page //
-            BPlusTreePage Child = this.GetPage(PageID);
+            ClusterPage Child = this.GetPage(PageID);
 
             // The node is not full; note that the node will handle flipping the overflow ID if needed //
             if (!Node.IsFull)
@@ -409,7 +410,7 @@ namespace Pulse.Data
             }
 
             // Otherwise, the node is full and we need to split //
-            BPlusTreePage y = this.SplitBranch(Node);
+            ClusterPage y = this.SplitBranch(Node);
 
             // But... we don't know for sure if we should insert into 'Node' or 'y', so we need to check //
             if (Node.LessThanTerminal(Key))
@@ -431,7 +432,7 @@ namespace Pulse.Data
         /// </summary>
         /// <param name="Node">The node to insert</param>
         /// <param name="Key">The data record (having the same schema as the parent table)</param>
-        private void InsertValue(BPlusTreePage Node, Record Element)
+        private void InsertValue(ClusterPage Node, Record Element)
         {
 
             if (!Node.IsLeaf)
@@ -445,7 +446,7 @@ namespace Pulse.Data
             }
 
             // Otherwise, the node is full and we need to split //
-            BPlusTreePage y = this.SplitLeaf(Node);
+            ClusterPage y = this.SplitLeaf(Node);
 
             // But... we don't know for sure if we should insert into 'Node' or 'y', so we need to check //
             if (Node.LessThanTerminal(Element))
@@ -465,14 +466,14 @@ namespace Pulse.Data
         /// </summary>
         /// <param name="OriginalNode">The node to be split; after this method is called, this node will have the LOWER half of all records before the split</param>
         /// <returns>A new node with the UPPER half of all record in the OriginalNode; this method will append the parent nodes</returns>
-        private BPlusTreePage SplitBranch(BPlusTreePage OriginalNode)
+        private ClusterPage SplitBranch(ClusterPage OriginalNode)
         {
 
             if (OriginalNode.IsLeaf)
                 throw new Exception("Node passed must be a branch node");
 
             // Split up the page; splitting will set the ParentID and the Leafness, but it won't set the overflow page id //
-            BPlusTreePage NewNode = OriginalNode.SplitXPage(this._Storage.GenerateNewPageID, OriginalNode.PageID, OriginalNode.NextPageID, OriginalNode.Count / 2);
+            ClusterPage NewNode = OriginalNode.SplitXPage(this._Storage.GenerateNewPageID, OriginalNode.PageID, OriginalNode.NextPageID, OriginalNode.Count / 2);
             this._Storage.SetPage(NewNode);
             this._Storage.Header.PageCount++;
 
@@ -483,7 +484,7 @@ namespace Pulse.Data
             // Set the last page id for the next page id
             if (NewNode.NextPageID != -1)
             {
-                BPlusTreePage UpPage = this.GetPage(NewNode.NextPageID);
+                ClusterPage UpPage = this.GetPage(NewNode.NextPageID);
                 UpPage.LastPageID = NewNode.PageID;
             }
 
@@ -491,7 +492,7 @@ namespace Pulse.Data
             List<int> PageIDs = NewNode.AllPageIDs();
             foreach (int PageID in PageIDs)
             {
-                BPlusTreePage q = this.GetPage(PageID);
+                ClusterPage q = this.GetPage(PageID);
                 q.ParentPageID = NewNode.PageID;
             }
 
@@ -500,11 +501,11 @@ namespace Pulse.Data
             {
 
                 // Get the parent //
-                BPlusTreePage parent = this.GetPage(OriginalNode.ParentPageID);
+                ClusterPage parent = this.GetPage(OriginalNode.ParentPageID);
 
 
                 // Need to update the key for OriginalNode to be it's last record //
-                parent.Delete(BPlusTreePage.Composite(Record.Split(NewNode.TerminalRecord, NewNode.WeakKeyColumns), OriginalNode.PageID));
+                parent.Delete(ClusterPage.Composite(Record.Split(NewNode.TerminalRecord, NewNode.WeakKeyColumns), OriginalNode.PageID));
 
                 // Note: we know because we just removed a record that the parent node is not full, so we do a direct insert
                 //      we would run into trouble if we didnt do this and the record we were deleting was the last in the tree's node
@@ -532,10 +533,10 @@ namespace Pulse.Data
                 NewNode.ParentPageID = this._Root.PageID;
 
                 // Need to insert the last row of the current record //
-                this._Root.Insert(BPlusTreePage.Composite(Record.Split(OriginalNode.TerminalRecord, OriginalNode.WeakKeyColumns), OriginalNode.PageID));
+                this._Root.Insert(ClusterPage.Composite(Record.Split(OriginalNode.TerminalRecord, OriginalNode.WeakKeyColumns), OriginalNode.PageID));
 
                 // Need to add the max record to this layer //
-                this._Root.Insert(BPlusTreePage.Composite(this._MaxRecord, NewNode.PageID));
+                this._Root.Insert(ClusterPage.Composite(this._MaxRecord, NewNode.PageID));
 
                 // Set the new node to be the highest //
                 NewNode.IsHighest = true;
@@ -556,7 +557,7 @@ namespace Pulse.Data
         /// </summary>
         /// <param name="OriginalNode">The node to split; this node will have the LOWER half of the original nodes record after the split</param>
         /// <returns>A new node with the UPPER half of all records on the original node</returns>
-        private BPlusTreePage SplitLeaf(BPlusTreePage OriginalNode)
+        private ClusterPage SplitLeaf(ClusterPage OriginalNode)
         {
 
             if (!OriginalNode.IsLeaf)
@@ -565,7 +566,7 @@ namespace Pulse.Data
             Record OriginalTerminal = OriginalNode.TerminalRecord;
 
             // Split up the page; splitting will set the ParentID and the Leafness, but it won't set the overflow page id //
-            BPlusTreePage NewNode = OriginalNode.SplitXPage(this._Storage.GenerateNewPageID, OriginalNode.PageID, OriginalNode.NextPageID, OriginalNode.Count / 2);
+            ClusterPage NewNode = OriginalNode.SplitXPage(this._Storage.GenerateNewPageID, OriginalNode.PageID, OriginalNode.NextPageID, OriginalNode.Count / 2);
             this._Storage.SetPage(NewNode);
             this._Storage.Header.PageCount++;
 
@@ -582,7 +583,7 @@ namespace Pulse.Data
             // Set the last page id for the next page id
             if (NewNode.NextPageID != -1)
             {
-                BPlusTreePage UpPage = this.GetPage(NewNode.NextPageID);
+                ClusterPage UpPage = this.GetPage(NewNode.NextPageID);
                 UpPage.LastPageID = NewNode.PageID;
             }
 
@@ -591,7 +592,7 @@ namespace Pulse.Data
             {
 
                 // Get the parent //
-                BPlusTreePage parent = this.GetPage(OriginalNode.ParentPageID);
+                ClusterPage parent = this.GetPage(OriginalNode.ParentPageID);
 
                 // If it is the highest //
                 if (OriginalNode.IsHighest)
@@ -602,7 +603,7 @@ namespace Pulse.Data
                     NewNode.IsHighest = true;
 
                     // The record in the parent is NOT the terminal record, it's the highest record //
-                    parent.Delete(BPlusTreePage.Composite(this._MaxRecord, OriginalNode.PageID));
+                    parent.Delete(ClusterPage.Composite(this._MaxRecord, OriginalNode.PageID));
 
                     // Note: we know because we just removed a record that the parent node is not full, so we do a direct insert
                     //      we would run into trouble if we didnt do this and the record we were deleting was the last in the tree's node
@@ -615,7 +616,7 @@ namespace Pulse.Data
                 {
 
                     // Need to update the key for OriginalNode to be it's last record //
-                    parent.Delete(BPlusTreePage.Composite(Record.Split(NewNode.TerminalRecord, NewNode.OriginalKeyColumns), OriginalNode.PageID));
+                    parent.Delete(ClusterPage.Composite(Record.Split(NewNode.TerminalRecord, NewNode.OriginalKeyColumns), OriginalNode.PageID));
 
                     // Note: we know because we just removed a record that the parent node is not full, so we do a direct insert
                     //      we would run into trouble if we didnt do this and the record we were deleting was the last in the tree's node
@@ -638,10 +639,10 @@ namespace Pulse.Data
                 NewNode.ParentPageID = this._Root.PageID;
 
                 // Need to insert
-                this._Root.Insert(BPlusTreePage.Composite(Record.Split(OriginalNode.TerminalRecord, OriginalNode.OriginalKeyColumns), OriginalNode.PageID));
+                this._Root.Insert(ClusterPage.Composite(Record.Split(OriginalNode.TerminalRecord, OriginalNode.OriginalKeyColumns), OriginalNode.PageID));
 
                 // Need to add the max record to this layer //
-                this._Root.Insert(BPlusTreePage.Composite(this._MaxRecord, NewNode.PageID));
+                this._Root.Insert(ClusterPage.Composite(this._MaxRecord, NewNode.PageID));
 
                 // Set the new node to be the highest //
                 NewNode.IsHighest = true;
@@ -662,10 +663,10 @@ namespace Pulse.Data
         /// </summary>
         /// <param name="PageID">The page ID requested</param>
         /// <returns></returns>
-        private BPlusTreePage GetPage(int PageID)
+        private ClusterPage GetPage(int PageID)
         {
             Page p = this._Storage.GetPage(PageID);
-            return BPlusTreePage.Mutate(p, this._IndexColumns);
+            return ClusterPage.Mutate(p, this._IndexColumns);
         }
 
         // New Root Methods //
@@ -673,13 +674,13 @@ namespace Pulse.Data
         /// Generates a new root page as if it were a branch node
         /// </summary>
         /// <returns></returns>
-        private BPlusTreePage NewRootAsBranch()
+        private ClusterPage NewRootAsBranch()
         {
 
             Schema s = Schema.Split(this._Storage.Columns, this._IndexColumns);
             s.Add("@IDX", CellAffinity.INT);
 
-            BPlusTreePage NewRoot = new BPlusTreePage(this._Storage.PageSize, this._Storage.GenerateNewPageID, -1, -1, s.Count, s.RecordDiskCost, this._IndexColumns, false, this.IsUnique);
+            ClusterPage NewRoot = new ClusterPage(this._Storage.PageSize, this._Storage.GenerateNewPageID, -1, -1, s.Count, s.RecordDiskCost, this._IndexColumns, false, this.State);
             NewRoot.ParentPageID = -1;
             NewRoot.IsHighest = true;
             this._Header.RootPageID = NewRoot.PageID;
@@ -692,12 +693,12 @@ namespace Pulse.Data
         /// Generates a new root node as a leaf node; note that this only called in the ctor method
         /// </summary>
         /// <returns></returns>
-        private BPlusTreePage NewRootAsLeaf()
+        private ClusterPage NewRootAsLeaf()
         {
 
             Schema s = this._Storage.Columns;
 
-            BPlusTreePage NewRoot = new BPlusTreePage(this._Storage.PageSize, this._Storage.GenerateNewPageID, -1, -1, s.Count, s.RecordDiskCost, this._IndexColumns, true, this.IsUnique);
+            ClusterPage NewRoot = new ClusterPage(this._Storage.PageSize, this._Storage.GenerateNewPageID, -1, -1, s.Count, s.RecordDiskCost, this._IndexColumns, true, this.State);
             NewRoot.ParentPageID = -1;
             NewRoot.IsHighest = true;
             this._Header.RootPageID = NewRoot.PageID;
@@ -726,7 +727,7 @@ namespace Pulse.Data
 
         }
 
-        private void DumpPage(StreamWriter Writer, BPlusTreePage Branch, int Level, bool NonClustered)
+        private void DumpPage(StreamWriter Writer, ClusterPage Branch, int Level, bool NonClustered)
         {
 
             // Dump this page //
@@ -749,7 +750,7 @@ namespace Pulse.Data
         }
 
         // Debugging //
-        internal void Print(StreamWriter writer, BPlusTreePage Page)
+        internal void Print(StreamWriter writer, ClusterPage Page)
         {
 
             // Print this data //
@@ -796,7 +797,7 @@ namespace Pulse.Data
 
         }
 
-        internal void AppendString(StringBuilder sb, BPlusTreePage Node)
+        internal void AppendString(StringBuilder sb, ClusterPage Node)
         {
 
             if (Node.IsLeaf)
@@ -816,7 +817,7 @@ namespace Pulse.Data
 
             foreach (int i in nodes)
             {
-                BPlusTreePage x = this.GetPage(i);
+                ClusterPage x = this.GetPage(i);
                 this.AppendString(sb, x);
             }
 
@@ -855,40 +856,40 @@ namespace Pulse.Data
         }
 
         // Statics //
-        public static BPlusTree CreateClusteredIndex(Table Parent, Key IndexColumns, bool IsUnique)
+        public static Cluster CreateClusteredIndex(Table Parent, Key IndexColumns, ClusterState State)
         {
-            return new BPlusTree(Parent, Parent.Columns, IndexColumns, null, Parent.Header, IsUnique);
+            return new Cluster(Parent, Parent.Columns, IndexColumns, null, Parent.Header, State);
         }
 
-        public static BPlusTree OpenClusteredIndex(Table Parent)
+        public static Cluster OpenClusteredIndex(Table Parent)
         {
 
             if (Parent.Header.RootPageID == -1)
                 throw new ArgumentException("Cannot open a clustered index; no such index exists");
-            Key k = Parent.Header.SortKey;
-            BPlusTreePage root = BPlusTreePage.Mutate(Parent.GetPage(Parent.Header.RootPageID), k);
-            return new BPlusTree(Parent, Parent.Columns, k, root, Parent.Header, Parent.Header.IsPrimaryKey);
+            Key k = Parent.Header.ClusterKey;
+            ClusterPage root = ClusterPage.Mutate(Parent.GetPage(Parent.Header.RootPageID), k);
+            return new Cluster(Parent, Parent.Columns, k, root, Parent.Header, Parent.Header.ClusterKeyState);
 
         }
 
-        public static BPlusTree CreateNonClusteredIndex(Table StorageAndParent, Key IndexColumns)
+        public static Cluster CreateNonClusteredIndex(Table StorageAndParent, Key IndexColumns)
         {
 
             Key k = Key.Build(IndexColumns.Count);
             Schema s = Schema.Split(StorageAndParent.Columns, IndexColumns);
             s.Add("@PTR", CellAffinity.INT, true, 8);
-            return new BPlusTree(StorageAndParent, s, k, null, StorageAndParent.Header, false);
+            return new Cluster(StorageAndParent, s, k, null, StorageAndParent.Header, ClusterState.Universal);
 
         }
 
-        public static BPlusTree OpenNonClusteredIndex(Table StorageAndParent, IndexHeader Header)
+        public static Cluster OpenNonClusteredIndex(Table StorageAndParent, IndexHeader Header)
         {
 
             Key k = Key.Build(Header.IndexColumns.Count);
             Schema s = Schema.Split(StorageAndParent.Columns, Header.IndexColumns);
             s.Add("@PTR", CellAffinity.INT, true, 8);
-            BPlusTreePage root = BPlusTreePage.Mutate(StorageAndParent.GetPage(Header.RootPageID), Header.IndexColumns);
-            return new BPlusTree(StorageAndParent, s, k, root, Header, false);
+            ClusterPage root = ClusterPage.Mutate(StorageAndParent.GetPage(Header.RootPageID), Header.IndexColumns);
+            return new Cluster(StorageAndParent, s, k, root, Header, ClusterState.Universal);
 
         }
 

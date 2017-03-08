@@ -70,7 +70,7 @@ namespace Pulse.Data
         /// <summary>
         /// Turn off sorting
         /// </summary>
-        /// <param name="SortKey"></param>
+        /// <param name="ClusterKey"></param>
         public override void Sort(IRecordMatcher SortKey)
         {
             throw new ArgumentException("Cannot sort a sorted page; it's already sorted and the key cannot be changed");

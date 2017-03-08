@@ -133,21 +133,21 @@ namespace Pulse.Data
 
         }
 
-        public ClusteredScribeTable CreateTable(string Alias, string Name, Schema Columns, Key ClusterColumns, bool IsUnique, int PageSize)
+        public ClusteredScribeTable CreateTable(string Alias, string Name, Schema Columns, Key ClusterColumns, ClusterState State, int PageSize)
         {
-            ClusteredScribeTable t = new ClusteredScribeTable(this, Name, this._Connections[Alias], Columns, ClusterColumns, IsUnique, PageSize);
+            ClusteredScribeTable t = new ClusteredScribeTable(this, Name, this._Connections[Alias], Columns, ClusterColumns, State, PageSize);
             return t;
         }
 
-        public ClusteredScribeTable CreateTable(string Alias, string Name, Schema Columns, Key ClusterColumns, bool IsUnique)
+        public ClusteredScribeTable CreateTable(string Alias, string Name, Schema Columns, Key ClusterColumns, ClusterState State)
         {
-            ClusteredScribeTable t = new ClusteredScribeTable(this, Name, this._Connections[Alias], Columns, ClusterColumns, IsUnique, Page.DEFAULT_SIZE);
+            ClusteredScribeTable t = new ClusteredScribeTable(this, Name, this._Connections[Alias], Columns, ClusterColumns, State, Page.DEFAULT_SIZE);
             return t;
         }
 
         public ClusteredScribeTable CreateTable(string Alias, string Name, Schema Columns, Key ClusterColumns)
         {
-            ClusteredScribeTable t = new ClusteredScribeTable(this, Name, this._Connections[Alias], Columns, ClusterColumns, false, Page.DEFAULT_SIZE);
+            ClusteredScribeTable t = new ClusteredScribeTable(this, Name, this._Connections[Alias], Columns, ClusterColumns, ClusterState.Universal, Page.DEFAULT_SIZE);
             return t;
         }
 

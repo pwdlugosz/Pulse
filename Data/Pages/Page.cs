@@ -533,7 +533,7 @@ namespace Pulse.Data
         /// <summary>
         /// Sorts all records on the page
         /// </summary>
-        /// <param name="SortKey"></param>
+        /// <param name="ClusterKey"></param>
         public virtual void Sort(IRecordMatcher SortKey)
         {
             this._Elements.Sort(SortKey);

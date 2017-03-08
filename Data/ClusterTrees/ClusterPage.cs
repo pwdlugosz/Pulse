@@ -10,7 +10,7 @@ namespace Pulse.Data
     /// <summary>
     /// Represents a single page in a b+ tree
     /// </summary>
-    public class BPlusTreePage : Page
+    public class ClusterPage : Page
     {
 
         private int DEBUG_MAX_RECORDS = -1; // used only for debugging; set to -1 to revert to the classic logic
@@ -28,7 +28,7 @@ namespace Pulse.Data
         // _X0 = parent page ID
         // _B0 = (1 == is leaf, 0 == is branch)
         // _B1 = is highest
-        // _B2 = is unique
+        // _B2 = is unique; 0 = not unique, 1 = unique, 2 = quasi unique, which just means it doesnt throw an exception when it finds a duplicate
 
         private RecordMatcher _StrongMatcher; // Matches all key columns + page id for the branch nodes
         private RecordMatcher _WeakMatcher; // Only matches key columns;
@@ -38,12 +38,12 @@ namespace Pulse.Data
         private Key _OriginalKeyColumns; // Used only for generating
         private int _RefColumn = 0;
 
-        public BPlusTreePage(int PageSize, int PageID, int LastPageID, int NextPageID, int FieldCount, int DataDiskCost, Key KeyColumns, bool IsLeaf, bool Unique)
+        public ClusterPage(int PageSize, int PageID, int LastPageID, int NextPageID, int FieldCount, int DataDiskCost, Key KeyColumns, bool IsLeaf, ClusterState State)
             : base(PageSize, PageID, LastPageID, NextPageID, FieldCount, DataDiskCost)
         {
 
             this.IsLeaf = IsLeaf;
-            this.IsUnique = Unique;
+            this.State = State;
             this._OriginalKeyColumns = KeyColumns;
             this._StrongKeyColumns = IsLeaf ? KeyColumns : BranchObjectiveClone(KeyColumns, false);
             if (this.IsLeaf)
@@ -82,11 +82,18 @@ namespace Pulse.Data
         {
 
             int idx = this._Elements.BinarySearch(Element, this._StrongMatcher);
-            if (idx >= 0 && this.IsUnique)
+            if (idx >= 0 && this.State == ClusterState.Unique)
             {
-                throw new BPlusTree.DuplicateKeyException(string.Format("Key '{0}' exists on page '{1}' at position '{2}'", Record.Split(Element, this._WeakKeyColumns).ToString(), this.PageID, idx));
+                throw new Cluster.DuplicateKeyException(string.Format("Key '{0}' exists on page '{1}' at position '{2}'", Record.Split(Element, this._WeakKeyColumns).ToString(), this.PageID, idx));
             }
-            if (idx < 0) idx = ~idx;
+            else if (idx >= 0 && this.State == ClusterState.Distinct)
+            {
+                return;
+            }
+            else if (idx < 0)
+            {
+                idx = ~idx;
+            }
 
             if (idx == this.Count && !this.IsHighest)
                 throw new Exception("Cannot add a higher record to this page");
@@ -136,10 +143,10 @@ namespace Pulse.Data
             set { this._B1 = (byte)(value ? 1 : 0); }
         }
 
-        public bool IsUnique
+        public ClusterState State
         {
-            get { return this._B2 == 1; }
-            set { this._B2 = (byte)(value ? 1 : 0); }
+            get { return (ClusterState)this._B2; }
+            set { this._B2 = (byte)(value); }
         }
 
         public Key StrongKeyColumns
@@ -172,14 +179,14 @@ namespace Pulse.Data
 
         }
 
-        public BPlusTreePage GenerateXPage(int PageID, int LastPageID, int NextPageID)
+        public ClusterPage GenerateXPage(int PageID, int LastPageID, int NextPageID)
         {
-            BPlusTreePage x = new BPlusTreePage(this.PageSize, PageID, LastPageID, NextPageID, this._FieldCount, this._DataDiskCost, this._OriginalKeyColumns, this.IsLeaf, this.IsUnique);
+            ClusterPage x = new ClusterPage(this.PageSize, PageID, LastPageID, NextPageID, this._FieldCount, this._DataDiskCost, this._OriginalKeyColumns, this.IsLeaf, this.State);
             x.IsLeaf = this.IsLeaf;
             return x;
         }
 
-        public BPlusTreePage SplitXPage(int PageID, int LastPageID, int NextPageID, int Pivot)
+        public ClusterPage SplitXPage(int PageID, int LastPageID, int NextPageID, int Pivot)
         {
 
             if (this.Count < 2)
@@ -191,7 +198,7 @@ namespace Pulse.Data
             if (Pivot >= this.Count)
                 throw new IndexOutOfRangeException(string.Format("The pivot ({0}) cannot be greater than the element count ({1})", Pivot, this.Count));
 
-            BPlusTreePage p = this.GenerateXPage(PageID, LastPageID, NextPageID);
+            ClusterPage p = this.GenerateXPage(PageID, LastPageID, NextPageID);
             for (int i = Pivot; i < this.Count; i++)
             {
                 p._Elements.Add(this._Elements[i]);
@@ -234,9 +241,13 @@ namespace Pulse.Data
             // Find the insertion point //
             Record k = Composite(Key, PageID);
             int idx = this._Elements.BinarySearch(k, this._StrongMatcher);
-            if (idx >= 0 && this.IsUnique)
+            if (idx >= 0 && this.State == ClusterState.Unique)
             {
-                throw new BPlusTree.DuplicateKeyException(string.Format("Key '{0}' exists on page '{1}' at position '{2}'", Key.ToString(), this.PageID, idx));
+                throw new Cluster.DuplicateKeyException(string.Format("Key '{0}' exists on page '{1}' at position '{2}'", Key.ToString(), this.PageID, idx));
+            }
+            else if (idx >= 0 && this.State == ClusterState.Distinct)
+            {
+                return;
             }
             else if (idx < 0)
             {
@@ -474,16 +485,16 @@ namespace Pulse.Data
         }
 
         // Statics //
-        public static BPlusTreePage Mutate(Page Primitive, Key KeyColumns)
+        public static ClusterPage Mutate(Page Primitive, Key KeyColumns)
         {
 
             if (Primitive.PageType != XPAGE_TYPE)
                 throw new Exception("Cannot convert to B+Tree");
 
-            if (Primitive is BPlusTreePage)
-                return Primitive as BPlusTreePage;
+            if (Primitive is ClusterPage)
+                return Primitive as ClusterPage;
 
-            BPlusTreePage x = new BPlusTreePage(Primitive.PageSize, Primitive.PageID, Primitive.LastPageID, Primitive.NextPageID, Primitive.FieldCount, Primitive.DataDiskCost, KeyColumns, Primitive.B0 == 1, Primitive.B2 == 1);
+            ClusterPage x = new ClusterPage(Primitive.PageSize, Primitive.PageID, Primitive.LastPageID, Primitive.NextPageID, Primitive.FieldCount, Primitive.DataDiskCost, KeyColumns, Primitive.B0 == 1, (ClusterState)Primitive.B2);
             x._X0 = Primitive.X0;
             x._X1 = Primitive.X1;
             x._X2 = Primitive.X2;

@@ -13,14 +13,14 @@ namespace Pulse.Data
     public class ClusteredScribeTable : ScribeTable
     {
 
-        protected BPlusTree _Cluster;
+        protected Cluster _Cluster;
 
         /// <summary>
         /// This method should be used for creating a table object from an existing table on disk
         /// </summary>
         /// <param name="Host"></param>
         /// <param name="Header"></param>
-        /// <param name="SortKey"></param>
+        /// <param name="ClusterKey"></param>
         public ClusteredScribeTable(Host Host, TableHeader Header)
             : base(Host, Header)
         {
@@ -29,13 +29,13 @@ namespace Pulse.Data
                 throw new ArgumentException("The root page ID cannot be null");
 
             // Get the sort key //
-            Key k = Header.SortKey;
+            Key k = Header.ClusterKey;
 
             // Get the root page ID //
-            BPlusTreePage root = BPlusTreePage.Mutate(this.GetPage(Header.RootPageID), k);
+            ClusterPage root = ClusterPage.Mutate(this.GetPage(Header.RootPageID), k);
 
             // Cluster //
-            this._Cluster = new BPlusTree(this, this.Columns, k, root, this.Header, false);
+            this._Cluster = new Cluster(this, this.Columns, k, root, this.Header, Header.ClusterKeyState);
 
             this._TableType = "CLUSTER_SCRIBE";
 
@@ -49,14 +49,14 @@ namespace Pulse.Data
         /// <param name="Dir"></param>
         /// <param name="Columns"></param>
         /// <param name="PageSize"></param>
-        /// <param name="SortKey"></param>
-        public ClusteredScribeTable(Host Host, string Name, string Dir, Schema Columns, Key ClusterColumns, bool IsUnique, int PageSize)
+        /// <param name="ClusterKey"></param>
+        public ClusteredScribeTable(Host Host, string Name, string Dir, Schema Columns, Key ClusterColumns, ClusterState State, int PageSize)
             : base(Host, Name, Dir, Columns, PageSize)
         {
 
-            this._Cluster = BPlusTree.CreateClusteredIndex(this, ClusterColumns, IsUnique);
+            this._Cluster = Cluster.CreateClusteredIndex(this, ClusterColumns, State);
             this._TableType = "CLUSTER_SCRIBE";
-            this._Header.SortKey = ClusterColumns;
+            this._Header.ClusterKey = ClusterColumns;
 
         }
 
@@ -68,8 +68,8 @@ namespace Pulse.Data
         /// <param name="Dir"></param>
         /// <param name="Columns"></param>
         /// <param name="ClusterColumns"></param>
-        public ClusteredScribeTable(Host Host, string Name, string Dir, Schema Columns, Key ClusterColumns, bool IsUnique)
-            : this(Host, Name, Dir, Columns, ClusterColumns, IsUnique, Page.DEFAULT_SIZE)
+        public ClusteredScribeTable(Host Host, string Name, string Dir, Schema Columns, Key ClusterColumns, ClusterState State)
+            : this(Host, Name, Dir, Columns, ClusterColumns, State, Page.DEFAULT_SIZE)
         {
         }
 
@@ -82,14 +82,14 @@ namespace Pulse.Data
         /// <param name="Columns"></param>
         /// <param name="ClusterColumns"></param>
         public ClusteredScribeTable(Host Host, string Name, string Dir, Schema Columns, Key ClusterColumns)
-            : this(Host, Name, Dir, Columns, ClusterColumns, false, Page.DEFAULT_SIZE)
+            : this(Host, Name, Dir, Columns, ClusterColumns, ClusterState.Universal, Page.DEFAULT_SIZE)
         {
         }
 
         /// <summary>
         /// Inner B+Tree
         /// </summary>
-        public BPlusTree BaseTree
+        public Cluster BaseTree
         {
             get { return this._Cluster; }
         }
@@ -163,7 +163,7 @@ namespace Pulse.Data
         /// <returns></returns>
         public override Index GetIndex(Key IndexColumns)
         {
-            if (Data.Key.EqualsStrong(IndexColumns, this._Header.SortKey))
+            if (Data.Key.EqualsStrong(IndexColumns, this._Header.ClusterKey))
                 return new DerivedIndex(this);
             return null;
         }

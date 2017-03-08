@@ -18,7 +18,7 @@ namespace Pulse.Data
         /// </summary>
         /// <param name="Host"></param>
         /// <param name="Header"></param>
-        /// <param name="SortKey"></param>
+        /// <param name="ClusterKey"></param>
         public ShellScribeTable(Host Host, TableHeader Header)
             : base(Host, Header)
         {
@@ -33,7 +33,7 @@ namespace Pulse.Data
         /// <param name="Dir"></param>
         /// <param name="Columns"></param>
         /// <param name="PageSize"></param>
-        /// <param name="SortKey"></param>
+        /// <param name="ClusterKey"></param>
         public ShellScribeTable(Host Host, string Name, string Dir, Schema Columns, int PageSize)
             : base(Host, Name, Dir, Columns, PageSize)
         {

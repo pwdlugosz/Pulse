@@ -16,7 +16,7 @@ namespace Pulse.Data
         /// <summary>
         /// Represents the base b+tree object
         /// </summary>
-        protected BPlusTree _Tree;
+        protected Cluster _Tree;
 
         /// <summary>
         /// Represents the table where the index will be stored
@@ -58,9 +58,9 @@ namespace Pulse.Data
             this._Parent = Parent;
             this._Header = Header;
             this._IndexColumns = Header.IndexColumns;
-            BPlusTreePage root = BPlusTreePage.Mutate(this._Storage.GetPage(Header.RootPageID), Header.IndexColumns);
-            Schema s = BPlusTree.NonClusteredIndexColumns(this._Parent.Columns, Header.IndexColumns);
-            this._Tree = new BPlusTree(Storage, s, Key.Build(this._IndexColumns.Count), root, Header, false);
+            ClusterPage root = ClusterPage.Mutate(this._Storage.GetPage(Header.RootPageID), Header.IndexColumns);
+            Schema s = Cluster.NonClusteredIndexColumns(this._Parent.Columns, Header.IndexColumns);
+            this._Tree = new Cluster(Storage, s, Key.Build(this._IndexColumns.Count), root, Header, ClusterState.Universal);
 
         }
 
@@ -77,8 +77,8 @@ namespace Pulse.Data
             this._Storage = Storage;
             this._Parent = Parent;
             this._IndexColumns = IndexColumns;
-            Schema s = BPlusTree.NonClusteredIndexColumns(this._Parent.Columns, this._IndexColumns);
-            this._Tree = new BPlusTree(this._Storage, s, this._IndexColumns, null, this._Header, false);
+            Schema s = Cluster.NonClusteredIndexColumns(this._Parent.Columns, this._IndexColumns);
+            this._Tree = new Cluster(this._Storage, s, this._IndexColumns, null, this._Header, ClusterState.Universal);
 
         }
 
@@ -103,7 +103,7 @@ namespace Pulse.Data
             get { return this._Header; }
         }
 
-        public BPlusTree Tree
+        public Cluster Tree
         {
             get { return this._Tree; }
         }
@@ -131,6 +131,15 @@ namespace Pulse.Data
         {
             RecordKey l = this._Tree.SeekFirst(LKey, false);
             RecordKey u = this._Tree.SeekLast(UKey, false);
+            return new IndexDataReadStream(this._Header, this._Storage, this._Parent, l, u);
+        }
+
+        public virtual ReadStream OpenStrictReader(Record Key)
+        {
+            RecordKey l = this._Tree.SeekFirst(Key, true);
+            RecordKey u = this._Tree.SeekLast(Key, true);
+            if (l.IsNotFound || u.IsNotFound)
+                return null;
             return new IndexDataReadStream(this._Header, this._Storage, this._Parent, l, u);
         }
 
@@ -170,7 +179,7 @@ namespace Pulse.Data
         public static Index CreateExternalIndex(Table Parent, Key IndexColumns)
         {
 
-            Schema columns = BPlusTree.NonClusteredIndexColumns(Parent.Columns, IndexColumns);
+            Schema columns = Cluster.NonClusteredIndexColumns(Parent.Columns, IndexColumns);
             ShellScribeTable storage = new ShellScribeTable(Parent.Host, Host.RandomName, Parent.Host.TempDB, columns, Page.DEFAULT_SIZE);
             return new Index(storage, Parent, Host.RandomName, IndexColumns);
 

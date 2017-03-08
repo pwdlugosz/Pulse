@@ -612,7 +612,7 @@ namespace Pulse.Data
                 fs.Read(b, 0, (int)ByteCount);
             }
 
-            RecordMatcher matcher = new RecordMatcher(Header.SortKey);
+            RecordMatcher matcher = new RecordMatcher(Header.ClusterKey);
             long Location = 0;
             for (int i = 0; i < PageCount; i++)
             {

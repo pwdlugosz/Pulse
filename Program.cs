@@ -23,9 +23,9 @@ namespace Pulse
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
 
             Host Enviro = new Host();
-            HeapDreamTable x1 = Pulse.Testing.SampleTables.SampleHeapDreamTable(Enviro, "T1", 10);
-            ClusteredDreamTable x2 = Pulse.Testing.SampleTables.SampleClusteredDreamTable(Enviro, "T2", 10);
-            HeapDreamTable x3 = Pulse.Testing.SampleTables.SampleHeapDreamTable(Enviro, "T3", 10);
+            HeapDreamTable x1 = Pulse.Testing.SampleTables.SampleHeapDreamTable(Enviro, "T1", 10, 0);
+            ClusteredDreamTable x2 = Pulse.Testing.SampleTables.SampleClusteredDreamTable(Enviro, "T2", 10, 5);
+            HeapDreamTable x3 = Pulse.Testing.SampleTables.SampleHeapDreamTable(Enviro, "T3", 10, 0);
             ExpressionCollection exp = new ExpressionCollection();
             exp.Add("LEFT", Expression.Field(x1, "KEY", 0));
             exp.Add("RIGHT", Expression.Field(x1, "KEY", 1));
@@ -34,11 +34,11 @@ namespace Pulse
 
             //UnionBeaconStream bs = UnionBeaconStream.Union(Enviro, VanilaBeaconStream.Select(x1), VanilaBeaconStream.Select(x2), VanilaBeaconStream.Select(x3));
             //BeaconStream bs = VanilaBeaconStream.Select(x1);
-            //NestedLoopJoinStream bs = new NestedLoopJoinStream(Enviro, FieldResolver.Build(Enviro, x1, x2), x1.OpenReader(), x2.OpenReader(), new RecordMatcher(new Key(0)), JoinStream.JoinType.INNER);
-            QuasiNestedLoopJoinStream bs = new QuasiNestedLoopJoinStream(Enviro, FieldResolver.Build(Enviro, x1, x2), x1.OpenReader(), x2.GetIndex(new Key(0)), new RecordMatcher(new Key(0)), JoinStream.JoinType.INNER);
+            //NestedLoopJoinStream bs = new NestedLoopJoinStream(Enviro, FieldResolver.Build(Enviro, x1, x2), x1.OpenReader(), x2.OpenReader(), new RecordMatcher(new Key(0)), JoinStream.JoinType.LEFT);
+            //QuasiNestedLoopJoinStream bs = new QuasiNestedLoopJoinStream(Enviro, FieldResolver.Build(Enviro, x1, x2), x1.OpenReader(), x2.GetIndex(new Key(0)), new RecordMatcher(new Key(0)), JoinStream.JoinType.LEFT);
             //SortMergeJoinStream bs = new SortMergeJoinStream(Enviro, FieldResolver.Build(Enviro, x1, x2), x1.OpenReader(), x2.OpenReader(), new RecordMatcher(new Key(0)), JoinStream.JoinType.INNER);
 
-            screen.Consume(bs);
+            //screen.Consume(bs);
 
             Enviro.ShutDown();
 
@@ -78,7 +78,7 @@ namespace Pulse
             f.AddSchema("R", right.Columns);
             //NestedLoopJoinStream js = new NestedLoopJoinStream(Enviro, f, left.OpenReader(), right.OpenReader(), new RecordMatcher(new Key(0)), JoinStream.JoinType.LEFT);
             //QuasiNestedLoopJoinStream js = new QuasiNestedLoopJoinStream(Enviro, f, left.OpenReader(), new DerivedIndex(right), new RecordMatcher(new Key(0)), JoinStream.JoinType.LEFT);
-            SortMergeJoinStream js = new SortMergeJoinStream(Enviro, f, left.OpenReader(), right.OpenReader(), new RecordMatcher(new Key(0)), JoinStream.JoinType.LEFT);
+            //SortMergeJoinStream js = new SortMergeJoinStream(Enviro, f, left.OpenReader(), right.OpenReader(), new RecordMatcher(new Key(0)), JoinStream.JoinType.LEFT);
 
             Expression a = new ExpressionFieldRef(null, 0, 0, CellAffinity.INT, 8);
             Expression b = new ExpressionFieldRef(null, 1, 0, CellAffinity.INT, 8);
@@ -86,15 +86,15 @@ namespace Pulse
             cols.Add("L_KEY", a);
             cols.Add("R_KEY", b);
 
-            while (js.CanAdvance)
-            {
+            //while (js.CanAdvance)
+            //{
 
-                Record v = cols.Evaluate(js.Variants);
-                Console.WriteLine(v);
+            //    Record v = cols.Evaluate(js.Variants);
+            //    Console.WriteLine(v);
 
-                js.Advance();
+            //    js.Advance();
 
-            }
+            //}
 
             Enviro.ShutDown();
 

@@ -20,7 +20,7 @@ namespace Pulse.Data
         protected Key _ValueFields;
 
         public DictionaryDreamTable(Host Host, string Name, Schema KeyColumns, Schema ValueColumns, int PageSize)
-            : base(Host, Name, Schema.Join(KeyColumns, ValueColumns), Data.Key.Build(KeyColumns.Count), true)
+            : base(Host, Name, Schema.Join(KeyColumns, ValueColumns), Data.Key.Build(KeyColumns.Count), ClusterState.Unique)
         {
             this._KeyCount = KeyColumns.Count;
             this._ValueCount = ValueColumns.Count;
@@ -80,10 +80,10 @@ namespace Pulse.Data
         {
 
             Record r = Record.Join(Key, Value);
-            BPlusTreePage p = this._Cluster.SeekPage(r);
+            ClusterPage p = this._Cluster.SeekPage(r);
             int idx = p.Search(r);
             if (idx < 0)
-                throw new BPlusTree.DuplicateKeyException("Key not found");
+                throw new Cluster.DuplicateKeyException("Key not found");
             p.Update(r, idx);
 
         }

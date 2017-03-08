@@ -174,6 +174,11 @@ namespace Pulse.Data
             get { return this._cTicks; }
         }
 
+        public long Ticks
+        {
+            get { return this._cTicks + this._eTicks; }
+        }
+
         public Key LeftKey
         {
             get { return this._LeftKey; }

@@ -18,7 +18,7 @@ namespace Pulse.Data
         /// </summary>
         /// <param name="Host"></param>
         /// <param name="Header"></param>
-        /// <param name="SortKey"></param>
+        /// <param name="ClusterKey"></param>
         public ScribeTable(Host Host, TableHeader Header)
             : base(Host, Header)
         {
@@ -33,7 +33,7 @@ namespace Pulse.Data
         /// <param name="Dir"></param>
         /// <param name="Columns"></param>
         /// <param name="PageSize"></param>
-        /// <param name="SortKey"></param>
+        /// <param name="ClusterKey"></param>
         public ScribeTable(Host Host, string Name, string Dir, Schema Columns, int PageSize)
             : base(Host, new TableHeader(Name, Dir, TableHeader.V1_EXTENSION, 0, 0, -1, -1, PageSize, Columns))
         {
