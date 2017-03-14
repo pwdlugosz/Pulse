@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
-using Pulse.Expressions;
+using Pulse.ScalarExpressions;
 
 namespace Pulse.Aggregates
 {
@@ -12,7 +12,7 @@ namespace Pulse.Aggregates
     public class AggregateSlope : AggregateCovariance
     {
 
-        public AggregateSlope(Expression ValueX, Expression ValueY, Expression Weight, Filter Filter)
+        public AggregateSlope(ScalarExpression ValueX, ScalarExpression ValueY, ScalarExpression Weight, Filter Filter)
             : base(ValueX, ValueY, Weight, Filter)
         {
         }

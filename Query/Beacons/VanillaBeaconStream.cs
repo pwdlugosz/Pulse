@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
+using Pulse.ScalarExpressions;
 
 namespace Pulse.Query.Beacons
 {

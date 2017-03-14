@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
-using Pulse.Expressions;
+using Pulse.ScalarExpressions;
 
 namespace Pulse.Aggregates
 {
@@ -13,28 +13,28 @@ namespace Pulse.Aggregates
     public class AggregateVarP : Aggregate
     {
 
-        protected Expression _Value;
-        protected Expression _Weight;
+        protected ScalarExpression _Value;
+        protected ScalarExpression _Weight;
 
-        public AggregateVarP(Expression Value, Expression Weight, Filter Filter)
+        public AggregateVarP(ScalarExpression Value, ScalarExpression Weight, Filter Filter)
             : base(Filter)
         {
             this._Value = Value;
             this._Weight = Weight;
         }
 
-        public AggregateVarP(Expression Value, Filter Filter)
-            : this(Value, Expression.OneNUM, Filter)
+        public AggregateVarP(ScalarExpression Value, Filter Filter)
+            : this(Value, ScalarExpression.OneNUM, Filter)
         {
         }
 
-        public AggregateVarP(Expression Value, Expression Weight)
+        public AggregateVarP(ScalarExpression Value, ScalarExpression Weight)
             : this(Value, Weight, Filter.TrueForAll)
         {
         }
 
-        public AggregateVarP(Expression Value)
-            : this(Value, Expression.OneNUM, Filter.TrueForAll)
+        public AggregateVarP(ScalarExpression Value)
+            : this(Value, ScalarExpression.OneNUM, Filter.TrueForAll)
         {
         }
 

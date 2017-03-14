@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Pulse.Expressions;
 using Pulse.Data;
+using Pulse.ScalarExpressions;
 
 namespace Pulse.Aggregates
 {
@@ -13,15 +13,15 @@ namespace Pulse.Aggregates
     public class AggregateSum : Aggregate
     {
 
-        private Expression _Value;
+        private ScalarExpression _Value;
 
-        public AggregateSum(Expression Value, Filter Filter)
+        public AggregateSum(ScalarExpression Value, Filter Filter)
             : base(Filter)
         {
             this._Value = Value;
         }
 
-        public AggregateSum(Expression Value)
+        public AggregateSum(ScalarExpression Value)
             : this(Value, Filter.TrueForAll)
         {
         }

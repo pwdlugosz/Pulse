@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Pulse.Expressions;
 using Pulse.Data;
+using Pulse.ScalarExpressions;
 
 
 namespace Pulse.Aggregates
@@ -14,17 +14,17 @@ namespace Pulse.Aggregates
     public class AggregateMaxOf : Aggregate
     {
 
-        private Expression _Key;
-        private Expression _Value;
+        private ScalarExpression _Key;
+        private ScalarExpression _Value;
 
-        public AggregateMaxOf(Expression Key, Expression Value, Filter Filter)
+        public AggregateMaxOf(ScalarExpression Key, ScalarExpression Value, Filter Filter)
             : base(Filter)
         {
             this._Key = Key;
             this._Value = Value;
         }
 
-        public AggregateMaxOf(Expression Key, Expression Value)
+        public AggregateMaxOf(ScalarExpression Key, ScalarExpression Value)
             : this(Key, Value, Filter.TrueForAll)
         {
         }

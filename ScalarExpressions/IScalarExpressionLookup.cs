@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Pulse.Expressions
+namespace Pulse.ScalarExpressions
 {
     
     /// <summary>
     /// Supports expression function lookups
     /// </summary>
-    public interface IExpressionLookup
+    public interface IScalarExpressionLookup
     {
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Pulse.Expressions
         /// </summary>
         /// <param name="Name"></param>
         /// <returns></returns>
-        ExpressionFunction Lookup(string Name);
+        ScalarExpressionFunction Lookup(string Name);
 
     }
 

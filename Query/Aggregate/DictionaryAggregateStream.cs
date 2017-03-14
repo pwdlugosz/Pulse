@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
-using Pulse.Expressions;
 using Pulse.Aggregates;
+using Pulse.ScalarExpressions;
 
 namespace Pulse.Query
 {
@@ -17,7 +17,7 @@ namespace Pulse.Query
         private DictionaryScribeTable _Storage;
         private long _Ticks = 0;
 
-        public DictionaryAggregateStream(WriteStream OutWriter, ExpressionCollection Keys, AggregateCollection Values)
+        public DictionaryAggregateStream(WriteStream OutWriter, ScalarExpressionCollection Keys, AggregateCollection Values)
             : base(OutWriter, Keys, Values)
         {
 

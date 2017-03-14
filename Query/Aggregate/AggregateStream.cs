@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
-using Pulse.Expressions;
 using Pulse.Aggregates;
 using Pulse.Query.Acceptors;
+using Pulse.ScalarExpressions;
 
 namespace Pulse.Query
 {
@@ -18,13 +18,13 @@ namespace Pulse.Query
     {
 
         protected WriteStream _Writer;
-        protected ExpressionCollection _Keys;
+        protected ScalarExpressionCollection _Keys;
         protected AggregateCollection _Values;
         protected FieldResolver _Resolver;
         protected Key _WeakKeyColumns;
         protected int _WorkOffset = 0;
 
-        public AggregateStream(WriteStream OutWriter, ExpressionCollection Keys, AggregateCollection Values)
+        public AggregateStream(WriteStream OutWriter, ScalarExpressionCollection Keys, AggregateCollection Values)
         {
         
             this._Writer = OutWriter;
@@ -48,7 +48,7 @@ namespace Pulse.Query
             get { return Schema.Join(this._Keys.Columns, this._Values.WorkColumns); }
         }
 
-        public ExpressionCollection Keys
+        public ScalarExpressionCollection Keys
         {
             get { return this._Keys; }
         }

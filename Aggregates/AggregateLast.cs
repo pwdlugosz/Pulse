@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
-using Pulse.Expressions;
+using Pulse.ScalarExpressions;
 
 namespace Pulse.Aggregates
 {
@@ -13,15 +13,15 @@ namespace Pulse.Aggregates
     public class AggregateLast : Aggregate
     {
 
-        private Expression _Value;
+        private ScalarExpression _Value;
 
-        public AggregateLast(Expression Value, Filter Filter)
+        public AggregateLast(ScalarExpression Value, Filter Filter)
             : base(Filter)
         {
             this._Value = Value;
         }
 
-        public AggregateLast(Expression Value)
+        public AggregateLast(ScalarExpression Value)
             : this(Value, Filter.TrueForAll)
         {
         }

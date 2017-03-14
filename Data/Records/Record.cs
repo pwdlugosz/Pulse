@@ -417,7 +417,7 @@ namespace Pulse.Data
         public static Record TryParse(Schema Columns, string Text, char[] Delim)
         {
             string[] s = Text.Split(Delim);
-            if (s.Length != Columns.Count) throw new Exception("Parse-Expression is invalid: " + Text);
+            if (s.Length != Columns.Count) throw new Exception("Parse-ScalarExpression is invalid: " + Text);
             List<Cell> c = new List<Cell>();
             for (int i = 0; i < Columns.Count; i++)
             {

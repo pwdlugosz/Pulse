@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
-using Pulse.Expressions;
 using Pulse.Aggregates;
 using Pulse.Query;
 using Pulse.Query.Join;
 using Pulse.Query.Beacons;
 using Pulse.Query.Acceptors;
+using Pulse.ScalarExpressions;
 
 namespace Pulse
 {
@@ -24,21 +24,11 @@ namespace Pulse
 
             Host Enviro = new Host();
             HeapDreamTable x1 = Pulse.Testing.SampleTables.SampleHeapDreamTable(Enviro, "T1", 10, 0);
-            ClusteredDreamTable x2 = Pulse.Testing.SampleTables.SampleClusteredDreamTable(Enviro, "T2", 10, 5);
-            HeapDreamTable x3 = Pulse.Testing.SampleTables.SampleHeapDreamTable(Enviro, "T3", 10, 0);
-            ExpressionCollection exp = new ExpressionCollection();
-            exp.Add("LEFT", Expression.Field(x1, "KEY", 0));
-            exp.Add("RIGHT", Expression.Field(x1, "KEY", 1));
+            
 
-            Query.Acceptors.HostAcceptor screen = new HostAcceptor(Enviro, exp);
 
-            //UnionBeaconStream bs = UnionBeaconStream.Union(Enviro, VanilaBeaconStream.Select(x1), VanilaBeaconStream.Select(x2), VanilaBeaconStream.Select(x3));
-            //BeaconStream bs = VanilaBeaconStream.Select(x1);
-            //NestedLoopJoinStream bs = new NestedLoopJoinStream(Enviro, FieldResolver.Build(Enviro, x1, x2), x1.OpenReader(), x2.OpenReader(), new RecordMatcher(new Key(0)), JoinStream.JoinType.LEFT);
-            //QuasiNestedLoopJoinStream bs = new QuasiNestedLoopJoinStream(Enviro, FieldResolver.Build(Enviro, x1, x2), x1.OpenReader(), x2.GetIndex(new Key(0)), new RecordMatcher(new Key(0)), JoinStream.JoinType.LEFT);
-            //SortMergeJoinStream bs = new SortMergeJoinStream(Enviro, FieldResolver.Build(Enviro, x1, x2), x1.OpenReader(), x2.OpenReader(), new RecordMatcher(new Key(0)), JoinStream.JoinType.INNER);
-
-            //screen.Consume(bs);
+            Table v = engine.InnerJoin("TEMP", "Q1", x1, x2, new RecordMatcher(new Key(0)), exp);
+            v.Dump(@"C:\Users\pwdlu_000\Documents\Pulse_Projects\Test\NL_InnerJoin_Test1.txt");
 
             Enviro.ShutDown();
 
@@ -55,46 +45,17 @@ namespace Pulse
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
 
             Host Enviro = new Host();
-            Schema s = new Schema("Key int, Value double");
-            ClusteredDreamTable left = Enviro.Dream("Test_L", s, new Key(0));
-            ClusteredDreamTable right = Enviro.Dream("Test_R", s, new Key(0));
+            HeapDreamTable x1 = Pulse.Testing.SampleTables.SampleHeapDreamTable(Enviro, "T1", 10, 0);
+            ClusteredDreamTable x2 = Pulse.Testing.SampleTables.SampleClusteredDreamTable(Enviro, "T2", 10, 5);
+            HeapDreamTable x3 = Pulse.Testing.SampleTables.SampleHeapDreamTable(Enviro, "T3", 10, 0);
+            ScalarExpressionCollection exp = new ScalarExpressionCollection();
+            exp.Add("LEFT", ScalarExpression.Field(x1, "KEY", 0));
+            exp.Add("RIGHT", ScalarExpression.Field(x1, "KEY", 1));
 
-            WriteStream left_writer = left.OpenWriter();
-            WriteStream right_writer = right.OpenWriter();
-            for (int i = 0; i < 20; i++)
-            {
+            NestedLoopJoinEngine engine = new NestedLoopJoinEngine();
 
-                Record lr = Record.Stitch(new Cell(i + 5), Enviro.BaseRNG.NextDoubleGauss());
-                Record rr = Record.Stitch(new Cell(i), Enviro.BaseRNG.NextDoubleGauss());
-                left_writer.Insert(lr);
-                right_writer.Insert(rr);
-
-            }
-            left_writer.Close();
-            right_writer.Close();
-
-            FieldResolver f = new FieldResolver(Enviro);
-            f.AddSchema("L", left.Columns);
-            f.AddSchema("R", right.Columns);
-            //NestedLoopJoinStream js = new NestedLoopJoinStream(Enviro, f, left.OpenReader(), right.OpenReader(), new RecordMatcher(new Key(0)), JoinStream.JoinType.LEFT);
-            //QuasiNestedLoopJoinStream js = new QuasiNestedLoopJoinStream(Enviro, f, left.OpenReader(), new DerivedIndex(right), new RecordMatcher(new Key(0)), JoinStream.JoinType.LEFT);
-            //SortMergeJoinStream js = new SortMergeJoinStream(Enviro, f, left.OpenReader(), right.OpenReader(), new RecordMatcher(new Key(0)), JoinStream.JoinType.LEFT);
-
-            Expression a = new ExpressionFieldRef(null, 0, 0, CellAffinity.INT, 8);
-            Expression b = new ExpressionFieldRef(null, 1, 0, CellAffinity.INT, 8);
-            ExpressionCollection cols = new ExpressionCollection();
-            cols.Add("L_KEY", a);
-            cols.Add("R_KEY", b);
-
-            //while (js.CanAdvance)
-            //{
-
-            //    Record v = cols.Evaluate(js.Variants);
-            //    Console.WriteLine(v);
-
-            //    js.Advance();
-
-            //}
+            Table v = engine.InnerJoin("TEMP", "Q1", x1, x2, new RecordMatcher(new Key(0)), exp);
+            v.Dump(@"C:\Users\pwdlu_000\Documents\Pulse_Projects\Test\NL_InnerJoin_Test1.txt");
 
             Enviro.ShutDown();
 
@@ -128,15 +89,15 @@ namespace Pulse
 
             //Index idx = x.GetIndex("IDX1");
 
-            ExpressionCollection keys = new ExpressionCollection();
-            keys.Add("KEY", Expression.Field(x, "Key", 0));
+            ScalarExpressionCollection keys = new ScalarExpressionCollection();
+            keys.Add("KEY", ScalarExpression.Field(x, "Key", 0));
 
             AggregateLookup l = new AggregateLookup();
             AggregateCollection aggs = new Aggregates.AggregateCollection();
-            aggs.Add("SUM", l.Lookup("SUM", new List<Expression>() { Expression.Field(x, "Value", 0) }, Filter.TrueForAll));
-            aggs.Add("MIN", l.Lookup("MIN", new List<Expression>() { Expression.Field(x, "Value", 0) }, Filter.TrueForAll));
-            aggs.Add("MAX", l.Lookup("MAX", new List<Expression>() { Expression.Field(x, "Value", 0) }, Filter.TrueForAll));
-            aggs.Add("COUNT", l.Lookup("COUNT", new List<Expression>() { Expression.Field(x, "Value", 0) }, Filter.TrueForAll));
+            aggs.Add("SUM", l.Lookup("SUM", new List<ScalarExpression>() { ScalarExpression.Field(x, "Value", 0) }, Filter.TrueForAll));
+            aggs.Add("MIN", l.Lookup("MIN", new List<ScalarExpression>() { ScalarExpression.Field(x, "Value", 0) }, Filter.TrueForAll));
+            aggs.Add("MAX", l.Lookup("MAX", new List<ScalarExpression>() { ScalarExpression.Field(x, "Value", 0) }, Filter.TrueForAll));
+            aggs.Add("COUNT", l.Lookup("COUNT", new List<ScalarExpression>() { ScalarExpression.Field(x, "Value", 0) }, Filter.TrueForAll));
 
             HeapDreamTable hdt = Enviro.Dream("T", new Schema("KEY INT, SUM DOUBLE, MIN DOUBLE, MAX DOUBLE, COUNT INT"));
             WriteStream wstream = hdt.OpenWriter();
@@ -184,15 +145,15 @@ namespace Pulse
 
             Index idx = x.GetIndex("IDX1");
 
-            ExpressionCollection keys = new ExpressionCollection();
-            keys.Add("KEY", Expression.Field(x, "Key", 0));
+            ScalarExpressionCollection keys = new ScalarExpressionCollection();
+            keys.Add("KEY", ScalarExpression.Field(x, "Key", 0));
 
             AggregateLookup l = new AggregateLookup();
             AggregateCollection aggs = new Aggregates.AggregateCollection();
-            aggs.Add("SUM", l.Lookup("SUM", new List<Expression>() { Expression.Field(x, "Value", 0) }, Filter.TrueForAll));
-            aggs.Add("MIN", l.Lookup("MIN", new List<Expression>() { Expression.Field(x, "Value", 0) }, Filter.TrueForAll));
-            aggs.Add("MAX", l.Lookup("MAX", new List<Expression>() { Expression.Field(x, "Value", 0) }, Filter.TrueForAll));
-            aggs.Add("COUNT", l.Lookup("COUNT", new List<Expression>() { Expression.Field(x, "Value", 0) }, Filter.TrueForAll));
+            aggs.Add("SUM", l.Lookup("SUM", new List<ScalarExpression>() { ScalarExpression.Field(x, "Value", 0) }, Filter.TrueForAll));
+            aggs.Add("MIN", l.Lookup("MIN", new List<ScalarExpression>() { ScalarExpression.Field(x, "Value", 0) }, Filter.TrueForAll));
+            aggs.Add("MAX", l.Lookup("MAX", new List<ScalarExpression>() { ScalarExpression.Field(x, "Value", 0) }, Filter.TrueForAll));
+            aggs.Add("COUNT", l.Lookup("COUNT", new List<ScalarExpression>() { ScalarExpression.Field(x, "Value", 0) }, Filter.TrueForAll));
 
             HeapDreamTable hdt = Enviro.Dream("T", new Schema("KEY INT, SUM DOUBLE, MIN DOUBLE, MAX DOUBLE, COUNT INT"));
             WriteStream wstream = hdt.OpenWriter();

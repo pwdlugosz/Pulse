@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
-using Pulse.Expressions;
+using Pulse.ScalarExpressions;
 
 namespace Pulse.Aggregates
 {
@@ -12,11 +12,11 @@ namespace Pulse.Aggregates
     public class AggregateCovariance : Aggregate
     {
 
-        protected Expression _ValueX;
-        protected Expression _ValueY;
-        protected Expression _Weight;
+        protected ScalarExpression _ValueX;
+        protected ScalarExpression _ValueY;
+        protected ScalarExpression _Weight;
 
-        public AggregateCovariance(Expression ValueX, Expression ValueY, Expression Weight, Filter Filter)
+        public AggregateCovariance(ScalarExpression ValueX, ScalarExpression ValueY, ScalarExpression Weight, Filter Filter)
             : base(Filter)
         {
             this._ValueX = ValueX;

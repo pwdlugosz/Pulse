@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
-using Pulse.Expressions;
+using Pulse.ScalarExpressions;
 
 namespace Pulse.Aggregates
 {
@@ -57,7 +57,7 @@ namespace Pulse.Aggregates
         {
         }
 
-        public Aggregate Lookup(string Name, List<Expression> Parameters, Filter Where)
+        public Aggregate Lookup(string Name, List<ScalarExpression> Parameters, Filter Where)
         {
 
             // Check the parameters //
@@ -113,19 +113,19 @@ namespace Pulse.Aggregates
                 case NAME_COVAR:
                     if (Parameters.Count == 3)
                         return new AggregateCovariance(Parameters[0], Parameters[1], Parameters[2], Where);
-                    return new AggregateCovariance(Parameters[0], Parameters[1], Expression.OneNUM, Where);
+                    return new AggregateCovariance(Parameters[0], Parameters[1], ScalarExpression.OneNUM, Where);
                 case NAME_CORR:
                     if (Parameters.Count == 3)
                         return new AggregateCorrelation(Parameters[0], Parameters[1], Parameters[2], Where);
-                    return new AggregateCorrelation(Parameters[0], Parameters[1], Expression.OneNUM, Where);
+                    return new AggregateCorrelation(Parameters[0], Parameters[1], ScalarExpression.OneNUM, Where);
                 case NAME_INTERCPT:
                     if (Parameters.Count == 3)
                         return new AggregateIntercept(Parameters[0], Parameters[1], Parameters[2], Where);
-                    return new AggregateIntercept(Parameters[0], Parameters[1], Expression.OneNUM, Where);
+                    return new AggregateIntercept(Parameters[0], Parameters[1], ScalarExpression.OneNUM, Where);
                 case NAME_SLOPE:
                     if (Parameters.Count == 3)
                         return new AggregateSlope(Parameters[0], Parameters[1], Parameters[2], Where);
-                    return new AggregateSlope(Parameters[0], Parameters[1], Expression.OneNUM, Where);
+                    return new AggregateSlope(Parameters[0], Parameters[1], ScalarExpression.OneNUM, Where);
 
             }
 
@@ -133,8 +133,6 @@ namespace Pulse.Aggregates
             throw new ArgumentException(string.Format("Aggregate '{0}' does not exist", Name));
 
         }
-
-
 
     }
 

@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
 
-namespace Pulse.Expressions
+namespace Pulse.ScalarExpressions
 {
 
     /// <summary>
     /// Represents an expression type
     /// </summary>
-    public enum ExpressionAffinity
+    public enum ScalarExpressionAffinity
     {
 
         /// <summary>

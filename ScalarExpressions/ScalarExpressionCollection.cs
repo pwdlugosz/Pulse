@@ -5,26 +5,29 @@ using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
 
-namespace Pulse.Expressions
+namespace Pulse.ScalarExpressions
 {
 
-    public sealed class ExpressionCollection : IColumns
+    /// <summary>
+    /// 
+    /// </summary>
+    public sealed class ScalarExpressionCollection : IColumns
     {
 
-        private Heap<Expression> _Expressions;
+        private Heap<ScalarExpression> _Expressions;
 
-        public ExpressionCollection()
+        public ScalarExpressionCollection()
         {
-            this._Expressions = new Heap<Expression>();
+            this._Expressions = new Heap<ScalarExpression>();
         }
 
-        public ExpressionCollection(Schema Columns, int InnerHeapRef)
+        public ScalarExpressionCollection(Schema Columns, int InnerHeapRef)
             : this()
         {
 
             for (int i = 0; i < Columns.Count; i++)
             {
-                ExpressionFieldRef e = new ExpressionFieldRef(null, InnerHeapRef, i, Columns.ColumnAffinity(i), Columns.ColumnSize(i));
+                ScalarExpressionFieldRef e = new ScalarExpressionFieldRef(null, InnerHeapRef, i, Columns.ColumnAffinity(i), Columns.ColumnSize(i));
                 this.Add(Columns.ColumnName(i), e);
             }
 
@@ -35,17 +38,17 @@ namespace Pulse.Expressions
             get { return this._Expressions.Count; }
         }
 
-        public Expression this[int IndexOf]
+        public ScalarExpression this[int IndexOf]
         {
             get { return this._Expressions[IndexOf]; }
         }
 
-        public Expression this[string Name]
+        public ScalarExpression this[string Name]
         {
             get { return this._Expressions[Name]; }
         }
 
-        public IEnumerable<Expression> Expressions
+        public IEnumerable<ScalarExpression> Expressions
         {
             get { return this._Expressions.Values; }
         }
@@ -70,13 +73,13 @@ namespace Pulse.Expressions
             return this._Expressions.Name(IndexOf);
         }
 
-        public void Add(string Alias, Expression Element)
+        public void Add(string Alias, ScalarExpression Element)
         {
             Element.Name = Alias;
             this._Expressions.Allocate(Alias, Element);
         }
 
-        public void Add(ExpressionCollection Elements)
+        public void Add(ScalarExpressionCollection Elements)
         {
 
             for (int i = 0; i < Elements.Count; i++)

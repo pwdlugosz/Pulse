@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
 using Pulse.Query.Beacons;
+using Pulse.ScalarExpressions;
 
 namespace Pulse.Query.Acceptors
 {

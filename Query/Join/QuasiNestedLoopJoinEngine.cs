@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
-using Pulse.Expressions;
 using Pulse.Util;
+using Pulse.ScalarExpressions;
 
 namespace Pulse.Query.Join
 {
@@ -34,7 +34,7 @@ namespace Pulse.Query.Join
         /// <param name="Where">The filter to apply</param>
         /// <param name="Type">The type of join to perform</param>
         /// <param name="ActualCost">Output of the actual cost of running this join</param>
-        public override void Render(WriteStream Output, Table Left, Table Right, RecordMatcher Predicate, ExpressionCollection Fields, Filter Where, JoinType Type, JoinMetaData MetaData)
+        public override void Render(WriteStream Output, Table Left, Table Right, RecordMatcher Predicate, ScalarExpressionCollection Fields, Filter Where, JoinType Type, JoinMetaData MetaData)
         {
 
             // Start the timer //

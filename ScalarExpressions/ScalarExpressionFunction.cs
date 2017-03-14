@@ -5,29 +5,29 @@ using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
 
-namespace Pulse.Expressions
+namespace Pulse.ScalarExpressions
 {
 
     /// <summary>
     /// Represents a functional expression
     /// </summary>
-    public abstract class ExpressionFunction : Expression
+    public abstract class ScalarExpressionFunction : ScalarExpression
     {
 
         private int _MaxParamterCount;
         private bool _DynamicReturn;
         private CellAffinity _ReturnAffinity;
 
-        public ExpressionFunction(Expression Parent, string Name, int ParameterCount)
-            : base(Parent, ExpressionAffinity.Function)
+        public ScalarExpressionFunction(ScalarExpression Parent, string Name, int ParameterCount)
+            : base(Parent, ScalarExpressionAffinity.Function)
         {
             this.Name = Name;
             this._MaxParamterCount = ParameterCount;
             this._DynamicReturn = true;
         }
 
-        public ExpressionFunction(Expression Parent, string Name, int ParameterCount, CellAffinity ReturnAffinity)
-            : base(Parent, ExpressionAffinity.Function)
+        public ScalarExpressionFunction(ScalarExpression Parent, string Name, int ParameterCount, CellAffinity ReturnAffinity)
+            : base(Parent, ScalarExpressionAffinity.Function)
         {
             this.Name = Name;
             this._MaxParamterCount = ParameterCount;
@@ -90,7 +90,7 @@ namespace Pulse.Expressions
         {
             get
             {
-                foreach (Expression e in this._ChildNodes)
+                foreach (ScalarExpression e in this._ChildNodes)
                 {
                     if (e.IsVolatile)
                         return true;
@@ -185,7 +185,7 @@ namespace Pulse.Expressions
         public const string NAME_ROUND = "ROUND";
 
         // Uninary Opperations //
-        public class ExpressionNot : ExpressionFunction
+        public class ExpressionNot : ScalarExpressionFunction
         {
 
             public ExpressionNot()
@@ -193,7 +193,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionNot();
             }
@@ -210,7 +210,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionPlus : ExpressionFunction
+        public class ExpressionPlus : ScalarExpressionFunction
         {
 
             public ExpressionPlus()
@@ -218,7 +218,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionPlus();
             }
@@ -235,7 +235,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionMinus : ExpressionFunction
+        public class ExpressionMinus : ScalarExpressionFunction
         {
 
             public ExpressionMinus()
@@ -243,7 +243,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionMinus();
             }
@@ -261,7 +261,7 @@ namespace Pulse.Expressions
         }
 
         // Binary Opperations //
-        public class ExpressionAdd : ExpressionFunction
+        public class ExpressionAdd : ScalarExpressionFunction
         {
 
             public ExpressionAdd()
@@ -269,7 +269,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionAdd();
             }
@@ -286,7 +286,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionSubtract : ExpressionFunction
+        public class ExpressionSubtract : ScalarExpressionFunction
         {
 
             public ExpressionSubtract()
@@ -294,7 +294,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionSubtract();
             }
@@ -311,7 +311,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionMultiply : ExpressionFunction
+        public class ExpressionMultiply : ScalarExpressionFunction
         {
 
             public ExpressionMultiply()
@@ -319,7 +319,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionMultiply();
             }
@@ -336,7 +336,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionDivide : ExpressionFunction
+        public class ExpressionDivide : ScalarExpressionFunction
         {
 
             public ExpressionDivide()
@@ -344,7 +344,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionDivide();
             }
@@ -361,7 +361,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionCheckedDivide : ExpressionFunction
+        public class ExpressionCheckedDivide : ScalarExpressionFunction
         {
 
             public ExpressionCheckedDivide()
@@ -369,7 +369,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionCheckedDivide();
             }
@@ -386,7 +386,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionModulo : ExpressionFunction
+        public class ExpressionModulo : ScalarExpressionFunction
         {
 
             public ExpressionModulo()
@@ -394,7 +394,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionModulo();
             }
@@ -411,7 +411,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionPower : ExpressionFunction
+        public class ExpressionPower : ScalarExpressionFunction
         {
 
             public ExpressionPower()
@@ -419,7 +419,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionPower();
             }
@@ -436,7 +436,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionEquals : ExpressionFunction
+        public class ExpressionEquals : ScalarExpressionFunction
         {
 
             public ExpressionEquals()
@@ -444,7 +444,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionEquals();
             }
@@ -461,7 +461,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionNotEquals : ExpressionFunction
+        public class ExpressionNotEquals : ScalarExpressionFunction
         {
 
             public ExpressionNotEquals()
@@ -469,7 +469,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionNotEquals();
             }
@@ -486,7 +486,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionLessThan : ExpressionFunction
+        public class ExpressionLessThan : ScalarExpressionFunction
         {
 
             public ExpressionLessThan()
@@ -494,7 +494,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionLessThan();
             }
@@ -511,7 +511,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionLessThanOrEqualTo : ExpressionFunction
+        public class ExpressionLessThanOrEqualTo : ScalarExpressionFunction
         {
 
             public ExpressionLessThanOrEqualTo()
@@ -519,7 +519,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionLessThanOrEqualTo();
             }
@@ -536,7 +536,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionGreaterThan : ExpressionFunction
+        public class ExpressionGreaterThan : ScalarExpressionFunction
         {
 
             public ExpressionGreaterThan()
@@ -544,7 +544,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionGreaterThan();
             }
@@ -561,7 +561,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionGreaterThanOrEqualTo : ExpressionFunction
+        public class ExpressionGreaterThanOrEqualTo : ScalarExpressionFunction
         {
 
             public ExpressionGreaterThanOrEqualTo()
@@ -569,7 +569,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionGreaterThanOrEqualTo();
             }
@@ -586,7 +586,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionAnd : ExpressionFunction
+        public class ExpressionAnd : ScalarExpressionFunction
         {
 
             public ExpressionAnd()
@@ -594,7 +594,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionAnd();
             }
@@ -611,7 +611,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionOr : ExpressionFunction
+        public class ExpressionOr : ScalarExpressionFunction
         {
 
             public ExpressionOr()
@@ -619,7 +619,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionOr();
             }
@@ -636,7 +636,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionXor : ExpressionFunction
+        public class ExpressionXor : ScalarExpressionFunction
         {
 
             public ExpressionXor()
@@ -644,7 +644,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionXor();
             }
@@ -662,7 +662,7 @@ namespace Pulse.Expressions
         }
 
         // Special Opperations //
-        public class ExpressionIf : ExpressionFunction
+        public class ExpressionIf : ScalarExpressionFunction
         {
 
             public ExpressionIf()
@@ -670,7 +670,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionIf();
             }
@@ -687,7 +687,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionIfNull : ExpressionFunction
+        public class ExpressionIfNull : ScalarExpressionFunction
         {
 
             public ExpressionIfNull()
@@ -695,7 +695,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionIfNull();
             }
@@ -713,7 +713,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionCast : ExpressionFunction
+        public class ExpressionCast : ScalarExpressionFunction
         {
 
             public ExpressionCast()
@@ -721,7 +721,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionCast();
             }
@@ -740,7 +740,7 @@ namespace Pulse.Expressions
         }
 
         // Special Functions //
-        public class ExpressionLike : ExpressionFunction
+        public class ExpressionLike : ScalarExpressionFunction
         {
 
             public const char WILD_CARD = '*';
@@ -750,7 +750,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionLike();
             }
@@ -806,7 +806,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionMatch : ExpressionFunction
+        public class ExpressionMatch : ScalarExpressionFunction
         {
 
             public ExpressionMatch()
@@ -814,7 +814,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionMatch();
             }
@@ -841,7 +841,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionGUID : ExpressionFunction
+        public class ExpressionGUID : ScalarExpressionFunction
         {
 
             public ExpressionGUID()
@@ -849,7 +849,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionGUID();
             }
@@ -866,7 +866,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionThreadID : ExpressionFunction
+        public class ExpressionThreadID : ScalarExpressionFunction
         {
 
             public ExpressionThreadID()
@@ -879,7 +879,7 @@ namespace Pulse.Expressions
                 get { return true; }
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionThreadID();
             }
@@ -891,7 +891,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionRandomBool : ExpressionFunction
+        public class ExpressionRandomBool : ScalarExpressionFunction
         {
 
             private RandomCell _Generator;
@@ -907,7 +907,7 @@ namespace Pulse.Expressions
                 get { return true; }
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionRandomBool(this._Generator);
             }
@@ -925,7 +925,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionRandomDate : ExpressionFunction
+        public class ExpressionRandomDate : ScalarExpressionFunction
         {
 
             private RandomCell _Generator;
@@ -941,7 +941,7 @@ namespace Pulse.Expressions
                 get { return true; }
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionRandomDate(this._Generator);
             }
@@ -961,7 +961,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionRandomInt : ExpressionFunction
+        public class ExpressionRandomInt : ScalarExpressionFunction
         {
 
             private RandomCell _Generator;
@@ -977,7 +977,7 @@ namespace Pulse.Expressions
                 get { return true; }
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionRandomInt(this._Generator);
             }
@@ -997,7 +997,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionRandomNum : ExpressionFunction
+        public class ExpressionRandomNum : ScalarExpressionFunction
         {
 
             private RandomCell _Generator;
@@ -1013,7 +1013,7 @@ namespace Pulse.Expressions
                 get { return true; }
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionRandomNum(this._Generator);
             }
@@ -1036,7 +1036,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionRandomBLOB : ExpressionFunction
+        public class ExpressionRandomBLOB : ScalarExpressionFunction
         {
 
             private RandomCell _Generator;
@@ -1052,7 +1052,7 @@ namespace Pulse.Expressions
                 get { return true; }
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionRandomBLOB(this._Generator);
             }
@@ -1071,7 +1071,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionRandomString : ExpressionFunction
+        public class ExpressionRandomString : ScalarExpressionFunction
         {
 
             private RandomCell _Generator;
@@ -1087,7 +1087,7 @@ namespace Pulse.Expressions
                 get { return true; }
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionRandomString(this._Generator);
             }
@@ -1117,7 +1117,7 @@ namespace Pulse.Expressions
         }
 
         // Date Functions //
-        public class ExpressionDateBuild : ExpressionFunction
+        public class ExpressionDateBuild : ScalarExpressionFunction
         {
 
             public ExpressionDateBuild()
@@ -1125,7 +1125,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionDateBuild();
             }
@@ -1156,7 +1156,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionNow : ExpressionFunction
+        public class ExpressionNow : ScalarExpressionFunction
         {
 
             public ExpressionNow()
@@ -1169,7 +1169,7 @@ namespace Pulse.Expressions
                 get { return true; }
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionDateBuild();
             }
@@ -1181,7 +1181,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionTicks : ExpressionFunction
+        public class ExpressionTicks : ScalarExpressionFunction
         {
 
             public ExpressionTicks()
@@ -1194,7 +1194,7 @@ namespace Pulse.Expressions
                 get { return true; }
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionTicks();
             }
@@ -1206,7 +1206,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionYear : ExpressionFunction
+        public class ExpressionYear : ScalarExpressionFunction
         {
 
             public ExpressionYear()
@@ -1214,7 +1214,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionYear();
             }
@@ -1231,7 +1231,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionMonth : ExpressionFunction
+        public class ExpressionMonth : ScalarExpressionFunction
         {
 
             public ExpressionMonth()
@@ -1239,7 +1239,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionMonth();
             }
@@ -1256,7 +1256,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionDay : ExpressionFunction
+        public class ExpressionDay : ScalarExpressionFunction
         {
 
             public ExpressionDay()
@@ -1264,7 +1264,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionDay();
             }
@@ -1281,7 +1281,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionHour : ExpressionFunction
+        public class ExpressionHour : ScalarExpressionFunction
         {
 
             public ExpressionHour()
@@ -1289,7 +1289,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionHour();
             }
@@ -1306,7 +1306,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionMinute : ExpressionFunction
+        public class ExpressionMinute : ScalarExpressionFunction
         {
 
             public ExpressionMinute()
@@ -1314,7 +1314,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionMinute();
             }
@@ -1331,7 +1331,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionSecond : ExpressionFunction
+        public class ExpressionSecond : ScalarExpressionFunction
         {
 
             public ExpressionSecond()
@@ -1339,7 +1339,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionSecond();
             }
@@ -1356,7 +1356,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionMillisecond : ExpressionFunction
+        public class ExpressionMillisecond : ScalarExpressionFunction
         {
 
             public ExpressionMillisecond()
@@ -1364,7 +1364,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionMillisecond();
             }
@@ -1382,7 +1382,7 @@ namespace Pulse.Expressions
         }
 
         // Strings //
-        public class ExpressionSubstring : ExpressionFunction
+        public class ExpressionSubstring : ScalarExpressionFunction
         {
 
             public ExpressionSubstring()
@@ -1390,7 +1390,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionSubstring();
             }
@@ -1411,7 +1411,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionReplace : ExpressionFunction
+        public class ExpressionReplace : ScalarExpressionFunction
         {
 
             public ExpressionReplace()
@@ -1419,7 +1419,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionReplace();
             }
@@ -1440,7 +1440,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionPosition : ExpressionFunction
+        public class ExpressionPosition : ScalarExpressionFunction
         {
 
             public ExpressionPosition()
@@ -1448,7 +1448,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionPosition();
             }
@@ -1469,7 +1469,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionLength : ExpressionFunction
+        public class ExpressionLength : ScalarExpressionFunction
         {
 
             public ExpressionLength()
@@ -1477,7 +1477,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionLength();
             }
@@ -1505,7 +1505,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionTrim : ExpressionFunction
+        public class ExpressionTrim : ScalarExpressionFunction
         {
 
             public ExpressionTrim()
@@ -1513,7 +1513,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionTrim();
             }
@@ -1534,7 +1534,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionToUTF16 : ExpressionFunction
+        public class ExpressionToUTF16 : ScalarExpressionFunction
         {
 
             public ExpressionToUTF16()
@@ -1542,7 +1542,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionToUTF16();
             }
@@ -1569,7 +1569,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionToUTF8 : ExpressionFunction
+        public class ExpressionToUTF8 : ScalarExpressionFunction
         {
 
             public ExpressionToUTF8()
@@ -1577,7 +1577,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionToUTF8();
             }
@@ -1599,7 +1599,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionToHex : ExpressionFunction
+        public class ExpressionToHex : ScalarExpressionFunction
         {
 
             public ExpressionToHex()
@@ -1607,7 +1607,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionToHex();
             }
@@ -1634,7 +1634,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionFromUTF16 : ExpressionFunction
+        public class ExpressionFromUTF16 : ScalarExpressionFunction
         {
 
             public ExpressionFromUTF16()
@@ -1642,7 +1642,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionFromUTF16();
             }
@@ -1672,7 +1672,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionFromUTF8 : ExpressionFunction
+        public class ExpressionFromUTF8 : ScalarExpressionFunction
         {
 
             public ExpressionFromUTF8()
@@ -1680,7 +1680,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionFromUTF8();
             }
@@ -1705,7 +1705,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionFromHex : ExpressionFunction
+        public class ExpressionFromHex : ScalarExpressionFunction
         {
 
             public ExpressionFromHex()
@@ -1713,7 +1713,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionFromHex();
             }
@@ -1741,7 +1741,7 @@ namespace Pulse.Expressions
         }
 
         // Numerical Functions //
-        public class ExpressionLog : ExpressionFunction
+        public class ExpressionLog : ScalarExpressionFunction
         {
 
             public ExpressionLog()
@@ -1749,7 +1749,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionLog();
             }
@@ -1768,7 +1768,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionExp : ExpressionFunction
+        public class ExpressionExp : ScalarExpressionFunction
         {
 
             public ExpressionExp()
@@ -1776,7 +1776,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionExp();
             }
@@ -1795,7 +1795,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionSine : ExpressionFunction
+        public class ExpressionSine : ScalarExpressionFunction
         {
 
             public ExpressionSine()
@@ -1803,7 +1803,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionSine();
             }
@@ -1822,7 +1822,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionCosine : ExpressionFunction
+        public class ExpressionCosine : ScalarExpressionFunction
         {
 
             public ExpressionCosine()
@@ -1830,7 +1830,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionCosine();
             }
@@ -1849,7 +1849,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionTangent : ExpressionFunction
+        public class ExpressionTangent : ScalarExpressionFunction
         {
 
             public ExpressionTangent()
@@ -1857,7 +1857,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionTangent();
             }
@@ -1876,7 +1876,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionHyperbolicSine : ExpressionFunction
+        public class ExpressionHyperbolicSine : ScalarExpressionFunction
         {
 
             public ExpressionHyperbolicSine()
@@ -1884,7 +1884,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionHyperbolicSine();
             }
@@ -1903,7 +1903,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionHyperbolicCosine : ExpressionFunction
+        public class ExpressionHyperbolicCosine : ScalarExpressionFunction
         {
 
             public ExpressionHyperbolicCosine()
@@ -1911,7 +1911,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionHyperbolicCosine();
             }
@@ -1930,7 +1930,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionHyperbolicTangent : ExpressionFunction
+        public class ExpressionHyperbolicTangent : ScalarExpressionFunction
         {
 
             public ExpressionHyperbolicTangent()
@@ -1938,7 +1938,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionHyperbolicTangent();
             }
@@ -1957,7 +1957,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionAbsoluteValue : ExpressionFunction
+        public class ExpressionAbsoluteValue : ScalarExpressionFunction
         {
 
             public ExpressionAbsoluteValue()
@@ -1965,7 +1965,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionAbsoluteValue();
             }
@@ -1984,7 +1984,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionSquareRoot : ExpressionFunction
+        public class ExpressionSquareRoot : ScalarExpressionFunction
         {
 
             public ExpressionSquareRoot()
@@ -1992,7 +1992,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionSquareRoot();
             }
@@ -2011,7 +2011,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionSign : ExpressionFunction
+        public class ExpressionSign : ScalarExpressionFunction
         {
 
             public ExpressionSign()
@@ -2019,7 +2019,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionSign();
             }
@@ -2038,7 +2038,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionRound : ExpressionFunction
+        public class ExpressionRound : ScalarExpressionFunction
         {
 
             public ExpressionRound()
@@ -2046,7 +2046,7 @@ namespace Pulse.Expressions
             {
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionRound();
             }
@@ -2069,7 +2069,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionLogit : ExpressionFunction
+        public class ExpressionLogit : ScalarExpressionFunction
         {
 
             public ExpressionLogit()
@@ -2078,7 +2078,7 @@ namespace Pulse.Expressions
                 throw new NotImplementedException();
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionLogit();
             }
@@ -2095,7 +2095,7 @@ namespace Pulse.Expressions
 
         }
 
-        public class ExpressionNormal : ExpressionFunction
+        public class ExpressionNormal : ScalarExpressionFunction
         {
 
             public ExpressionNormal()
@@ -2104,7 +2104,7 @@ namespace Pulse.Expressions
                 throw new NotImplementedException();
             }
 
-            public override Expression CloneOfMe()
+            public override ScalarExpression CloneOfMe()
             {
                 return new ExpressionNormal();
             }
@@ -2125,7 +2125,7 @@ namespace Pulse.Expressions
         //---------------------------------------------------------------------------------------------
         //---------------------------------------------------------------------------------------------
 
-        public class BaseLibrary : IExpressionLookup
+        public class BaseLibrary : IScalarExpressionLookup
         {
 
             public BaseLibrary(Host Host)
@@ -2139,7 +2139,7 @@ namespace Pulse.Expressions
                 private set;
             }
 
-            public ExpressionFunction Lookup(string Name)
+            public ScalarExpressionFunction Lookup(string Name)
             {
 
                 switch (Name.ToUpper())

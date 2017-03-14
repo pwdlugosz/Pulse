@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
 
-namespace Pulse.Expressions
+namespace Pulse.ScalarExpressions
 {
 
     public sealed class Filter 
     {
 
-        public Filter(Expression Node)
+        public Filter(ScalarExpression Node)
         {
             this.InnerNode = Node;
         }
@@ -22,7 +22,7 @@ namespace Pulse.Expressions
             set;
         }
 
-        public Expression InnerNode
+        public ScalarExpression InnerNode
         {
             get;
             set;
@@ -43,7 +43,7 @@ namespace Pulse.Expressions
         {
             get
             {
-                return new Filter(new ExpressionConstant(null, Cell.TRUE));
+                return new Filter(new ScalarExpressionConstant(null, Cell.TRUE));
             }
         }
 
@@ -51,21 +51,21 @@ namespace Pulse.Expressions
         {
             get
             {
-                return new Filter(new ExpressionConstant(null, Cell.FALSE));
+                return new Filter(new ScalarExpressionConstant(null, Cell.FALSE));
             }
         }
 
         public static Filter Create(RecordMatcher Matcher, Record Key)
         {
 
-            Expression x = null;
+            ScalarExpression x = null;
             for (int i = 0; i < Matcher.LeftKey.Count; i++)
             {
-                Expression y = Expression.EQ(new ExpressionConstant(null, Key[0]), new ExpressionFieldRef(null, 0, Matcher.LeftKey[i], Key[i].Affinity, Key[i].DataCost));
+                ScalarExpression y = ScalarExpression.EQ(new ScalarExpressionConstant(null, Key[0]), new ScalarExpressionFieldRef(null, 0, Matcher.LeftKey[i], Key[i].Affinity, Key[i].DataCost));
                 if (x == null)
                     y = x;
                 else
-                    x = Expression.AND(x, y);
+                    x = ScalarExpression.AND(x, y);
             }
             return new Filter(x);
 

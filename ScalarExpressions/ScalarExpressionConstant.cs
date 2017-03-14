@@ -5,19 +5,19 @@ using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
 
-namespace Pulse.Expressions
+namespace Pulse.ScalarExpressions
 {
 
     /// <summary>
     /// Represents a constant value
     /// </summary>
-    public sealed class ExpressionConstant : Expression
+    public sealed class ScalarExpressionConstant : ScalarExpression
     {
 
         private Cell _Value;
 
-        public ExpressionConstant(Expression Parent, Cell Value)
-            : base(Parent, ExpressionAffinity.Value)
+        public ScalarExpressionConstant(ScalarExpression Parent, Cell Value)
+            : base(Parent, ScalarExpressionAffinity.Value)
         {
             this._Value = Value;
         }
@@ -28,9 +28,9 @@ namespace Pulse.Expressions
             return this._Value.valueSTRING;
         }
 
-        public override Expression CloneOfMe()
+        public override ScalarExpression CloneOfMe()
         {
-            return new ExpressionConstant(this._ParentNode, this._Value);
+            return new ScalarExpressionConstant(this._ParentNode, this._Value);
         }
 
         public override int ExpressionSize()

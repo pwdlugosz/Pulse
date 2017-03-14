@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
-using Pulse.Expressions;
 using Pulse.Aggregates;
+using Pulse.ScalarExpressions;
 
 namespace Pulse.Query
 {
@@ -19,7 +19,7 @@ namespace Pulse.Query
         private Record _WorkData = null;
         private long _WriteCount = 0;
 
-        public OrderedAggregateStream(WriteStream OutWriter, ExpressionCollection Keys, AggregateCollection Values)
+        public OrderedAggregateStream(WriteStream OutWriter, ScalarExpressionCollection Keys, AggregateCollection Values)
             : base(OutWriter, Keys, Values)
         {
 

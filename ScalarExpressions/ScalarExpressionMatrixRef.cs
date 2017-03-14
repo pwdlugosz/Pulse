@@ -5,14 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
 
-namespace Pulse.Expressions
+namespace Pulse.ScalarExpressions
 {
 
 
     /// <summary>
     /// Represents a scalar in a matrix in a heap
     /// </summary>
-    public sealed class ExpressionMatrixRef : Expression
+    public sealed class ScalarExpressionMatrixRef : ScalarExpression
     {
 
         private int _HeapRef;
@@ -20,8 +20,8 @@ namespace Pulse.Expressions
         private int _FieldSize;
         private CellAffinity _FieldAffinity;
 
-        public ExpressionMatrixRef(Expression Parent, int HeapRef, int MatrixRef, CellAffinity FieldAffinity, int FieldSize)
-            : base(Parent, ExpressionAffinity.Matrix)
+        public ScalarExpressionMatrixRef(ScalarExpression Parent, int HeapRef, int MatrixRef, CellAffinity FieldAffinity, int FieldSize)
+            : base(Parent, ScalarExpressionAffinity.Matrix)
         {
             this._HeapRef = HeapRef;
             this._MatrixRef = MatrixRef;
@@ -47,9 +47,9 @@ namespace Pulse.Expressions
             return Variants.GetMatrixName(this._HeapRef, this._MatrixRef) + "[" + row + "," + col + "]";
         }
 
-        public override Expression CloneOfMe()
+        public override ScalarExpression CloneOfMe()
         {
-            return new ExpressionMatrixRef(this._ParentNode, this._HeapRef, this._MatrixRef, this._FieldAffinity, this._FieldSize);
+            return new ScalarExpressionMatrixRef(this._ParentNode, this._HeapRef, this._MatrixRef, this._FieldAffinity, this._FieldSize);
         }
 
         public override int ExpressionSize()

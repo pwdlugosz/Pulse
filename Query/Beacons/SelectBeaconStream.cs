@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
-using Pulse.Expressions;
+using Pulse.ScalarExpressions;
 
 namespace Pulse.Query.Beacons
 {
@@ -16,9 +16,9 @@ namespace Pulse.Query.Beacons
     {
 
         private BeaconStream _stream;
-        private ExpressionCollection _Fields;
+        private ScalarExpressionCollection _Fields;
         
-        public SelectBeaconStream(Host Host, BeaconStream Base, ExpressionCollection Fields)
+        public SelectBeaconStream(Host Host, BeaconStream Base, ScalarExpressionCollection Fields)
             : base(Host, new FieldResolver(Host))
         {
             this._stream = Base;

@@ -400,7 +400,7 @@ namespace Pulse.Data
         /// <summary>
         /// Adds a columns based on a text expression
         /// </summary>
-        /// <param name="Expression">A text expression [Alias] [Type].[PageSize] [Nullable]</param>
+        /// <param name="ScalarExpression">A text expression [Alias] [Type].[PageSize] [Nullable]</param>
         public void Add(string Expression)
         {
 
@@ -418,7 +418,7 @@ namespace Pulse.Data
 
             // Check length //
             if (s.Length < 2 || s.Length > 5)
-                throw new Exception("Expression is invalid: " + Expression);
+                throw new Exception("ScalarExpression is invalid: " + Expression);
 
             // Set defaults //
             string name = s[0].Trim();

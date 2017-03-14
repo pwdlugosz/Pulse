@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
-using Pulse.Expressions;
+using Pulse.ScalarExpressions;
 
 namespace Pulse.Query.Acceptors
 {
@@ -16,10 +16,10 @@ namespace Pulse.Query.Acceptors
     {
 
         private Host _Host;
-        private ExpressionCollection _Expressions;
+        private ScalarExpressionCollection _Expressions;
         private long _Ticks = 0;
 
-        public HostAcceptor(Host Host, ExpressionCollection Fields)
+        public HostAcceptor(Host Host, ScalarExpressionCollection Fields)
             : base()
         {
             this._Host = Host;

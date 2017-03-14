@@ -4,12 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Aggregates;
-using Pulse.Expressions;
 using Pulse.Data;
+using Pulse.ScalarExpressions;
 
 namespace Pulse.Query.Aggregate
 {
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class AggregateMetaData
     {
 
@@ -49,33 +52,150 @@ namespace Pulse.Query.Aggregate
 
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public abstract class AggregateEngine
     {
 
-        public abstract void Render(WriteStream Output, Table Data, ExpressionCollection Keys, AggregateCollection Values, Filter Where, AggregateMetaData MetaData);
+        /// <summary>
+        /// Groups values by keys
+        /// </summary>
+        /// <param name="Output">The stream to write the data to</param>
+        /// <param name="Data">The source data</param>
+        /// <param name="Keys">The expressions that form the unique set in the data</param>
+        /// <param name="Values">The aggregate functions over which to consolidate the data</param>
+        /// <param name="Where">The filter to apply to the data</param>
+        /// <param name="MetaData">The meta data to update</param>
+        public abstract void Render(WriteStream Output, Table Data, ScalarExpressionCollection Keys, AggregateCollection Values, Filter Where, AggregateMetaData MetaData);
 
-        public void Render(WriteStream Output, Table Data, ExpressionCollection Keys, AggregateCollection Values, Filter Where)
+        /// <summary>
+        /// Groups values by keys
+        /// </summary>
+        /// <param name="Output">The stream to write the data to</param>
+        /// <param name="Data">The source data</param>
+        /// <param name="Keys">The expressions that form the unique set in the data</param>
+        /// <param name="Values">The aggregate functions over which to consolidate the data</param>
+        /// <param name="Where">The filter to apply to the data</param>
+        /// <param name="MetaData">The meta data to update</param>
+        public void Render(WriteStream Output, Table Data, ScalarExpressionCollection Keys, AggregateCollection Values, Filter Where)
         {
             AggregateMetaData meta = new AggregateMetaData();
             this.Render(Output, Data, Keys, Values, Where, meta);
         }
 
-        public Schema GetOutputSchema(ExpressionCollection Keys, AggregateCollection Values)
+        /// <summary>
+        /// Aggregates data into a clustered table
+        /// </summary>
+        /// <param name="DB"></param>
+        /// <param name="Name"></param>
+        /// <param name="ClusterColumns"></param>
+        /// <param name="Data"></param>
+        /// <param name="Keys"></param>
+        /// <param name="Values"></param>
+        /// <param name="Where"></param>
+        /// <returns></returns>
+        public ClusteredScribeTable Aggregate(string DB, string Name, Key ClusterColumns, Table Data, ScalarExpressionCollection Keys, AggregateCollection Values, Filter Where)
+        {
+
+            ClusteredScribeTable t = Data.Host.CreateTable(DB, Name, this.GetOutputSchema(Keys, Values), ClusterColumns);
+            WriteStream w = t.OpenWriter();
+            this.Render(w, Data, Keys, Values, Where);
+            w.Close();
+            return t;
+
+        }
+
+        /// <summary>
+        /// Aggregates data into a clustered table
+        /// </summary>
+        /// <param name="DB"></param>
+        /// <param name="Name"></param>
+        /// <param name="ClusterColumns"></param>
+        /// <param name="Data"></param>
+        /// <param name="Keys"></param>
+        /// <param name="Values"></param>
+        /// <returns></returns>
+        public ClusteredScribeTable Aggregate(string DB, string Name, Key ClusterColumns, Table Data, ScalarExpressionCollection Keys, AggregateCollection Values)
+        {
+            return this.Aggregate(DB, Name, ClusterColumns, Data, Keys, Values, Filter.TrueForAll);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="DB"></param>
+        /// <param name="Name"></param>
+        /// <param name="Data"></param>
+        /// <param name="Keys"></param>
+        /// <param name="Values"></param>
+        /// <param name="Where"></param>
+        /// <returns></returns>
+        public HeapScribeTable Aggregate(string DB, string Name, Table Data, ScalarExpressionCollection Keys, AggregateCollection Values, Filter Where)
+        {
+
+            HeapScribeTable t = Data.Host.CreateTable(DB, Name, this.GetOutputSchema(Keys, Values));
+            WriteStream w = t.OpenWriter();
+            this.Render(w, Data, Keys, Values, Where);
+            w.Close();
+            return t;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="DB"></param>
+        /// <param name="Name"></param>
+        /// <param name="Data"></param>
+        /// <param name="Keys"></param>
+        /// <param name="Values"></param>
+        /// <returns></returns>
+        public HeapScribeTable Aggregate(string DB, string Name, Table Data, ScalarExpressionCollection Keys, AggregateCollection Values)
+        {
+            return this.Aggregate(DB, Name, Data, Keys, Values, Filter.TrueForAll);
+        }
+
+        // Supporting aggregates //
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Keys"></param>
+        /// <param name="Values"></param>
+        /// <returns></returns>
+        public Schema GetOutputSchema(ScalarExpressionCollection Keys, AggregateCollection Values)
         {
             return Schema.Join(Keys.Columns, Values.Columns);
         }
 
-        public Schema GetWorkSchema(ExpressionCollection Keys, AggregateCollection Values)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Keys"></param>
+        /// <param name="Values"></param>
+        /// <returns></returns>
+        public Schema GetWorkSchema(ScalarExpressionCollection Keys, AggregateCollection Values)
         {
             return Schema.Join(Keys.Columns, Values.WorkColumns);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="WorkData"></param>
+        /// <param name="Key"></param>
         public virtual void OverLay(Record WorkData, Record Key)
         {
             Array.Copy(Key._data, WorkData._data, Key.Count);
         }
 
-        public virtual Record GetWorkRecord(ExpressionCollection Keys, AggregateCollection Values)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Keys"></param>
+        /// <param name="Values"></param>
+        /// <returns></returns>
+        public virtual Record GetWorkRecord(ScalarExpressionCollection Keys, AggregateCollection Values)
         {
             int woffset = Keys.Count;
             Record r = this.GetWorkSchema(Keys, Values).NullRecord;
@@ -86,17 +206,29 @@ namespace Pulse.Query.Aggregate
     }
 
     /// <summary>
-    /// Creates an aggregate engine assumine the data is ordered
+    /// Creates an aggregate engine assuming the data is ordered
     /// </summary>
     public class OrderedAggregateEngine : AggregateEngine
     {
 
+        /// <summary>
+        /// 
+        /// </summary>
         public OrderedAggregateEngine()
             : base()
         {
         }
 
-        public override void Render(WriteStream Output, Table Data, ExpressionCollection Keys, AggregateCollection Values, Filter Where, AggregateMetaData MetaData)
+        /// <summary>
+        /// Groups values by keys
+        /// </summary>
+        /// <param name="Output">The stream to write the data to</param>
+        /// <param name="Data">The source data</param>
+        /// <param name="Keys">The expressions that form the unique set in the data</param>
+        /// <param name="Values">The aggregate functions over which to consolidate the data</param>
+        /// <param name="Where">The filter to apply to the data</param>
+        /// <param name="MetaData">The meta data to update</param>
+        public override void Render(WriteStream Output, Table Data, ScalarExpressionCollection Keys, AggregateCollection Values, Filter Where, AggregateMetaData MetaData)
         {
 
             // Start the timer //
@@ -183,17 +315,32 @@ namespace Pulse.Query.Aggregate
 
     }
 
+    /// <summary>
+    /// Represents an engine that aggregates a table using a b+ tree
+    /// </summary>
     public class DictionaryAggregateEngine : AggregateEngine
     {
-        
 
+
+        /// <summary>
+        /// 
+        /// </summary>
         public DictionaryAggregateEngine()
             : base()
         {
             
         }
 
-        public override void Render(WriteStream Output, Table Data, ExpressionCollection Keys, AggregateCollection Values, Filter Where, AggregateMetaData MetaData)
+        /// <summary>
+        /// Groups values by keys
+        /// </summary>
+        /// <param name="Output">The stream to write the data to</param>
+        /// <param name="Data">The source data</param>
+        /// <param name="Keys">The expressions that form the unique set in the data</param>
+        /// <param name="Values">The aggregate functions over which to consolidate the data</param>
+        /// <param name="Where">The filter to apply to the data</param>
+        /// <param name="MetaData">The meta data to update</param>
+        public override void Render(WriteStream Output, Table Data, ScalarExpressionCollection Keys, AggregateCollection Values, Filter Where, AggregateMetaData MetaData)
         {
 
             // Start the timer //
