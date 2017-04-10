@@ -41,6 +41,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionExpressions\ActionExpression.cs" />
+    <Compile Include="ActionExpressions\ActionExpressionFor.cs" />
+    <Compile Include="ActionExpressions\ActionExpressionIf.cs" />
+    <Compile Include="ActionExpressions\ActionExpressionInsert.cs" />
+    <Compile Include="ActionExpressions\ActionExpressionMatrixAssign.cs" />
+    <Compile Include="ActionExpressions\ActionExpressionScalarAssign.cs" />
+    <Compile Include="ActionExpressions\ActionExpressionTableAssign.cs" />
+    <Compile Include="ActionExpressions\ActionExpressionWhile.cs" />
     <Compile Include="Aggregates\Aggregate.cs" />
     <Compile Include="Aggregates\AggregateAvg.cs" />
     <Compile Include="Aggregates\AggregateCollection.cs" />
@@ -62,13 +70,29 @@
     <Compile Include="Aggregates\AggregateStdevS.cs" />
     <Compile Include="Data\ClusterTrees\ClusterState.cs" />
     <Compile Include="Data\Indexes\DerivedIndex.cs" />
-    <Compile Include="Query\Acceptors\HostAcceptor.cs" />
+    <Compile Include="Data\Streams\DistinctWriteStream.cs" />
+    <Compile Include="Data\Streams\OrderedWriter.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpression.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionAdd.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionAddScalar.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionCheckDivide.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionCheckDivideScalar.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionDivide.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionDivideScalar.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionHeap.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionIdentity.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionInverse.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionLiteral.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionMatrixMultiply.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionMinus.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionMultiply.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionMultiplyScalar.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionSubtract.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionSubtractScalar.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionTranspose.cs" />
     <Compile Include="Query\Aggregate\AggregateEngine.cs" />
-    <Compile Include="Query\Beacons\FilteredBeaconStream.cs" />
-    <Compile Include="Query\Beacons\SelectBeaconStream.cs" />
     <Compile Include="Data\Tables\DreamTables\DictionaryDreamTable.cs" />
     <Compile Include="Data\Tables\ScribeTables\DictionaryScribeTable.cs" />
-    <Compile Include="Query\Aggregate\AggregateStream.cs" />
     <Compile Include="Aggregates\AggregateSum.cs" />
     <Compile Include="Aggregates\AggregateVarP.cs" />
     <Compile Include="Aggregates\AggregateVarS.cs" />
@@ -85,14 +109,11 @@
     <Compile Include="Data\Pages\SortedPage.cs" />
     <Compile Include="Data\Records\RecordBuilder.cs" />
     <Compile Include="Data\Records\RecordComparer.cs" />
-    <Compile Include="Query\Beacons\BeaconStream.cs" />
-    <Compile Include="Data\Streams\RecordStreams\IndexDataReadStream.cs" />
-    <Compile Include="Data\Streams\RecordStreams\IndexKeyReadStream.cs" />
-    <Compile Include="Data\Streams\RecordStreams\VanillaReadStream.cs" />
-    <Compile Include="Data\Streams\RecordStreams\VanillaWriteStream.cs" />
-    <Compile Include="Data\Streams\RecordStreams\WriteStream.cs" />
-    <Compile Include="Query\Beacons\UnionBeaconStream.cs" />
-    <Compile Include="Query\Beacons\VanillaBeaconStream.cs" />
+    <Compile Include="Data\Streams\IndexDataReadStream.cs" />
+    <Compile Include="Data\Streams\IndexKeyReadStream.cs" />
+    <Compile Include="Data\Streams\VanillaReadStream.cs" />
+    <Compile Include="Data\Streams\VanillaWriteStream.cs" />
+    <Compile Include="Data\Streams\WriteStream.cs" />
     <Compile Include="Data\System\Communicator.cs" />
     <Compile Include="Data\System\Host.cs" />
     <Compile Include="Data\Indexes\Index.cs" />
@@ -102,7 +123,7 @@
     <Compile Include="Data\Cells\RandomCell.cs" />
     <Compile Include="Data\Pages\Page.cs" />
     <Compile Include="Data\Records\Record.cs" />
-    <Compile Include="Data\Streams\RecordStreams\ReadStream.cs" />
+    <Compile Include="Data\Streams\ReadStream.cs" />
     <Compile Include="Data\Structures\FloatingQueue.cs" />
     <Compile Include="Data\Structures\Heap.cs" />
     <Compile Include="Data\System\PageManager.cs" />
@@ -119,6 +140,16 @@
     <Compile Include="Data\Tables\Table.cs" />
     <Compile Include="Data\Tables\Schema.cs" />
     <Compile Include="Data\Tables\TableHeader.cs" />
+    <Compile Include="Query\Aggregate\AggregateMetaData.cs" />
+    <Compile Include="Query\Aggregate\DictionaryAggregateEngine.cs" />
+    <Compile Include="Query\Aggregate\OrderedAggregateEngine.cs" />
+    <Compile Include="Query\Modifier.cs" />
+    <Compile Include="Query\Select\BasicSelectEngine.cs" />
+    <Compile Include="Query\Select\SelectEngine.cs" />
+    <Compile Include="Query\Select\SelectMetaData.cs" />
+    <Compile Include="Query\Union\BasicUnionEngine.cs" />
+    <Compile Include="Query\Union\UnionEngine.cs" />
+    <Compile Include="Query\Union\UnionMetaData.cs" />
     <Compile Include="ScalarExpressions\ScalarExpression.cs" />
     <Compile Include="ScalarExpressions\ScalarExpressionAffinity.cs" />
     <Compile Include="ScalarExpressions\ScalarExpressionCollection.cs" />
@@ -129,12 +160,9 @@
     <Compile Include="ScalarExpressions\ScalarExpressionMatrixRef.cs" />
     <Compile Include="ScalarExpressions\ScalarExpressionScalarRef.cs" />
     <Compile Include="Data\FieldResolver.cs" />
-    <Compile Include="Query\Acceptors\AcceptorStream.cs" />
     <Compile Include="ScalarExpressions\IScalarExpressionLookup.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Query\Aggregate\DictionaryAggregateStream.cs" />
-    <Compile Include="Query\Aggregate\OrderedAggregateStream.cs" />
     <Compile Include="Query\Join\JoinAlgorithm.cs" />
     <Compile Include="Query\Join\JoinEngine.cs" />
     <Compile Include="Query\Join\JoinMetaData.cs" />
@@ -144,6 +172,7 @@
     <Compile Include="Query\Join\QuasiNestedLoopJoinEngine.cs" />
     <Compile Include="Query\Join\SortMergeJoinEngine.cs" />
     <Compile Include="Query\TableExpressionHelper.cs" />
+    <Compile Include="TableExpressions\TableExpression.cs" />
     <Compile Include="Testing\SampleTables.cs" />
     <Compile Include="Testing\Testers.cs" />
     <Compile Include="Util\CostCalculator.cs" />
@@ -153,7 +182,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Query\Select\" />
+    <Folder Include="Data\Streams\RecordStreams\" />
+    <Folder Include="Query\Distinct\" />
+    <Folder Include="Query\OrderBy\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

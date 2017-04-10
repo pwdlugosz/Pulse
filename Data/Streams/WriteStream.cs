@@ -52,6 +52,20 @@ namespace Pulse.Data
         /// </summary>
         public abstract void Close();
 
+        /// <summary>
+        /// Reads all records form the readstream and writes to the current instance
+        /// </summary>
+        /// <param name="Reader"></param>
+        public virtual void Consume(ReadStream Reader)
+        {
+
+            while (Reader.CanAdvance)
+            {
+                this.Insert(Reader.ReadNext());
+            }
+
+        }
+
     }
 
 }

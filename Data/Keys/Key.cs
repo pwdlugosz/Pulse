@@ -61,6 +61,14 @@ namespace Pulse.Data
         }
 
         /// <summary>
+        /// True if the key contains no elements
+        /// </summary>
+        public bool IsEmpty
+        {
+            get { return this._data.Count == 0; }
+        }
+
+        /// <summary>
         /// Field index
         /// </summary>
         /// <param name="Index">Index of the key field to be pulled</param>
@@ -83,6 +91,11 @@ namespace Pulse.Data
             return (KeyAffinity)this._data[Index].INT_B;
         }
 
+        /// <summary>
+        /// Sets the sort by affinity
+        /// </summary>
+        /// <param name="Index"></param>
+        /// <param name="Affinity"></param>
         public void SetAffinity(int Index, KeyAffinity Affinity)
         {
             this._data[Index] = new Cell(this._data[Index].INT_A, (int)Affinity);
@@ -343,6 +356,12 @@ namespace Pulse.Data
             return k;
         }
 
+        /// <summary>
+        /// Reads a key from a hash buffer
+        /// </summary>
+        /// <param name="Buffer"></param>
+        /// <param name="Location"></param>
+        /// <returns></returns>
         public static Key Read(byte[] Buffer, int Location)
         {
 

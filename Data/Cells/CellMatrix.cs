@@ -635,6 +635,64 @@ namespace Pulse.Data
         }
 
         /// <summary>
+        /// Dividies each element in a matrix by each other element in another matrix
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
+        public static CellMatrix operator %(CellMatrix A, CellMatrix B)
+        {
+
+            // Check bounds are the same //
+            if (CellMatrix.CheckDimensions(A, B) == false)
+            {
+                throw new Exception(string.Format("Dimension mismatch A {0}OriginalNode{1} B {2}OriginalNode{3}", A.RowCount, A.ColumnCount, B.RowCount, B.ColumnCount));
+            }
+
+            // Build a matrix //
+            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity);
+
+            // Main loop //
+            for (int i = 0; i < A.RowCount; i++)
+            {
+                for (int j = 0; j < A.ColumnCount; j++)
+                {
+                    C[i, j] = A[i, j] % B[i, j];
+                }
+            }
+
+            // Return //
+            return C;
+
+        }
+
+        public static CellMatrix operator %(Cell A, CellMatrix B)
+        {
+            CellMatrix C = new CellMatrix(B.RowCount, B.ColumnCount, A.AFFINITY);
+            for (int i = 0; i < B.RowCount; i++)
+            {
+                for (int j = 0; j < B.ColumnCount; j++)
+                {
+                    C._Data[i, j] = A % B._Data[i, j];
+                }
+            }
+            return C;
+        }
+
+        public static CellMatrix operator %(CellMatrix A, Cell B)
+        {
+            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity);
+            for (int i = 0; i < A.RowCount; i++)
+            {
+                for (int j = 0; j < A.ColumnCount; j++)
+                {
+                    C._Data[i, j] = A._Data[i, j] % B;
+                }
+            }
+            return C;
+        }
+
+        /// <summary>
         /// Performs the true matrix multiplication between two matricies
         /// </summary>
         /// <param name="A"></param>

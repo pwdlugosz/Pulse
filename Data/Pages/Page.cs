@@ -740,6 +740,7 @@ namespace Pulse.Data
         internal List<Record> Cache
         {
             get { return this._Elements; }
+            set { this._Elements = value; }
         }
 
         // Hashing methods //
