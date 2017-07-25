@@ -9,16 +9,16 @@ using Pulse.ScalarExpressions;
 namespace Pulse.MatrixExpressions
 {
 
-    public abstract class MatrixExpression
+    public abstract class MatrixExpression : IBindable
     {
 
         private MatrixExpression _ParentNode;
-        protected List<MatrixExpression> _Cache;
+        protected List<MatrixExpression> _Children;
 
         public MatrixExpression(MatrixExpression Parent)
         {
             this._ParentNode = Parent;
-            this._Cache = new List<MatrixExpression>();
+            this._Children = new List<MatrixExpression>();
         }
 
         public MatrixExpression ParentNode
@@ -48,14 +48,14 @@ namespace Pulse.MatrixExpressions
 
         public MatrixExpression this[int IndexOf]
         {
-            get { return this._Cache[IndexOf]; }
+            get { return this._Children[IndexOf]; }
         }
 
         // Methods //
         public void AddChildNode(MatrixExpression Node)
         {
             Node.ParentNode = this;
-            this._Cache.Add(Node);
+            this._Children.Add(Node);
         }
 
         public void AddChildren(params MatrixExpression[] Nodes)
@@ -66,13 +66,13 @@ namespace Pulse.MatrixExpressions
 
         public List<MatrixExpression> Children
         {
-            get { return _Cache; }
+            get { return _Children; }
         }
 
         public CellMatrix[] EvaluateChildren(FieldResolver Variant)
         {
             List<CellMatrix> c = new List<CellMatrix>();
-            foreach (MatrixExpression x in _Cache)
+            foreach (MatrixExpression x in _Children)
                 c.Add(x.Evaluate(Variant));
             return c.ToArray();
         }
@@ -80,7 +80,7 @@ namespace Pulse.MatrixExpressions
         public CellAffinity[] ReturnAffinityChildren()
         {
             List<CellAffinity> c = new List<CellAffinity>();
-            foreach (MatrixExpression x in _Cache)
+            foreach (MatrixExpression x in _Children)
                 c.Add(x.ReturnAffinity());
             return c.ToArray();
         }
@@ -97,6 +97,12 @@ namespace Pulse.MatrixExpressions
         public abstract CellAffinity ReturnAffinity();
 
         public abstract MatrixExpression CloneOfMe();
+
+        public virtual void Bind(string PointerRef, ScalarExpression Value)
+        {
+            this._Children.ForEach((x) => { x.Bind(PointerRef, Value); });
+        }
+
 
     }
 

@@ -54,22 +54,22 @@ namespace Pulse.Query
             // No order by or distinct
             if (this.OrderByColumns.Count == 0 && !this.Distinct)
             {
-                return new HeapScribeTable(Host, Name, Host.Connections[DB], Columns, Page.DEFAULT_SIZE);
+                return new HeapTable(Host, Name, Host.Connections[DB], Columns, Page.DEFAULT_SIZE);
             }
             // Yes order by, no distinct, create a clustered table
             else if (this.OrderByColumns.Count != 0 && !this.Distinct)
             {
-                return new ClusteredScribeTable(Host, Name, Host.Connections[DB], Columns, OrderByColumns, ClusterState.Universal);
+                return new ClusteredTable(Host, Name, Host.Connections[DB], Columns, OrderByColumns, ClusterState.Universal);
             }
             // No order by and yes distinct //
             else if (this.OrderByColumns.Count == 0 && this.Distinct)
             {
-                return new ClusteredScribeTable(Host, Name, Host.Connections[DB], Columns, Columns.KeyParse("*"), ClusterState.Distinct);
+                return new ClusteredTable(Host, Name, Host.Connections[DB], Columns, Columns.KeyParse("*"), ClusterState.Distinct);
             }
             // both order by and distinct
             else if (this.OrderByColumns.Count != 0 && this.Distinct)
             {
-                return new ClusteredScribeTable(Host, Name, Host.Connections[DB], Columns, this.OrderByColumns, ClusterState.Distinct);
+                return new ClusteredTable(Host, Name, Host.Connections[DB], Columns, this.OrderByColumns, ClusterState.Distinct);
             }
 
             throw new Exception("Critical error");

@@ -24,41 +24,41 @@ namespace Pulse.Query.Select
         /// <param name="Keys"></param>
         /// <param name="Where"></param>
         /// <param name="MetaData"></param>
-        public abstract void Render(Host Host, WriteStream Output, Table Data, ScalarExpressionCollection Fields, Filter Where, long Limit, SelectMetaData MetaData);
+        public abstract void Render(Host Host, RecordWriter Output, Table Data, ScalarExpressionCollection Fields, Filter Where, long Limit, SelectMetaData MetaData);
 
-        public void Render(Host Host, WriteStream Output, Table Data, ScalarExpressionCollection Fields, Filter Where)
+        public void Render(Host Host, RecordWriter Output, Table Data, ScalarExpressionCollection Fields, Filter Where)
         {
             this.Render(Host, Output, Data, Fields, Where, -1, new SelectMetaData());
         }
 
-        public ClusteredScribeTable Select(Host Host, string DB, string Name, Key ClusterColumns, Table Data, ScalarExpressionCollection Fields, Filter Where)
+        public ClusteredTable Select(Host Host, string DB, string Name, Key ClusterColumns, Table Data, ScalarExpressionCollection Fields, Filter Where)
         {
 
-            ClusteredScribeTable t = Data.Host.CreateTable(DB, Name, Fields.Columns, ClusterColumns);
-            WriteStream w = t.OpenWriter();
+            ClusteredTable t = Data.Host.CreateTable(DB, Name, Fields.Columns, ClusterColumns);
+            RecordWriter w = t.OpenWriter();
             this.Render(Host, w, Data, Fields, Where);
             w.Close();
             return t;
 
         }
 
-        public ClusteredScribeTable Select(Host Host, string DB, string Name, Key ClusterColumns, Table Data, ScalarExpressionCollection Fields)
+        public ClusteredTable Select(Host Host, string DB, string Name, Key ClusterColumns, Table Data, ScalarExpressionCollection Fields)
         {
             return this.Select(Host, DB, Name, ClusterColumns, Data, Fields, Filter.TrueForAll);
         }
 
-        public HeapScribeTable Select(Host Host, string DB, string Name, Table Data, ScalarExpressionCollection Fields, Filter Where)
+        public HeapTable Select(Host Host, string DB, string Name, Table Data, ScalarExpressionCollection Fields, Filter Where)
         {
 
-            HeapScribeTable t = Data.Host.CreateTable(DB, Name, Fields.Columns);
-            WriteStream w = t.OpenWriter();
+            HeapTable t = Data.Host.CreateTable(DB, Name, Fields.Columns);
+            RecordWriter w = t.OpenWriter();
             this.Render(Host, w, Data, Fields, Where);
             w.Close();
             return t;
 
         }
 
-        public HeapScribeTable Select(Host Host, string DB, string Name, Table Data, ScalarExpressionCollection Fields)
+        public HeapTable Select(Host Host, string DB, string Name, Table Data, ScalarExpressionCollection Fields)
         {
             return this.Select(Host, DB, Name, Data, Fields, Filter.TrueForAll);
         }

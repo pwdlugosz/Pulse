@@ -61,6 +61,7 @@ namespace Pulse.Data
         public const int OFFSET_B1 = 57;
         public const int OFFSET_B2 = 58;
         public const int OFFSET_B3 = 59;
+        public const int OFFSET_PARENT_PAGE_ID = 60;
         public const int OFFSET_RECORD_TABLE = 64;
         public const int SIZE_ELEMENT = 4;
 
@@ -106,6 +107,9 @@ namespace Pulse.Data
         protected byte _B1 = 0;
         protected byte _B2 = 0;
         protected byte _B3 = 0;
+        protected int _ParentPageID = -1;
+
+        protected long _Version = 0; // This never touches the disk; it incements each time the page is altered; if 0, the page was never altered
 
         protected List<Record> _Elements;
 
@@ -140,6 +144,15 @@ namespace Pulse.Data
         }
 
         // Non-Virtuals //
+        /// <summary>
+        /// Represents the number of times the page has been altered; if this is 0, the page doesnt need to be saved to disk
+        /// </summary>
+        public long Version
+        {
+            get { return this._Version; }
+            set { this._Version = value; }
+        }
+
         /// <summary>
         /// True if the page is the first link in a linked list; false otherwise
         /// </summary>
@@ -194,11 +207,19 @@ namespace Pulse.Data
             return new RecordKey(this.PageID, RowID);
         }
 
+        /// <summary>
+        /// Gets the key for the first record
+        /// </summary>
+        /// <returns></returns>
         public RecordKey GetFirstKey()
         {
             return new RecordKey(this.PageID, 0);
         }
 
+        /// <summary>
+        /// Gets the key for the last record
+        /// </summary>
+        /// <returns></returns>
         public RecordKey GetLastKey()
         {
             return new RecordKey(this.PageID, this.Count == 0 ? 0 : this.Count - 1);
@@ -387,7 +408,21 @@ namespace Pulse.Data
         /// </summary>
         public virtual int CheckSum
         {
-            get { return this._CheckSum; }
+            get 
+            {
+                // Meta data cs //
+                int cs = (this._PageSize + 1) ^ (this._PageID + 2) ^ (this._LastPageID + 3) ^ (this._NextPageID + 4);
+                cs = (cs + 127) * 19470708 % (1 + this._FieldCount + this._Capacity + this._DataDiskCost + this._Type);
+                cs = cs ^ ((this._X0 + 1) * (this._X2 + 1) * (this._X2 + 1) * (this._X3 + 1) + (int)(this._B0 + this._B1 + this._B2 + this._B3));
+
+                // Data check sum //
+                for (int i = 0; i < this._Elements.Count; i++)
+                {
+                    cs ^= (i * this._Elements[i].GetHashCode());
+                }
+
+                return cs; 
+            }
         }
 
         /// <summary>
@@ -399,6 +434,15 @@ namespace Pulse.Data
         }
 
         /// <summary>
+        /// The parent page's ID; for non tree tables, this is -1
+        /// </summary>
+        public virtual int ParentPageID
+        {
+            get { return this._ParentPageID; }
+            set { this._ParentPageID = value; }
+        }
+
+        /// <summary>
         /// Removes a row from the page
         /// </summary>
         /// <param name="RowID"></param>
@@ -407,6 +451,7 @@ namespace Pulse.Data
             if (!CheckRowID(RowID))
                 throw new IndexOutOfRangeException(string.Format("RowID is invalid: {0}", RowID));
             this._Elements.RemoveAt(RowID);
+            this._Version++;
         }
 
         /// <summary>
@@ -417,6 +462,7 @@ namespace Pulse.Data
             if (this.Count == 0)
                 return;
             this._Elements.RemoveAt(this._Elements.Count - 1);
+            this._Version++;
         }
 
         /// <summary>
@@ -429,6 +475,7 @@ namespace Pulse.Data
             if (this.IsFull)
                 throw new Exception("Page is full");
             this._Elements.Add(Element);
+            this._Version++;
 
         }
 
@@ -445,6 +492,7 @@ namespace Pulse.Data
             if (RowID < 0 || RowID > this.Count)
                 throw new IndexOutOfRangeException(string.Format("RowID is invalid: {0}", RowID));
             this._Elements.Insert(RowID, Element);
+            this._Version++;
 
         }
 
@@ -458,6 +506,7 @@ namespace Pulse.Data
             if (!CheckRowID(RowID))
                 throw new IndexOutOfRangeException(string.Format("RowID is invalid: {0}", RowID));
             this._Elements[RowID] = Element;
+            this._Version++;
         }
 
         /// <summary>
@@ -537,6 +586,7 @@ namespace Pulse.Data
         public virtual void Sort(IRecordMatcher SortKey)
         {
             this._Elements.Sort(SortKey);
+            this._Version++;
         }
 
         /// <summary>
@@ -594,6 +644,7 @@ namespace Pulse.Data
                 p._Elements.Add(this._Elements[i]);
             }
             this._Elements.RemoveRange(Pivot, this.Count - Pivot);
+            this._Version++;
             return p;
 
         }
@@ -618,6 +669,25 @@ namespace Pulse.Data
         public override int GetHashCode()
         {
             return this._PageID;
+        }
+
+        /// <summary>
+        /// Prints all data records to a string
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+
+            StringBuilder sb = new StringBuilder();
+            int i = 0;
+            foreach (Record r in this._Elements)
+            {
+                sb.AppendLine(string.Format("{0} : {1}", i, r.ToString()));
+                i++;
+            }
+
+            return sb.ToString();
+
         }
 
         // Debug methods //
@@ -781,6 +851,7 @@ namespace Pulse.Data
             element._B1 = Buffer[(int)Location + OFFSET_B1];
             element._B2 = Buffer[(int)Location + OFFSET_B2];
             element._B3 = Buffer[(int)Location + OFFSET_B3];
+            element._ParentPageID = BitConverter.ToInt32(Buffer, (int)Location + OFFSET_PARENT_PAGE_ID);
 
             // Read in records //
             for (int k = 0; k < Count; k++)
@@ -920,11 +991,17 @@ namespace Pulse.Data
             Buffer[Location + OFFSET_B1] = Element._B1;
             Buffer[Location + OFFSET_B2] = Element._B2;
             Buffer[Location + OFFSET_B3] = Element._B3;
+            Array.Copy(BitConverter.GetBytes(Element._ParentPageID), 0, Buffer, Location + OFFSET_PARENT_PAGE_ID, SIZE_ELEMENT);
             Location += HEADER_SIZE;
 
+            int v = 0, w = 0;
             // Start writting the record data //
             foreach (Record R in Element._Elements)
             {
+
+                //Console.WriteLine("{0} : {1} : {2}", v, R.DiskCost, (int)Location - w);
+                //v++;
+                //w = (int)Location;
 
                 // Write each cell //
                 for (int j = 0; j < R.Count; j++)

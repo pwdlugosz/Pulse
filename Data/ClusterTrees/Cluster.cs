@@ -135,6 +135,7 @@ namespace Pulse.Data
             ClusterPage x = this._Root;
             while (true)
             {
+                
                 int PageID = x.GetPageID(Key);
                 x = this.GetPage(PageID);
                 if (x.IsLeaf)
@@ -143,18 +144,18 @@ namespace Pulse.Data
             }
 
             // ## For debuggin ##
-            //ClusterPage x = this._Root;
+            //ClusterPage OriginalPage = this._Root;
             //while (true)
             //{
-            //    int PageID = x.GetPageID(Key);
-            //    ClusterPage y = this.GetPage(PageID);
-            //    if (y.IsLeaf)
+            //    int PageID = OriginalPage.GetPageID(Key);
+            //    ClusterPage NewPage = this.GetBranchPage(PageID);
+            //    if (NewPage.IsLeaf)
             //    {
-            //        return y;
+            //        return NewPage;
             //    }
             //    else
             //    {
-            //        x = y;
+            //        OriginalPage = NewPage;
             //    }
             //}
 
@@ -262,7 +263,7 @@ namespace Pulse.Data
         //{
             
         //    RecordKey k = this.SeekFirst(Key);
-        //    ClusterPage p = this.GetPage(k.PAGE_ID);
+        //    ClusterPage p = this.GetBranchPage(k.PAGE_ID);
 
         //    if (k.ROW_ID >= p.Count)
         //        return RecordKey.RecordNotFound;
@@ -282,7 +283,7 @@ namespace Pulse.Data
         //{
 
         //    RecordKey k = this.SeekLast(Key);
-        //    ClusterPage p = this.GetPage(k.PAGE_ID);
+        //    ClusterPage p = this.GetBranchPage(k.PAGE_ID);
 
         //    if (k.ROW_ID >= p.Count)
         //        return RecordKey.RecordNotFound;
@@ -361,7 +362,7 @@ namespace Pulse.Data
 
         // Inserts //
         /// <summary>
-        /// Core insertion step; inserts a value into the b+ tree and splits any nodes if needed
+        /// Core insertion control; inserts a value into the b+ tree and splits any nodes if needed
         /// </summary>
         /// <param name="Key"></param>
         public virtual void Insert(Record Element)
@@ -370,8 +371,8 @@ namespace Pulse.Data
             // Check if it exists only if this is unqiue //
             //if (this.IsUnique)
             //{
-            //    if (this.Exists(Record.Split(Element, this._IndexColumns)))
-            //        throw new DuplicateKeyException(string.Format("Key exists {0}", Record.Split(Element, this._IndexColumns)));
+            //    if (this.Exists(Record.Split(Key, this._IndexColumns)))
+            //        throw new DuplicateKeyException(string.Format("Key exists {0}", Record.Split(Key, this._IndexColumns)));
             //}
 
             // Finde the leaf node to insert into //
@@ -389,14 +390,14 @@ namespace Pulse.Data
         /// Adds a key/page id to the tree; if the node is currently full, this method will split it, and update it's parent; if the parent is full, it'll also split; if the parent is the root and it's
         /// full, it'll split that too;
         /// </summary>
-        /// <param name="Node">A branch node to append</param>
+        /// <param name="OriginalNode">A branch node to append</param>
         /// <param name="Key">The key value of the index</param>
         /// <param name="PageID">The page id linking to the key</param>
         private void InsertKey(ClusterPage Node, Record Key, int PageID)
         {
 
             if (Node.IsLeaf)
-                throw new Exception("Node passed must be a branch node");
+                throw new Exception("OriginalNode passed must be a branch node");
 
             // Get the child page //
             ClusterPage Child = this.GetPage(PageID);
@@ -412,7 +413,7 @@ namespace Pulse.Data
             // Otherwise, the node is full and we need to split //
             ClusterPage y = this.SplitBranch(Node);
 
-            // But... we don't know for sure if we should insert into 'Node' or 'y', so we need to check //
+            // But... we don't know for sure if we should insert into 'OriginalNode' or 'NewPage', so we need to check //
             if (Node.LessThanTerminal(Key))
             {
                 Child.ParentPageID = Node.PageID;
@@ -430,13 +431,13 @@ namespace Pulse.Data
         /// Inserts a value into a node;
         /// If the node is full, this method will split it and update it's parent; using 'InsertKey'
         /// </summary>
-        /// <param name="Node">The node to insert</param>
+        /// <param name="OriginalNode">The node to insert</param>
         /// <param name="Key">The data record (having the same schema as the parent table)</param>
         private void InsertValue(ClusterPage Node, Record Element)
         {
 
             if (!Node.IsLeaf)
-                throw new Exception("Node passed must be a branch node");
+                throw new Exception("OriginalNode passed must be a branch node");
 
             // InsertKey if the node isnt full //
             if (!Node.IsFull)
@@ -448,7 +449,7 @@ namespace Pulse.Data
             // Otherwise, the node is full and we need to split //
             ClusterPage y = this.SplitLeaf(Node);
 
-            // But... we don't know for sure if we should insert into 'Node' or 'y', so we need to check //
+            // But... we don't know for sure if we should insert into 'OriginalNode' or 'NewPage', so we need to check //
             if (Node.LessThanTerminal(Element))
             {
                 Node.Insert(Element);
@@ -464,18 +465,19 @@ namespace Pulse.Data
         /// <summary>
         /// Splits a branch node; this will re-balance all nodes above it;
         /// </summary>
-        /// <param name="OriginalNode">The node to be split; after this method is called, this node will have the LOWER half of all records before the split</param>
-        /// <returns>A new node with the UPPER half of all record in the OriginalNode; this method will append the parent nodes</returns>
+        /// <param name="OriginalPage">The node to be split; after this method is called, this node will have the LOWER half of all records before the split</param>
+        /// <returns>A new node with the UPPER half of all record in the OriginalPage; this method will append the parent nodes</returns>
         private ClusterPage SplitBranch(ClusterPage OriginalNode)
         {
 
             if (OriginalNode.IsLeaf)
-                throw new Exception("Node passed must be a branch node");
+                throw new Exception("OriginalNode passed must be a branch node");
 
             // Split up the page; splitting will set the ParentID and the Leafness, but it won't set the overflow page id //
             ClusterPage NewNode = OriginalNode.SplitXPage(this._Storage.GenerateNewPageID, OriginalNode.PageID, OriginalNode.NextPageID, OriginalNode.Count / 2);
             this._Storage.SetPage(NewNode);
             this._Storage.Header.PageCount++;
+            NewNode.Version++;
 
             // Marry the new and og nodes //
             NewNode.LastPageID = OriginalNode.PageID;
@@ -496,15 +498,14 @@ namespace Pulse.Data
                 q.ParentPageID = NewNode.PageID;
             }
 
-            // Finally, we need to handle introducing NewNode to OriginalNode's parent //
-            if (OriginalNode.ParentPageID != -1) // OriginalNode isnt the root node
+            // Finally, we need to handle introducing NewNode to OriginalPage's parent //
+            if (OriginalNode.ParentPageID != -1) // OriginalPage isnt the root node
             {
 
                 // Get the parent //
                 ClusterPage parent = this.GetPage(OriginalNode.ParentPageID);
 
-
-                // Need to update the key for OriginalNode to be it's last record //
+                // Need to update the key for OriginalPage to be it's last record //
                 parent.Delete(ClusterPage.Composite(Record.Split(NewNode.TerminalRecord, NewNode.WeakKeyColumns), OriginalNode.PageID));
 
                 // Note: we know because we just removed a record that the parent node is not full, so we do a direct insert
@@ -555,13 +556,13 @@ namespace Pulse.Data
         /// <summary>
         /// Splits a leaf node
         /// </summary>
-        /// <param name="OriginalNode">The node to split; this node will have the LOWER half of the original nodes record after the split</param>
+        /// <param name="OriginalPage">The node to split; this node will have the LOWER half of the original nodes record after the split</param>
         /// <returns>A new node with the UPPER half of all records on the original node</returns>
         private ClusterPage SplitLeaf(ClusterPage OriginalNode)
         {
 
             if (!OriginalNode.IsLeaf)
-                throw new Exception("Node passed must be a leaf node");
+                throw new Exception("OriginalNode passed must be a leaf node");
 
             Record OriginalTerminal = OriginalNode.TerminalRecord;
 
@@ -569,6 +570,7 @@ namespace Pulse.Data
             ClusterPage NewNode = OriginalNode.SplitXPage(this._Storage.GenerateNewPageID, OriginalNode.PageID, OriginalNode.NextPageID, OriginalNode.Count / 2);
             this._Storage.SetPage(NewNode);
             this._Storage.Header.PageCount++;
+            NewNode.Version++;
 
             // Check the last ID //
             if (this.TerminalBTreePageID == OriginalNode.PageID)
@@ -588,7 +590,7 @@ namespace Pulse.Data
             }
 
             // We need to introduce NewNode to it's parent //
-            if (OriginalNode.ParentPageID != -1) // OriginalNode isnt the root node
+            if (OriginalNode.ParentPageID != -1) // OriginalPage isnt the root node
             {
 
                 // Get the parent //
@@ -615,7 +617,7 @@ namespace Pulse.Data
                 else  // Note that becuase the child nodes are leafs, we do want to use the 'OriginalKeyColumns' not the 'Weak Key Columns'
                 {
 
-                    // Need to update the key for OriginalNode to be it's last record //
+                    // Need to update the key for OriginalPage to be it's last record //
                     parent.Delete(ClusterPage.Composite(Record.Split(NewNode.TerminalRecord, NewNode.OriginalKeyColumns), OriginalNode.PageID));
 
                     // Note: we know because we just removed a record that the parent node is not full, so we do a direct insert
@@ -625,7 +627,7 @@ namespace Pulse.Data
 
                 }
 
-                // add in OriginalNode because it didnt exist before
+                // add in OriginalPage because it didnt exist before
                 this.InsertKey(parent, Record.Split(OriginalNode.TerminalRecord, OriginalNode.OriginalKeyColumns), OriginalNode.PageID);
 
             }
@@ -684,6 +686,7 @@ namespace Pulse.Data
             NewRoot.ParentPageID = -1;
             NewRoot.IsHighest = true;
             this._Header.RootPageID = NewRoot.PageID;
+            NewRoot.Version++;
 
             return NewRoot;
 
@@ -702,6 +705,7 @@ namespace Pulse.Data
             NewRoot.ParentPageID = -1;
             NewRoot.IsHighest = true;
             this._Header.RootPageID = NewRoot.PageID;
+            NewRoot.Version++;
 
             return NewRoot;
 

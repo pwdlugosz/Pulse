@@ -10,7 +10,7 @@ namespace Pulse.Data
     /// <summary>
     /// A basic read stream
     /// </summary>
-    public class VanillaReadStream : ReadStream
+    public class RecordReaderBase : RecordReader
     {
 
         protected Table _Storage;
@@ -21,7 +21,7 @@ namespace Pulse.Data
         protected RecordKey _Upper;
         protected int _Ticks = 0;
 
-        public VanillaReadStream(Table Data, RecordKey LKey, RecordKey UKey)
+        public RecordReaderBase(Table Data, RecordKey LKey, RecordKey UKey)
             : base()
         {
 
@@ -43,13 +43,13 @@ namespace Pulse.Data
 
         }
 
-        public VanillaReadStream(Table Data, IElementHeader Header)
-            : this(Data, VanillaReadStream.OriginKey(Data, Header), VanillaReadStream.TerminalKey(Data, Header))
+        public RecordReaderBase(Table Data, IElementHeader Header)
+            : this(Data, RecordReaderBase.OriginKey(Data, Header), RecordReaderBase.TerminalKey(Data, Header))
         {
         }
 
-        public VanillaReadStream(Table Data)
-            : this(Data, VanillaReadStream.OriginKey(Data, Data.Header), VanillaReadStream.TerminalKey(Data, Data.Header))
+        public RecordReaderBase(Table Data)
+            : this(Data, RecordReaderBase.OriginKey(Data, Data.Header), RecordReaderBase.TerminalKey(Data, Data.Header))
         {
         }
 

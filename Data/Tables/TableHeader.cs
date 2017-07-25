@@ -48,7 +48,7 @@ namespace Pulse.Data
         public const int COL_NULL = 35;
         public const int COL_REC_LEN = 36;
 
-        public const string V1_EXTENSION = ".ryev1";
+        public const string V1_EXTENSION = ".tdatv1";
 
         private string _Name;
         private string _Directory;
@@ -57,9 +57,13 @@ namespace Pulse.Data
 
         private TableHeader()
         {
+            this.ClusterKey = new Key();
+            this.RootPageID = -1;
+            this.IndexHeaders = new List<IndexHeader>(8);
         }
 
         public TableHeader(string Name, string Directory, string Extension, int PageCount, long RecordCount, int FirstPageID, int LastPageID, int PageSize, Schema Columns)
+            :this()
         {
 
             this.Name = Name;
@@ -71,9 +75,7 @@ namespace Pulse.Data
             this.TerminalPageID = LastPageID;
             this.Columns = Columns;
             this.PageSize = PageSize;
-            this.ClusterKey = new Key();
-            this.RootPageID = -1;
-            this.IndexHeaders = new List<IndexHeader>(8);
+            
         }
 
         public TableHeader(string Name, int PageCount, long RecordCount, int PageSize, Schema Columns)

@@ -10,7 +10,7 @@ namespace Pulse.Data
     /// <summary>
     /// Reads data from an index
     /// </summary>
-    public class IndexDataReadStream : VanillaReadStream
+    public class RecordReaderIndexData : RecordReaderBase
     {
 
         private IndexHeader _Header;
@@ -24,7 +24,7 @@ namespace Pulse.Data
         /// <param name="Parent">The table that stores the data pages; may be the same object as 'Storage'</param>
         /// <param name="LKey">The lower bound key</param>
         /// <param name="RKey">The upper bound key</param>
-        public IndexDataReadStream(IndexHeader Header, Table Storage, Table Parent, RecordKey LKey, RecordKey RKey)
+        public RecordReaderIndexData(IndexHeader Header, Table Storage, Table Parent, RecordKey LKey, RecordKey RKey)
             : base(Storage, LKey, RKey)
         {
             this._Header = Header;
@@ -37,8 +37,8 @@ namespace Pulse.Data
         /// <param name="Header">The index header</param>
         /// <param name="Storage">The table that stores the index pages</param>
         /// <param name="Parent">The table that stores the data pages; may be the same object as 'Storage'</param>
-        public IndexDataReadStream(IndexHeader Header, Table Storage, Table Parent)
-            : this(Header, Storage, Parent, VanillaReadStream.OriginKey(Storage, Header), VanillaReadStream.TerminalKey(Storage, Header))
+        public RecordReaderIndexData(IndexHeader Header, Table Storage, Table Parent)
+            : this(Header, Storage, Parent, RecordReaderBase.OriginKey(Storage, Header), RecordReaderBase.TerminalKey(Storage, Header))
         {
         }
 

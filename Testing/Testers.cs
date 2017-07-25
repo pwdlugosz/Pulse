@@ -18,13 +18,13 @@ namespace Pulse.Testing
 
             Host Enviro = new Host();
             Schema s = new Schema("Key int, Value double, xyz int");
-            //HeapDreamTable x = Enviro.Dream("Test", s);
-            HeapScribeTable x = Enviro.CreateTable("TEMP", "Test", s);
+            //HeapDreamTable OriginalPage = Enviro.Dream("Test", s);
+            HeapTable x = Enviro.CreateTable("TEMP", "Test", s);
             x.CreateIndex("IDX1", new Key(0));
             Index y = Index.CreateExternalIndex(x, new Key(0));
             RandomCell rng = new RandomCell(127);
 
-            WriteStream writer = x.OpenWriter();
+            RecordWriter writer = x.OpenWriter();
             for (int i = 0; i < 20000; i++)
             {
 
@@ -44,7 +44,7 @@ namespace Pulse.Testing
             Table.Dump(Host.TestDir + "Test_Data_Dump_NCIndex_WHERE.txt", idx.OpenReader(Record.Stitch(new Cell(0))));
             Console.WriteLine("Index Dump - WHERE: {0}", sw.Elapsed);
 
-            ReadStream stream = idx.OpenReader();
+            RecordReader stream = idx.OpenReader();
             Table.Dump(Host.TestDir + "Test_Data_Dump_NCIndex.txt", stream);
             Console.WriteLine("Table Dump - Index: {0}", sw.Elapsed);
 

@@ -10,7 +10,7 @@ namespace Pulse.Data
     /// <summary>
     /// The base class for all record readers
     /// </summary>
-    public abstract class ReadStream
+    public abstract class RecordReader : IDisposable, IColumns
     {
 
         /// <summary>
@@ -110,6 +110,13 @@ namespace Pulse.Data
         public RecordKey PositionKey
         {
             get { return new RecordKey(this.PageID(), this.RecordID()); }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual void Dispose()
+        {
         }
 
     }

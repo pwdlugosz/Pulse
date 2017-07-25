@@ -10,19 +10,19 @@ namespace Pulse.Data
     /// <summary>
     /// Reads the record keys from an index
     /// </summary>
-    public class IndexKeyReadStream : VanillaReadStream
+    public class RecordReaderIndexKey : RecordReaderBase
     {
 
         private IndexHeader _Header;
 
-        public IndexKeyReadStream(IndexHeader Header, Table Storage, RecordKey LKey, RecordKey RKey)
+        public RecordReaderIndexKey(IndexHeader Header, Table Storage, RecordKey LKey, RecordKey RKey)
             : base(Storage, LKey, RKey)
         {
             this._Header = Header;
         }
 
-        public IndexKeyReadStream(IndexHeader Header, Table Storage)
-            : this(Header, Storage, VanillaReadStream.OriginKey(Storage, Header), VanillaReadStream.TerminalKey(Storage, Header))
+        public RecordReaderIndexKey(IndexHeader Header, Table Storage)
+            : this(Header, Storage, RecordReaderBase.OriginKey(Storage, Header), RecordReaderBase.TerminalKey(Storage, Header))
         {
         }
 

@@ -10,13 +10,13 @@ namespace Pulse.Data
     /// <summary>
     /// A vanilla write stream
     /// </summary>
-    public class VanillaWriteStream : WriteStream
+    public class RecordWriterBase : RecordWriter
     {
 
         protected Table _Parent;
         protected long _Ticks = 0;
 
-        public VanillaWriteStream(Table Data)
+        public RecordWriterBase(Table Data)
             : base()
         {
             this._Parent = Data;

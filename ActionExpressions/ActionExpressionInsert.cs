@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Pulse.Data;
 using Pulse.ScalarExpressions;
 using Pulse.MatrixExpressions;
+using Pulse.TableExpressions;
 
 namespace Pulse.ActionExpressions
 {
@@ -13,10 +14,10 @@ namespace Pulse.ActionExpressions
     public sealed class ActionExpressionInsert : ActionExpression
     {
 
-        private WriteStream _Writer;
+        private RecordWriter _Writer;
         private ScalarExpressionCollection _Fields;
 
-        public ActionExpressionInsert(Host Host, ActionExpression Parent, WriteStream Writer, ScalarExpressionCollection Fields)
+        public ActionExpressionInsert(Host Host, ActionExpression Parent, RecordWriter Writer, ScalarExpressionCollection Fields)
             : base(Host, Parent)
         {
             this._Writer = Writer;

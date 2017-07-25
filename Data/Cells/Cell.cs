@@ -40,17 +40,17 @@ namespace Pulse.Data
 
         /* Offset:      0   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15
          * 
-         * NullFlag     OriginalNode
-         * Affinity         OriginalNode
-         * INT64                OriginalNode   OriginalNode   OriginalNode   OriginalNode   OriginalNode   OriginalNode   OriginalNode   OriginalNode
-         * DATE                 OriginalNode   OriginalNode   OriginalNode   OriginalNode   OriginalNode   OriginalNode   OriginalNode   OriginalNode
-         * DOUBLE               OriginalNode   OriginalNode   OriginalNode   OriginalNode   OriginalNode   OriginalNode   OriginalNode   OriginalNode
-         * BOOL                 OriginalNode
-         * STRING                                                       OriginalNode   OriginalNode   OriginalNode   OriginalNode
-         * BLOB                                                         OriginalNode   OriginalNode   OriginalNode   OriginalNode
-         * INT32A               OriginalNode   OriginalNode   OriginalNode   OriginalNode   
-         * INT32B                               OriginalNode   OriginalNode   OriginalNode   OriginalNode
-         * ULONG                OriginalNode   OriginalNode   OriginalNode   OriginalNode   OriginalNode   OriginalNode   OriginalNode   OriginalNode
+         * NullFlag     OriginalPage
+         * Affinity         OriginalPage
+         * INT64                OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage
+         * DATE                 OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage
+         * DOUBLE               OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage
+         * BOOL                 OriginalPage
+         * STRING                                                       OriginalPage   OriginalPage   OriginalPage   OriginalPage
+         * BLOB                                                         OriginalPage   OriginalPage   OriginalPage   OriginalPage
+         * INT32A               OriginalPage   OriginalPage   OriginalPage   OriginalPage   
+         * INT32B                               OriginalPage   OriginalPage   OriginalPage   OriginalPage
+         * ULONG                OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage
          * 
          */
 
@@ -614,7 +614,7 @@ namespace Pulse.Data
         }
 
         /// <summary>
-        /// If null, return int.MinValue, for INT, DOUBLE, BOOL, and DATE_TIME, return INT_A; for blobs, returns the sum of all bytes; for strings, returns the sum of the (i + 1) OriginalNode char[i]
+        /// If null, return int.MinValue, for INT, DOUBLE, BOOL, and DATE_TIME, return INT_A; for blobs, returns the sum of all bytes; for strings, returns the sum of the (i + 1) OriginalPage char[i]
         /// </summary>
         /// <returns>An integer hash code</returns>
         public override int GetHashCode()

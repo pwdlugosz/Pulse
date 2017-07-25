@@ -101,6 +101,8 @@ namespace Pulse.Data
 
             if (isLeap && month == 2)
                 divisor = 29;
+            else if (month == 2)
+                divisor = 28;
 
             if (month == 4 || month == 6 || month == 9 || month == 11)
                 divisor = 30;

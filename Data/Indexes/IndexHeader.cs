@@ -19,7 +19,7 @@ namespace Pulse.Data
             RootPageID: 4 bytes
             RecordCount: 4 bytes
             PageCount: 4 bytes
-            Key: 4 byte count, n x 8 bytes length (up to 8 columns)
+            Key: 4 byte count, n OriginalPage 8 bytes length (up to 8 columns)
          
             128 bytes 
          

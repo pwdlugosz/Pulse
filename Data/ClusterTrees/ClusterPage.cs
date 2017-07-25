@@ -42,7 +42,9 @@ namespace Pulse.Data
             : base(PageSize, PageID, LastPageID, NextPageID, FieldCount, DataDiskCost)
         {
 
-            this.IsLeaf = IsLeaf;
+            //if (PageID == 1 && IsLeaf == false) throw new Exception();
+
+            this._B0 = (byte)(IsLeaf ? 1 : 0); //this.IsLeaf = IsLeaf;
             this.State = State;
             this._OriginalKeyColumns = KeyColumns;
             this._StrongKeyColumns = IsLeaf ? KeyColumns : BranchObjectiveClone(KeyColumns, false);
@@ -99,6 +101,7 @@ namespace Pulse.Data
                 throw new Exception("Cannot add a higher record to this page");
 
             this._Elements.Insert(idx, Element);
+            this._Version++;
 
         }
 
@@ -204,6 +207,7 @@ namespace Pulse.Data
                 p._Elements.Add(this._Elements[i]);
             }
             this._Elements.RemoveRange(Pivot, this.Count - Pivot);
+            this._Version++;
 
             // Set the leafness and the parent page id //
             p.IsLeaf = this.IsLeaf;
@@ -256,6 +260,7 @@ namespace Pulse.Data
 
             // InsertKey as usual //
             this._Elements.Insert(idx, k);
+            this._Version++;
 
         }
 
@@ -335,6 +340,10 @@ namespace Pulse.Data
             return this._Elements.BinarySearch(Key, this._WeakMatcher) >= 0;
         }
 
+        /// <summary>
+        /// Deletes a record
+        /// </summary>
+        /// <param name="Key"></param>
         public void Delete(Record Element)
         {
 
@@ -346,9 +355,15 @@ namespace Pulse.Data
             }
 
             this._Elements.RemoveAt(idx);
+            this._Version++;
 
         }
 
+        /// <summary>
+        /// Checks if the key is less than the terminal record
+        /// </summary>
+        /// <param name="Key"></param>
+        /// <returns></returns>
         public bool LessThanTerminal(Record Key)
         {
 
@@ -357,6 +372,9 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// Gets the key portion of the terminal record
+        /// </summary>
         public Record TerminalKeyOnly
         {
             get { return Record.Split(this._Elements.Last(), this._WeakKeyColumns); }

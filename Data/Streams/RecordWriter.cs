@@ -10,7 +10,7 @@ namespace Pulse.Data
     /// <summary>
     /// The base class for all record writers
     /// </summary>
-    public abstract class WriteStream : IColumns
+    public abstract class RecordWriter : IColumns, IDisposable
     {
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Pulse.Data
         /// Reads all records form the readstream and writes to the current instance
         /// </summary>
         /// <param name="Reader"></param>
-        public virtual void Consume(ReadStream Reader)
+        public virtual void Consume(RecordReader Reader)
         {
 
             while (Reader.CanAdvance)
@@ -64,6 +64,15 @@ namespace Pulse.Data
                 this.Insert(Reader.ReadNext());
             }
 
+        }
+
+        // Interface //
+        /// <summary>
+        /// Disposes of the object
+        /// </summary>
+        public void Dispose()
+        {
+            this.Close();
         }
 
     }

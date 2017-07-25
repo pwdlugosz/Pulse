@@ -10,18 +10,6 @@ using Pulse.MatrixExpressions;
 namespace Pulse.ActionExpressions
 {
 
-    public enum Assignment
-    {
-        Equals,
-        PlusEquals,
-        MinusEquals,
-        ProductEquals,
-        DivideEquals,
-        CheckDivideEquals,
-        ModEquals
-        // Auto increment and decrement are handeled via the parser
-    }
-
     public sealed class ActionExpressionScalarAssign : ActionExpression
     {
 
@@ -41,6 +29,9 @@ namespace Pulse.ActionExpressions
 
         public override void Invoke(FieldResolver Variant)
         {
+
+            //if (this._Store[this._HeapRef].INT == 1)
+            //    throw new Exception();
 
             switch (this._Logic)
             {

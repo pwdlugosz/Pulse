@@ -46,7 +46,7 @@ namespace Pulse.Util
         /// <summary>
         /// The gamma function
         /// </summary>
-        /// <param name="x"></param>
+        /// <param name="OriginalPage"></param>
         /// <returns></returns>
         public double Gamma(double x)
         {

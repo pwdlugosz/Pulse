@@ -13,19 +13,7 @@ namespace Pulse.Data
     public class DerivedIndex : Index
     {
 
-        public DerivedIndex(ClusteredDreamTable Table)
-            : base()
-        {
-
-            this._Storage = Table;
-            this._Parent = Table;
-            this._Header = new IndexHeader(Table.Name, -1, -1, -1, 0, 0, Table.BaseTree.IndexColumns);
-            this._IndexColumns = Table.BaseTree.IndexColumns;
-            this._Tree = Table.BaseTree;
-
-        }
-
-        public DerivedIndex(ClusteredScribeTable Table)
+        public DerivedIndex(ClusteredTable Table)
             : base()
         {
 
@@ -44,17 +32,17 @@ namespace Pulse.Data
             this._Parent.Insert(Element);
         }
 
-        public override ReadStream OpenReader()
+        public override RecordReader OpenReader()
         {
             return this._Parent.OpenReader();
         }
 
-        public override ReadStream OpenReader(Record Key)
+        public override RecordReader OpenReader(Record Key)
         {
             return this._Parent.OpenReader(Key);
         }
 
-        public override ReadStream OpenReader(Record LKey, Record UKey)
+        public override RecordReader OpenReader(Record LKey, Record UKey)
         {
             return this._Parent.OpenReader(LKey, UKey);
         }
@@ -66,7 +54,9 @@ namespace Pulse.Data
 
         }
 
-
     }
+
+    
+
 
 }

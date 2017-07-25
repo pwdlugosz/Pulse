@@ -31,7 +31,7 @@ namespace Pulse.Query.Join
         /// <param name="Where">The filter to apply</param>
         /// <param name="Type">The type of join to perform</param>
         /// <param name="ActualCost">Output of the actual cost of running this join</param>
-        public override void Render(Host Host, WriteStream Output, Table Left, Table Right, RecordMatcher Predicate, ScalarExpressionCollection Fields, Filter Where, JoinType Type, JoinMetaData MetaData)
+        public override void Render(Host Host, RecordWriter Output, Table Left, Table Right, RecordMatcher Predicate, ScalarExpressionCollection Fields, Filter Where, JoinType Type, JoinMetaData MetaData)
         {
 
             // Start the timer //
@@ -44,7 +44,7 @@ namespace Pulse.Query.Join
             bool Intersection = (Type == JoinType.INNER || Type == JoinType.LEFT), Antisection = (Type == JoinType.LEFT || Type == JoinType.ANTI_LEFT);
 
             // Open a read stream //
-            ReadStream lstream = Left.OpenReader();
+            RecordReader lstream = Left.OpenReader();
 
             // Create a FieldResolver //
             FieldResolver variant = new FieldResolver(Left.Host);
@@ -56,7 +56,7 @@ namespace Pulse.Query.Join
             {
 
                 // Open the right stream //
-                ReadStream rstream = Right.OpenReader();
+                RecordReader rstream = Right.OpenReader();
                 Record lrec = lstream.ReadNext();
                 MetaData.LeftReadCount++;
 

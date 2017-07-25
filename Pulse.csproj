@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Antlr4.CodeGenerator.4.6.1\build\Antlr4.CodeGenerator.props" Condition="Exists('..\packages\Antlr4.CodeGenerator.4.6.1\build\Antlr4.CodeGenerator.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -32,6 +33,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Antlr4.Runtime, Version=4.6.0.0, Culture=neutral, PublicKeyToken=09abb75b9ed49849, processorArchitecture=MSIL">
+      <HintPath>..\packages\Antlr4.Runtime.4.6.1\lib\net45\Antlr4.Runtime.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -42,13 +47,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActionExpressions\ActionExpression.cs" />
+    <Compile Include="ActionExpressions\ActionExpressionDeclare.cs" />
+    <Compile Include="ActionExpressions\ActionExpressionDo.cs" />
     <Compile Include="ActionExpressions\ActionExpressionFor.cs" />
     <Compile Include="ActionExpressions\ActionExpressionIf.cs" />
     <Compile Include="ActionExpressions\ActionExpressionInsert.cs" />
+    <Compile Include="ActionExpressions\ActionExpressionInsertSelect.cs" />
     <Compile Include="ActionExpressions\ActionExpressionMatrixAssign.cs" />
+    <Compile Include="ActionExpressions\ActionExpressionMatrixUnitAssign.cs" />
+    <Compile Include="ActionExpressions\ActionExpressionMatrixUnitAssignAll.cs" />
+    <Compile Include="ActionExpressions\ActionExpressionPrint.cs" />
+    <Compile Include="ActionExpressions\ActionExpressionQuery.cs" />
     <Compile Include="ActionExpressions\ActionExpressionScalarAssign.cs" />
     <Compile Include="ActionExpressions\ActionExpressionTableAssign.cs" />
     <Compile Include="ActionExpressions\ActionExpressionWhile.cs" />
+    <Compile Include="ActionExpressions\AssignmentLogic.cs" />
     <Compile Include="Aggregates\Aggregate.cs" />
     <Compile Include="Aggregates\AggregateAvg.cs" />
     <Compile Include="Aggregates\AggregateCollection.cs" />
@@ -70,8 +83,15 @@
     <Compile Include="Aggregates\AggregateStdevS.cs" />
     <Compile Include="Data\ClusterTrees\ClusterState.cs" />
     <Compile Include="Data\Indexes\DerivedIndex.cs" />
-    <Compile Include="Data\Streams\DistinctWriteStream.cs" />
-    <Compile Include="Data\Streams\OrderedWriter.cs" />
+    <Compile Include="Data\Streams\RecordWriterDistinct.cs" />
+    <Compile Include="Data\Streams\RecordWriterClustered.cs" />
+    <Compile Include="Data\System\DebugUtil.cs" />
+    <Compile Include="Data\System\TableStore.cs" />
+    <Compile Include="Data\ITextWritable.cs" />
+    <Compile Include="Data\XTree\XTreePage.cs" />
+    <Compile Include="Library\BaseLibrary.cs" />
+    <Compile Include="Library\IActionExpressionLookup.cs" />
+    <Compile Include="Library\Library.cs" />
     <Compile Include="MatrixExpressions\MatrixExpression.cs" />
     <Compile Include="MatrixExpressions\MatrixExpressionAdd.cs" />
     <Compile Include="MatrixExpressions\MatrixExpressionAddScalar.cs" />
@@ -87,12 +107,13 @@
     <Compile Include="MatrixExpressions\MatrixExpressionMinus.cs" />
     <Compile Include="MatrixExpressions\MatrixExpressionMultiply.cs" />
     <Compile Include="MatrixExpressions\MatrixExpressionMultiplyScalar.cs" />
+    <Compile Include="MatrixExpressions\MatrixExpressionNullLiteral.cs" />
     <Compile Include="MatrixExpressions\MatrixExpressionSubtract.cs" />
     <Compile Include="MatrixExpressions\MatrixExpressionSubtractScalar.cs" />
     <Compile Include="MatrixExpressions\MatrixExpressionTranspose.cs" />
     <Compile Include="Query\Aggregate\AggregateEngine.cs" />
     <Compile Include="Data\Tables\DreamTables\DictionaryDreamTable.cs" />
-    <Compile Include="Data\Tables\ScribeTables\DictionaryScribeTable.cs" />
+    <Compile Include="Data\Tables\DictionaryTable.cs" />
     <Compile Include="Aggregates\AggregateSum.cs" />
     <Compile Include="Aggregates\AggregateVarP.cs" />
     <Compile Include="Aggregates\AggregateVarS.cs" />
@@ -109,11 +130,11 @@
     <Compile Include="Data\Pages\SortedPage.cs" />
     <Compile Include="Data\Records\RecordBuilder.cs" />
     <Compile Include="Data\Records\RecordComparer.cs" />
-    <Compile Include="Data\Streams\IndexDataReadStream.cs" />
-    <Compile Include="Data\Streams\IndexKeyReadStream.cs" />
-    <Compile Include="Data\Streams\VanillaReadStream.cs" />
-    <Compile Include="Data\Streams\VanillaWriteStream.cs" />
-    <Compile Include="Data\Streams\WriteStream.cs" />
+    <Compile Include="Data\Streams\RecordReaderIndexData.cs" />
+    <Compile Include="Data\Streams\RecordReaderIndexKey.cs" />
+    <Compile Include="Data\Streams\RecordReaderBase.cs" />
+    <Compile Include="Data\Streams\RecordWriterBase.cs" />
+    <Compile Include="Data\Streams\RecordWriter.cs" />
     <Compile Include="Data\System\Communicator.cs" />
     <Compile Include="Data\System\Host.cs" />
     <Compile Include="Data\Indexes\Index.cs" />
@@ -123,7 +144,7 @@
     <Compile Include="Data\Cells\RandomCell.cs" />
     <Compile Include="Data\Pages\Page.cs" />
     <Compile Include="Data\Records\Record.cs" />
-    <Compile Include="Data\Streams\ReadStream.cs" />
+    <Compile Include="Data\Streams\RecordReader.cs" />
     <Compile Include="Data\Structures\FloatingQueue.cs" />
     <Compile Include="Data\Structures\Heap.cs" />
     <Compile Include="Data\System\PageManager.cs" />
@@ -133,10 +154,10 @@
     <Compile Include="Data\Tables\DreamTables\HeapDreamTable.cs" />
     <Compile Include="Data\Tables\IColumns.cs" />
     <Compile Include="Data\Tables\IElementHeader.cs" />
-    <Compile Include="Data\Tables\ScribeTables\ClusteredScribeTable.cs" />
-    <Compile Include="Data\Tables\ScribeTables\HeapScribeTable.cs" />
-    <Compile Include="Data\Tables\ScribeTables\ScribeShellTable.cs" />
-    <Compile Include="Data\Tables\ScribeTables\ScribeTable.cs" />
+    <Compile Include="Data\Tables\ClusteredTable.cs" />
+    <Compile Include="Data\Tables\HeapTable.cs" />
+    <Compile Include="Data\Tables\ShellTable.cs" />
+    <Compile Include="Data\Tables\ScribeTable.cs" />
     <Compile Include="Data\Tables\Table.cs" />
     <Compile Include="Data\Tables\Schema.cs" />
     <Compile Include="Data\Tables\TableHeader.cs" />
@@ -150,6 +171,7 @@
     <Compile Include="Query\Union\BasicUnionEngine.cs" />
     <Compile Include="Query\Union\UnionEngine.cs" />
     <Compile Include="Query\Union\UnionMetaData.cs" />
+    <Compile Include="ScalarExpressions\IBindable.cs" />
     <Compile Include="ScalarExpressions\ScalarExpression.cs" />
     <Compile Include="ScalarExpressions\ScalarExpressionAffinity.cs" />
     <Compile Include="ScalarExpressions\ScalarExpressionCollection.cs" />
@@ -158,9 +180,10 @@
     <Compile Include="ScalarExpressions\ScalarExpressionFilter.cs" />
     <Compile Include="ScalarExpressions\ScalarExpressionFunction.cs" />
     <Compile Include="ScalarExpressions\ScalarExpressionMatrixRef.cs" />
+    <Compile Include="ScalarExpressions\ScalarExpressionPointer.cs" />
     <Compile Include="ScalarExpressions\ScalarExpressionScalarRef.cs" />
     <Compile Include="Data\FieldResolver.cs" />
-    <Compile Include="ScalarExpressions\IScalarExpressionLookup.cs" />
+    <Compile Include="Library\IScalarExpressionLookup.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Query\Join\JoinAlgorithm.cs" />
@@ -172,7 +195,25 @@
     <Compile Include="Query\Join\QuasiNestedLoopJoinEngine.cs" />
     <Compile Include="Query\Join\SortMergeJoinEngine.cs" />
     <Compile Include="Query\TableExpressionHelper.cs" />
+    <Compile Include="Scripting\ActionExpressionVisitor.cs" />
+    <Compile Include="Scripting\MatrixExpressionParser.cs" />
+    <Compile Include="Scripting\PulseLexer.g4.cs">
+      <DependentUpon>PulseLexer.g4</DependentUpon>
+    </Compile>
+    <Compile Include="Scripting\PulseParser.g4.cs">
+      <DependentUpon>PulseParser.g4</DependentUpon>
+    </Compile>
+    <Compile Include="Scripting\ScalarExpressionVisitor.cs" />
+    <Compile Include="Scripting\ScriptingHelper.cs" />
+    <Compile Include="Scripting\ScriptProcessor.cs" />
+    <Compile Include="Scripting\TableExpressionVisitor.cs" />
     <Compile Include="TableExpressions\TableExpression.cs" />
+    <Compile Include="TableExpressions\TableExpressionFold.cs" />
+    <Compile Include="TableExpressions\TableExpressionJoin.cs" />
+    <Compile Include="TableExpressions\TableExpressionSelect.cs" />
+    <Compile Include="TableExpressions\TableExpressionShell.cs" />
+    <Compile Include="TableExpressions\TableExpressionUnion.cs" />
+    <Compile Include="TableExpressions\TableExpressionValue.cs" />
     <Compile Include="Testing\SampleTables.cs" />
     <Compile Include="Testing\Testers.cs" />
     <Compile Include="Util\CostCalculator.cs" />
@@ -180,13 +221,32 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
+    <Antlr4 Include="Scripting\PulseLexer.g4">
+      <Generator>MSBuild:Compile</Generator>
+      <CustomToolNamespace>Pulse.Scripting</CustomToolNamespace>
+    </Antlr4>
+    <Antlr4 Include="Scripting\PulseParser.g4">
+      <Generator>MSBuild:Compile</Generator>
+      <CustomToolNamespace>Pulse.Scripting</CustomToolNamespace>
+    </Antlr4>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Data\Streams\RecordStreams\" />
     <Folder Include="Query\Distinct\" />
     <Folder Include="Query\OrderBy\" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripting\TestScript.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Antlr4.CodeGenerator.4.6.1\build\Antlr4.CodeGenerator.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Antlr4.CodeGenerator.4.6.1\build\Antlr4.CodeGenerator.props'))" />
+    <Error Condition="!Exists('..\packages\Antlr4.CodeGenerator.4.6.1\build\Antlr4.CodeGenerator.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Antlr4.CodeGenerator.4.6.1\build\Antlr4.CodeGenerator.targets'))" />
+  </Target>
+  <Import Project="..\packages\Antlr4.CodeGenerator.4.6.1\build\Antlr4.CodeGenerator.targets" Condition="Exists('..\packages\Antlr4.CodeGenerator.4.6.1\build\Antlr4.CodeGenerator.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

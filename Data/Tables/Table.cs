@@ -31,12 +31,34 @@ namespace Pulse.Data
         protected TableHeader _Header;
         protected IndexCollection _Indexes;
         protected string _TableType = "BASE_TABLE";
+        protected long _Version = 0; // Does not persist to disk; used to determine if the table has been altered since being buffered
+        protected bool _IsOpen = false; // Does not persist to disk; used to tell tag that the table is or is not cached
 
+        /// <summary>
+        /// Base constructor for tables
+        /// </summary>
+        /// <param name="Host"></param>
+        /// <param name="Header"></param>
         public Table(Host Host, TableHeader Header)
         {
             this._Host = Host;
             this._Header = Header;
             this._Indexes = new IndexCollection();
+            this._Host.Store.PushTable(this);
+        }
+
+        /// <summary>
+        /// This method should be used for creating a brand new table object
+        /// </summary>
+        /// <param name="Host"></param>
+        /// <param name="Alias"></param>
+        /// <param name="Dir"></param>
+        /// <param name="Columns"></param>
+        /// <param name="PageSize"></param>
+        /// <param name="ClusterKey"></param>
+        public Table(Host Host, string Name, string Dir, Schema Columns, int PageSize)
+            : this(Host, new TableHeader(Name, Dir, TableHeader.V1_EXTENSION, 0, 0, -1, -1, PageSize, Columns))
+        {
         }
 
         // Non virtual / abstract //
@@ -55,6 +77,15 @@ namespace Pulse.Data
         public Host Host
         {
             get { return this._Host; }
+        }
+
+        /// <summary>
+        /// True if the table is in memory, false otherwise
+        /// </summary>
+        internal bool IsOpen
+        {
+            get { return this._IsOpen; }
+            set { this._IsOpen = value; }
         }
 
         // Meta Data //
@@ -139,7 +170,7 @@ namespace Pulse.Data
         public virtual Index CreateTemporyIndex(Key IndexColumns)
         {
             Index idx = Index.CreateExternalIndex(this, IndexColumns);
-            this._Host.PageCache.TagTempObject(idx.Storage.Name);
+            this._Host.Store.PlaceInRecycleBin(idx.Storage.Key);
             return idx;
         }
 
@@ -213,9 +244,9 @@ namespace Pulse.Data
         /// Opens a read stream
         /// </summary>
         /// <returns></returns>
-        public virtual ReadStream OpenReader()
+        public virtual RecordReader OpenReader()
         {
-            return new VanillaReadStream(this);
+            return new RecordReaderBase(this);
         }
 
         /// <summary>
@@ -223,9 +254,9 @@ namespace Pulse.Data
         /// </summary>
         /// <param name="Key"></param>
         /// <returns></returns>
-        public virtual ReadStream OpenReader(Record Key)
+        public virtual RecordReader OpenReader(Record Key)
         {
-            return new VanillaReadStream(this);
+            return new RecordReaderBase(this);
         }
 
         /// <summary>
@@ -234,18 +265,18 @@ namespace Pulse.Data
         /// <param name="LKey"></param>
         /// <param name="UKey"></param>
         /// <returns></returns>
-        public virtual ReadStream OpenReader(Record LKey, Record UKey)
+        public virtual RecordReader OpenReader(Record LKey, Record UKey)
         {
-            return new VanillaReadStream(this);
+            return new RecordReaderBase(this);
         }
 
         /// <summary>
         /// Opens a write stream
         /// </summary>
         /// <returns></returns>
-        public virtual WriteStream OpenWriter()
+        public virtual RecordWriter OpenWriter()
         {
-            return new VanillaWriteStream(this);
+            return new RecordWriterBase(this);
         }
 
         /// <summary>
@@ -278,20 +309,29 @@ namespace Pulse.Data
         /// </summary>
         /// <param name="PageID"></param>
         /// <returns></returns>
-        public abstract Page GetPage(int PageID);
+        public virtual Page GetPage(int PageID)
+        {
+            return this._Host.Store.RequestPage(new PageUID(this.Key, PageID));
+        }
 
         /// <summary>
         /// Sets a age into the table; if the page exists, nothing happens; otherwise it gets added
         /// </summary>
         /// <param name="Key"></param>
-        public abstract void SetPage(Page Element);
+        public virtual void SetPage(Page Element)
+        {
+            this._Host.Store.PushPage(this.Key, Element);
+        }
 
         /// <summary>
         /// Checks if a page exists in the table
         /// </summary>
         /// <param name="PageID"></param>
         /// <returns></returns>
-        public abstract bool PageExists(int PageID);
+        public virtual bool PageExists(int PageID)
+        {
+            return this._Host.Store.PageIsInMemory(new PageUID(this.Key, PageID));
+        }
 
         /// <summary>
         /// Gets the first data page ID
@@ -338,7 +378,24 @@ namespace Pulse.Data
         /// Creates a new page
         /// </summary>
         /// <returns></returns>
-        public abstract Page GenerateNewPage();
+        public virtual Page GenerateNewPage()
+        {
+
+            // Create the new page //
+            Page p = new Page(this.PageSize, this.GenerateNewPageID, this.TerminalPageID, -1, this.Columns);
+
+            // Get the last page and switch it's next page id //
+            Page q = this.TerminalPage;
+            q.NextPageID = p.PageID;
+            p.Version++;
+            this.Header.TerminalPageID = p.PageID;
+
+            // Add this page //
+            this.SetPage(p);
+
+            return p;
+
+        }
 
         /// <summary>
         /// Given a page ID, returns a page N steps above or below it
@@ -458,44 +515,11 @@ namespace Pulse.Data
 
         }
 
-        // Protected helpers //
-        protected int[] Map(int PartitionCount, int ElementCount)
-        {
-
-            int[] map = new int[PartitionCount];
-            for (int i = 0; i < ElementCount; i++)
-            {
-                int idx = i % PartitionCount;
-                map[idx]++;
-            }
-            return map;
-
-        }
-
-        protected int StartIndex(int PartitionIndex, int[] Map)
-        {
-
-            int idx = 0;
-            for (int i = 0; i < PartitionIndex; i++)
-            {
-                idx += Map[i];
-            }
-            return idx;
-
-        }
-
-        protected void IncrementTerminus()
-        {
-
-            Page p = this.GenerateNewPage();
-            int NewPageID = this.GenerateNewPageID;
-            p.NextPageID = -1;
-            p.LastPageID = this.TerminalPageID;
-
-
-        }
-
         // Internal debugging //
+        /// <summary>
+        /// Dumps the entire table to a flat file
+        /// </summary>
+        /// <param name="Path"></param>
         internal void Dump(string Path)
         {
 
@@ -503,7 +527,7 @@ namespace Pulse.Data
             {
 
                 sw.WriteLine(this.Columns.ToNameString('\t'));
-                ReadStream rs = this.OpenReader();
+                RecordReader rs = this.OpenReader();
                 while (rs.CanAdvance)
                 {
 
@@ -517,13 +541,22 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// Represents meta about a table
+        /// </summary>
+        /// <returns></returns>
         internal string MetaData()
         {
             return this._TableType + "\n" + this._Header.DebugPrint() + this.PageMap();
         }
 
         // Statics //
-        public static void Dump(string Path, ReadStream Stream)
+        /// <summary>
+        /// Dumps any read stream to a path
+        /// </summary>
+        /// <param name="Path"></param>
+        /// <param name="Stream"></param>
+        public static void Dump(string Path, RecordReader Stream)
         {
 
             using (StreamWriter sw = new StreamWriter(Path))

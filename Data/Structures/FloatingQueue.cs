@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace Pulse.Data
     /// Represents a Queue where elements can move up or down
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class FloatingQueue<T>
+    public class FloatingQueue<T> : IEnumerable<T>, IEnumerable
     {
 
         public enum State
@@ -138,6 +139,16 @@ namespace Pulse.Data
             this._Trail.Remove(x);
             this._Index.Remove(Value);
 
+        }
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            return this._Trail.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this._Trail.GetEnumerator();
         }
 
     }

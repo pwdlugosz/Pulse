@@ -15,34 +15,12 @@ namespace Pulse.Query.Join
     public static class JoinOptimizer
     {
 
-        public static double NestedLoopCost(Table Left, Table Right, RecordMatcher Predicate, JoinAlgorithm Type)
-        {
-            return CostCalculator.NestedLoopJoinCost(Left.RecordCount, Right.RecordCount);
-        }
-
-        public static double QuasiNestedLoopCost(Table Left, Table Right, RecordMatcher Predicate, JoinAlgorithm Type)
+        public static JoinAlgorithm LowestCost(long LCount, long RCount)
         {
 
-            bool IsIndexed = Right.IsIndexedBy(Predicate.RightKey);
-            return CostCalculator.QuasiNestedLoopJoinCost(Left.RecordCount, Right.RecordCount, !IsIndexed);
-
-        }
-
-        public static double SortMergeCost(Table Left, Table Right, RecordMatcher Predicate, JoinAlgorithm Type)
-        {
-
-            bool LeftIsIndexed = Left.IsIndexedBy(Predicate.LeftKey);
-            bool RightIsIndexed = Right.IsIndexedBy(Predicate.RightKey);
-            return CostCalculator.SortMergeNestedLoopJoinCost(Left.RecordCount, Right.RecordCount, !LeftIsIndexed, !RightIsIndexed);
-
-        }
-
-        public static JoinAlgorithm LowestCost(Table Left, Table Right, RecordMatcher Predicate, JoinAlgorithm Type)
-        {
-
-            double nl = JoinOptimizer.NestedLoopCost(Left, Right, Predicate, Type);
-            double qnl = JoinOptimizer.QuasiNestedLoopCost(Left, Right, Predicate, Type);
-            double sm = JoinOptimizer.SortMergeCost(Left, Right, Predicate, Type);
+            double nl = Util.CostCalculator.NestedLoopJoinCost(LCount, RCount);
+            double qnl = Util.CostCalculator.QuasiNestedLoopJoinCost(LCount, RCount, false);
+            double sm = Util.CostCalculator.SortMergeNestedLoopJoinCost(LCount, RCount, false, false);
 
             if (sm < nl && sm < qnl)
                 return JoinAlgorithm.SortMerge;
@@ -53,7 +31,6 @@ namespace Pulse.Query.Join
 
 
         }
-
 
     }
 

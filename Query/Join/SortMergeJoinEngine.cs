@@ -31,7 +31,7 @@ namespace Pulse.Query.Join
         /// <param name="Where">The filter to apply</param>
         /// <param name="Type">The type of join to perform</param>
         /// <param name="MetaData">Output of the actual cost of running this join</param>
-        public override void Render(Host Host, WriteStream Output, Table Left, Table Right, RecordMatcher Predicate, ScalarExpressionCollection Fields, Filter Where, JoinType Type, JoinMetaData MetaData)
+        public override void Render(Host Host, RecordWriter Output, Table Left, Table Right, RecordMatcher Predicate, ScalarExpressionCollection Fields, Filter Where, JoinType Type, JoinMetaData MetaData)
         {
 
             // Start the timer //
@@ -40,10 +40,10 @@ namespace Pulse.Query.Join
             // Get the left and right join index //
             Index lidx = Left.GetIndex(Predicate.LeftKey);
             if (lidx == null)
-                throw new Exception("The right table must have an index over the right join columns");
+                lidx = Index.BuildTemporaryIndex(Left, Predicate.LeftKey);
             Index ridx = Right.GetIndex(Predicate.RightKey);
             if (ridx == null)
-                throw new Exception("The right table must have an index over the right join columns");
+                ridx = Index.BuildTemporaryIndex(Right, Predicate.RightKey);
 
             // Get the expected join cost //
             MetaData.ExpectedJoinCost = CostCalculator.SortMergeNestedLoopJoinCost(Left.RecordCount, Right.RecordCount, false, false);
@@ -52,8 +52,8 @@ namespace Pulse.Query.Join
             bool Intersection = (Type == JoinType.INNER || Type == JoinType.LEFT), Antisection = (Type == JoinType.LEFT || Type == JoinType.ANTI_LEFT);
 
             // Open a read stream //
-            ReadStream lstream = Left.OpenReader();
-            ReadStream rstream = Right.OpenReader();
+            RecordReader lstream = lidx.OpenReader();
+            RecordReader rstream = ridx.OpenReader();
             MetaData.LeftReadCount++;
             MetaData.RightReadCount++;
 
@@ -68,12 +68,12 @@ namespace Pulse.Query.Join
 
                 int Compare = Predicate.Compare(lstream.Read(), rstream.Read());
 
-                // Left is less than right, step left
+                // Left is less than right, control left
                 if (Compare < 0)
                 {
                     lstream.Advance();
                 }
-                // Right is less than left, step right, but also output an anti join record
+                // Right is less than left, control right, but also output an anti join record
                 else if (Compare > 0)
                 {
 

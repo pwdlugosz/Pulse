@@ -8,6 +8,7 @@ using Pulse.Aggregates;
 using Pulse.Query;
 using Pulse.Query.Join;
 using Pulse.ScalarExpressions;
+using Pulse.Data.XTree;
 
 namespace Pulse
 {
@@ -21,13 +22,35 @@ namespace Pulse
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
 
             Host Enviro = new Host();
-            ClusteredScribeTable x1 = Pulse.Testing.SampleTables.SampleClusteredScribeTable(Enviro, "Test1", 10000, 0);
-            Query.Aggregate.DictionaryAggregateEngine engine = new Query.Aggregate.DictionaryAggregateEngine();
-            ScalarExpression a = ScalarExpression.Field(x1, "GROUP10", 0);
 
+            //XTable x = new XTable(Enviro, "XTest", @"C:\Users\pwdlu_000\Documents\Pulse_Projects\Temp", new Schema("KEY1 INT, KEY2 STRING.10, KEY3 DOUBLE, VALUE1 NUM, VALUE2 NUM"), new Key(0, 1, 2));
+            //RandomCell rand = new RandomCell(127);
 
-            //Table v = engine.InnerJoin("TEMP", "Q1", x1, x2, new RecordMatcher(new Key(0)), exp);
-            //v.Dump(@"C:\Users\pwdlu_000\Documents\Pulse_Projects\Test\NL_InnerJoin_Test1.txt");
+            //using (RecordWriter w = x.OpenWriter())
+            //{
+            
+            //    for (int i = 0; i < 1000; i++)
+            //    {
+
+            //        RecordBuilder rb = new RecordBuilder();
+            //        rb.Add(rand.NextLong());
+            //        rb.Add(rand.NextStringUpperText(10));
+            //        rb.Add(rand.NextDouble());
+            //        rb.Add(rand.NextDouble());
+            //        rb.Add(rand.NextDoubleGauss());
+            //        Record r = rb.ToRecord();
+            //        w.Insert(r);
+
+            //    }
+            
+            //}
+
+            //x.BaseTree.DumpTree(@"C:\Users\pwdlu_000\Documents\Pulse_Projects\Temp\XDataTree.txt");
+            //x.BaseTree.DumpData(@"C:\Users\pwdlu_000\Documents\Pulse_Projects\Temp\XDataDump.txt");
+
+            Scripting.ScriptProcessor sp = new Scripting.ScriptProcessor(Enviro);
+            string script = System.IO.File.ReadAllText(@"C:\Users\pwdlu_000\Documents\Pulse\Pulse\Scripting\TestScript.txt");
+            sp.RenderAction(script);
 
             Enviro.ShutDown();
 
@@ -44,17 +67,8 @@ namespace Pulse
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
 
             Host Enviro = new Host();
-            HeapDreamTable x1 = Pulse.Testing.SampleTables.SampleHeapDreamTable(Enviro, "T1", 10, 0);
-            ClusteredDreamTable x2 = Pulse.Testing.SampleTables.SampleClusteredDreamTable(Enviro, "T2", 10, 5);
-            HeapDreamTable x3 = Pulse.Testing.SampleTables.SampleHeapDreamTable(Enviro, "T3", 10, 0);
-            ScalarExpressionCollection exp = new ScalarExpressionCollection();
-            exp.Add("LEFT", ScalarExpression.Field(x1, "KEY", 0));
-            exp.Add("RIGHT", ScalarExpression.Field(x1, "KEY", 1));
 
-            NestedLoopJoinEngine engine = new NestedLoopJoinEngine();
-
-            Table v = engine.InnerJoin(Enviro, "TEMP", "Q1", x1, x2, new RecordMatcher(new Key(0)), exp);
-            v.Dump(@"C:\Users\pwdlu_000\Documents\Pulse_Projects\Test\NL_InnerJoin_Test1.txt");
+            Table x = Testing.SampleTables.SampleHeapTable(Enviro, "Test1", 100000, 0);
 
             Enviro.ShutDown();
 
@@ -71,7 +85,7 @@ namespace Pulse
 
             Host Enviro = new Host();
             Schema s = new Schema("Key int, Value double, xyz int");
-            DictionaryScribeTable t = Enviro.CreateTable("TEMP", "TEST1", new Schema("KEY1 INT, KEY2 STRING.3"), new Schema("VALUE1 DOUBLE, VALUE2 INT"));
+            DictionaryTable t = Enviro.CreateTable("TEMP", "TEST1", new Schema("KEY1 INT, KEY2 STRING.3"), new Schema("VALUE1 DOUBLE, VALUE2 INT"));
 
             for (int i = 0; i < 10000; i++)
             {

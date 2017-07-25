@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
+using Pulse.Libraries;
 
 namespace Pulse.ScalarExpressions
 {
@@ -183,6 +184,10 @@ namespace Pulse.ScalarExpressions
         public const string NAME_ABS = "ABS";
         public const string NAME_SIGN = "SIGN";
         public const string NAME_ROUND = "ROUND";
+
+        // Meta //
+        public const string NAME_FORMULA = "FORMULA";
+        public const string NAME_GET_TYPE = "GET_TYPE";
 
         // Uninary Opperations //
         public class ExpressionNot : ScalarExpressionFunction
@@ -716,14 +721,22 @@ namespace Pulse.ScalarExpressions
         public class ExpressionCast : ScalarExpressionFunction
         {
 
-            public ExpressionCast()
-                : base(null, NAME_CAST, 2)
+            private CellAffinity _t;
+
+            public ExpressionCast(CellAffinity Type)
+                : base(null, NAME_CAST, 1)
             {
+                this._t = Type;
             }
 
             public override ScalarExpression CloneOfMe()
             {
-                return new ExpressionCast();
+                return new ExpressionCast(this._t);
+            }
+
+            public override CellAffinity ExpressionReturnAffinity()
+            {
+                return this._t;
             }
 
             public override Cell Evaluate(FieldResolver Variants)
@@ -732,8 +745,7 @@ namespace Pulse.ScalarExpressions
                 if (this._ChildNodes.Count != this._MaxParamterCount)
                     throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
 
-                CellAffinity t = (CellAffinity)this._ChildNodes[1].Evaluate(Variants).INT;
-                return Cell.Cast(this._ChildNodes[0].Evaluate(Variants), t);
+                return Cell.Cast(this._ChildNodes[0].Evaluate(Variants), this._t);
 
             }
 
@@ -795,7 +807,7 @@ namespace Pulse.ScalarExpressions
                 {
                     z = Text.StartsWith(Patern, StringComparison.OrdinalIgnoreCase);
                 }
-                else // !OriginalNode && !NewNode // 'Hello World' //
+                else // !OriginalPage && !NewNode // 'Hello World' //
                 {
                     z = string.Equals(Text, Patern, StringComparison.OrdinalIgnoreCase);
                 }
@@ -2121,6 +2133,48 @@ namespace Pulse.ScalarExpressions
 
         }
 
+        // Meta Functions //
+        public class ExpressionMeta_Formula : ScalarExpressionFunction
+        {
+
+            public ExpressionMeta_Formula()
+                : base(null, NAME_FORMULA, 1)
+            {
+            }
+
+            public override ScalarExpression CloneOfMe()
+            {
+                return new ExpressionMeta_Formula();
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return new Cell(this._ChildNodes[0].Unparse(Variants));
+            }
+
+        }
+
+        public class ExpressionMeta_GetType : ScalarExpressionFunction
+        {
+
+            public ExpressionMeta_GetType()
+                : base(null, NAME_GET_TYPE, 1)
+            {
+            }
+
+            public override ScalarExpression CloneOfMe()
+            {
+                return new ExpressionMeta_GetType();
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return new Cell((long)this._ChildNodes[0].ExpressionReturnAffinity());
+            }
+
+
+        }
+
         //---------------------------------------------------------------------------------------------
         //---------------------------------------------------------------------------------------------
         //---------------------------------------------------------------------------------------------
@@ -2165,7 +2219,7 @@ namespace Pulse.ScalarExpressions
                     case NAME_XOR: return new ExpressionXor();
                     case NAME_IF: return new ExpressionIf();
                     case NAME_IFNULL: return new ExpressionIfNull();
-                    case NAME_CAST: return new ExpressionCast();
+                    //case NAME_CAST: return new ExpressionCast(); // Note: cast has it's own syntax
                     case NAME_LIKE: return new ExpressionLike();
                     case NAME_MATCH: return new ExpressionMatch();
                     case NAME_GUID: return new ExpressionGUID();
@@ -2211,6 +2265,8 @@ namespace Pulse.ScalarExpressions
                     case NAME_ABS: return new ExpressionAbsoluteValue();
                     case NAME_SIGN: return new ExpressionSign();
                     case NAME_ROUND: return new ExpressionRound();
+                    case NAME_FORMULA: return new ExpressionMeta_Formula();
+                    case NAME_GET_TYPE: return new ExpressionMeta_GetType();
 
                 }
 
@@ -2220,7 +2276,7 @@ namespace Pulse.ScalarExpressions
 
             public bool Exists(string Name)
             {
-                return this.Lookup(Name) == null;
+                return this.Lookup(Name) != null;
             }
 
         }

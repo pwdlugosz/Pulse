@@ -16,7 +16,7 @@ using Pulse.Query.Union;
 namespace Pulse.TableExpressions
 {
 
-    public abstract class TableExpression
+    public abstract class TableExpression : IBindable
     {
 
         protected List<TableExpression> _Children;
@@ -37,26 +37,41 @@ namespace Pulse.TableExpressions
         }
 
         // Tree support //
+        /// <summary>
+        /// All child expressions
+        /// </summary>
         public List<TableExpression> Children
         {
             get { return this._Children; }
         }
 
+        /// <summary>
+        /// All child tables
+        /// </summary>
         public IEnumerable<Table> ChildTables
         {
             get { return new TableCollection(this._Children); }
         }
 
+        /// <summary>
+        /// Gets the parent table; null if this is the root node
+        /// </summary>
         public TableExpression Parent
         {
             get { return this._Parent; }
         }
 
+        /// <summary>
+        /// True if this is the first nod ein the tree
+        /// </summary>
         public bool IsRoot
         {
             get { return this._Parent == null; }
         }
 
+        /// <summary>
+        /// True if this is the last node in the tree
+        /// </summary>
         public bool IsTerminal
         {
             get { return this._Children.Count == 0; }
@@ -104,21 +119,21 @@ namespace Pulse.TableExpressions
         /// </summary>
         /// <param name="Data"></param>
         /// <returns></returns>
-        public WriteStream CreateWriter(Table Data)
+        public RecordWriter CreateWriter(Table Data)
         {
 
             // Don't do an order by and a cluster becuase it'll performa pointless sort
             if (this.IsOrdered && !this.IsClustered)
             {
-                return new OrderedClusteredWriter(Data, this.OrderBy);
+                return new RecordWriterClustered(Data, this.OrderBy);
             }
             else if (this.IsDistinct)
             {
-                return new DistinctWriteStream(Data);
+                return new RecordWriterDistinct(Data);
             }
             else
             {
-                return new VanillaWriteStream(Data);
+                return new RecordWriterBase(Data);
             }
 
         }
@@ -145,6 +160,36 @@ namespace Pulse.TableExpressions
         public Table CreateTempTable()
         {
             return this.CreateTable(Host.TEMP, Host.RandomName);
+        }
+
+        /// <summary>
+        /// Creates and loads all data from the expression into the table
+        /// </summary>
+        /// <param name="DB"></param>
+        /// <param name="Name"></param>
+        /// <returns></returns>
+        public Table RenderTable(string DB, string Name)
+        {
+            Table t = this.CreateTable(DB, Name);
+            using (RecordWriter w = this.CreateWriter(t))
+            {
+                this.Evaluate(w);
+            }
+            return t;
+        }
+
+        /// <summary>
+        /// Creates a temp table and loads it with the table expression
+        /// </summary>
+        /// <returns></returns>
+        public Table RenderTempTable()
+        {
+            Table t = this.CreateTempTable();
+            using (RecordWriter w = this.CreateWriter(t))
+            {
+                this.Evaluate(w);
+            }
+            return t;
         }
 
         // Methods //
@@ -183,7 +228,7 @@ namespace Pulse.TableExpressions
         /// Writes the value of expression to a table
         /// </summary>
         /// <param name="Writer"></param>
-        public abstract void Evaluate(WriteStream Writer);
+        public abstract void Evaluate(RecordWriter Writer);
 
         /// <summary>
         /// Returns meta data around the expression
@@ -201,7 +246,7 @@ namespace Pulse.TableExpressions
         {
 
             Table t = this.CreateTable(DB, Name);
-            WriteStream ws = this.CreateWriter(t);
+            RecordWriter ws = this.CreateWriter(t);
             this.Evaluate(ws);
             ws.Close();
 
@@ -227,7 +272,7 @@ namespace Pulse.TableExpressions
             // Recycle this node //
             foreach (Table t in this._RecycleBin)
             {
-                this._Host.PageCache.DropTable(t.Key);
+                this._Host.Store.DropTable(t.Key);
             }
 
 
@@ -247,6 +292,24 @@ namespace Pulse.TableExpressions
                 te.Recycle();
             }
 
+        }
+
+        /// <summary>
+        /// Binds a pointer expression to a value expression
+        /// </summary>
+        /// <param name="PointerRef"></param>
+        /// <param name="Value"></param>
+        public virtual void Bind(string PointerRef, ScalarExpression Value)
+        {
+            this._Children.ForEach((x) => { x.Bind(PointerRef, Value); });
+        }
+
+        /// <summary>
+        /// Gets an estimate of the records of underlying table
+        /// </summary>
+        public virtual long EstimatedCount
+        {
+            get { return 1; }
         }
 
         // Internal Classes //
@@ -305,176 +368,6 @@ namespace Pulse.TableExpressions
             {
             }
 
-        }
-
-    }
-
-    public sealed class TableExpressionValue : TableExpression
-    {
-
-        private Table _t;
-
-        public TableExpressionValue(Host Host, TableExpression Parent, Table Value)
-            :base(Host, Parent)
-        {
-            this._t = Value;
-        }
-
-        public override Schema Columns
-        {
-            get { return this._t.Columns; }
-        }
-
-        public override Table Evaluate()
-        {
-            return this._t;
-        }
-
-        public override void Evaluate(WriteStream Writer)
-        {
-
-            Writer.Consume(this._t.OpenReader());
-
-        }
-
-        public override void Recycle()
-        {
-            // do nothing
-        }
-
-    }
-
-    public sealed class TableExpressionSelect : TableExpression
-    {
-
-        private ScalarExpressionCollection _Fields;
-        private Filter _Where;
-        private Query.Select.SelectEngine _Engine;
-
-        public TableExpressionSelect(Host Host, TableExpression Parent, ScalarExpressionCollection Fields, Filter Where, Query.Select.SelectEngine Engine)
-            : base(Host, Parent)
-        {
-            this._Fields = Fields;
-            this._Where = Where;
-            this._Engine = Engine;
-        }
-
-        public override Schema Columns
-        {
-            get { return this._Fields.Columns; }
-        }
-
-        public ScalarExpressionCollection Fields
-        {
-            get { return this._Fields; }
-        }
-
-        public Filter Where
-        {
-            get { return this._Where; }
-        }
-
-        public override void Evaluate(WriteStream Writer)
-        {
-            this._Engine.Render(this._Host, Writer, this.Children[0].Evaluate(), Fields, Where);
-        }
-
-    }
-
-    public sealed class TableExpressionFold : TableExpression
-    {
-
-        private ScalarExpressionCollection _Keys;
-        private AggregateCollection _Values;
-        private Filter _Where;
-        private AggregateEngine _Engine;
-
-        public TableExpressionFold(Host Host, TableExpression Parent, ScalarExpressionCollection Keys, AggregateCollection Values, Filter Where, AggregateEngine Engine)
-            : base(Host, Parent)
-        {
-            this._Keys = Keys;
-            this._Values = Values;
-            this._Where = Where;
-            this._Engine = Engine;
-        }
-
-        public override Schema Columns
-        {
-            get { return this._Engine.GetOutputSchema(this._Keys, this._Values); }
-        }
-
-        public override void Evaluate(WriteStream Writer)
-        {
-
-            this._Engine.Render(this._Host, Writer, this._Children[0].Evaluate(), this._Keys, this._Values, this._Where);
-
-        }
-
-    }
-
-    public sealed class TableExpressionJoin : TableExpression
-    {
-
-        private ScalarExpressionCollection _Fields;
-        private RecordMatcher _Predicate;
-        private Filter _Where;
-        private JoinEngine _Engine;
-        private JoinType _Type;
-
-        public TableExpressionJoin(Host Host, TableExpression Parent, ScalarExpressionCollection Fields, RecordMatcher Predicate, Filter Where, JoinEngine Engine, JoinType Type)
-            : base(Host, Parent)
-        {
-        }
-
-        public override Schema Columns
-        {
-            get { return this._Fields.Columns; }
-        }
-
-        public override void Evaluate(WriteStream Writer)
-        {
-            this._Engine.Render(this._Host, Writer, this._Children[0].Evaluate(), this._Children[1].Evaluate(), this._Predicate, this._Fields, this._Where, JoinType.INNER);
-        }
-
-    }
-
-    public sealed class TableExpressionUnion : TableExpression
-    {
-
-        private UnionEngine _Engine;
-
-        public TableExpressionUnion(Host Host, TableExpression Parent, UnionEngine Engine)
-            : base(Host, Parent)
-        {
-            this._Engine = Engine;
-        }
-
-        public override Schema Columns
-        {
-            get { return this._Children.First().Columns; }
-        }
-
-        public override void AddChild(TableExpression Child)
-        {
-
-            if (this._Children.Count == 0)
-            {
-                base.AddChild(Child);
-            }
-            else if (Child.Columns.Count == this.Columns.Count)
-            {
-                base.AddChild(Child);
-            }
-            else
-            {
-                throw new Exception("Schema of the child node is not compatible with current node");
-            }
-
-        }
-
-        public override void Evaluate(WriteStream Writer)
-        {
-            this._Engine.Render(this._Host, Writer, this.ChildTables);
         }
 
     }

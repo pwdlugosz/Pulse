@@ -31,7 +31,7 @@ namespace Pulse.MatrixExpressions
         public override MatrixExpression CloneOfMe()
         {
             MatrixExpression node = new MatrixExpressionInverse(this.ParentNode);
-            foreach (MatrixExpression m in this._Cache)
+            foreach (MatrixExpression m in this._Children)
                 node.AddChildNode(m.CloneOfMe());
             return node;
         }

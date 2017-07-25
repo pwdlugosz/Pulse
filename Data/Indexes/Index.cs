@@ -78,78 +78,121 @@ namespace Pulse.Data
             this._Parent = Parent;
             this._IndexColumns = IndexColumns;
             Schema s = Cluster.NonClusteredIndexColumns(this._Parent.Columns, this._IndexColumns);
-            this._Tree = new Cluster(this._Storage, s, this._IndexColumns, null, this._Header, ClusterState.Universal);
+            this._Tree = new Cluster(this._Storage, s, Key.Build(this._IndexColumns.Count), null, this._Header, ClusterState.Universal);
 
         }
 
         // Properties //
+        /// <summary>
+        /// The table the data is stored in (may be the same as Parent)
+        /// </summary>
         public Table Storage
         {
             get { return this._Storage; }
         }
 
+        /// <summary>
+        /// The table the data is indexing (may be the same as Storage)
+        /// </summary>
         public Table Parent
         {
             get { return this._Parent; }
         }
 
+        /// <summary>
+        /// The columns that are indexed
+        /// </summary>
         public Key IndexColumns
         {
             get { return this._IndexColumns; }
         }
 
+        /// <summary>
+        /// The index header
+        /// </summary>
         public IndexHeader Header
         {
             get { return this._Header; }
         }
 
+        /// <summary>
+        /// The inner cluster
+        /// </summary>
         public Cluster Tree
         {
             get { return this._Tree; }
         }
 
         // Methods //
+        /// <summary>
+        /// Inserts a record into the index
+        /// </summary>
+        /// <param name="Key">The record</param>
+        /// <param name="Key">The position it's located in the table</param>
         public virtual void Insert(Record Element, RecordKey Key)
         {
             Record x = Index.GetIndexElement(Element, Key, this._IndexColumns);
             this._Tree.Insert(x);
         }
 
-        public virtual ReadStream OpenReader()
+        /// <summary>
+        /// Opens a reader
+        /// </summary>
+        /// <returns></returns>
+        public virtual RecordReader OpenReader()
         {
-            return new IndexDataReadStream(this._Header, this._Storage, this._Parent);
+            return new RecordReaderIndexData(this._Header, this._Storage, this._Parent);
         }
 
-        public virtual ReadStream OpenReader(Record Key)
+        /// <summary>
+        /// Opens a reader at the location of the key and containing only the key
+        /// </summary>
+        /// <param name="Key"></param>
+        /// <returns></returns>
+        public virtual RecordReader OpenReader(Record Key)
         {
             RecordKey l = this._Tree.SeekFirst(Key, false);
             RecordKey u = this._Tree.SeekLast(Key, false);
-            return new IndexDataReadStream(this._Header, this._Storage, this._Parent, l, u);
+            return new RecordReaderIndexData(this._Header, this._Storage, this._Parent, l, u);
         }
 
-        public virtual ReadStream OpenReader(Record LKey, Record UKey)
+        /// <summary>
+        /// Opens a reader between each key
+        /// </summary>
+        /// <param name="LKey"></param>
+        /// <param name="UKey"></param>
+        /// <returns></returns>
+        public virtual RecordReader OpenReader(Record LKey, Record UKey)
         {
             RecordKey l = this._Tree.SeekFirst(LKey, false);
             RecordKey u = this._Tree.SeekLast(UKey, false);
-            return new IndexDataReadStream(this._Header, this._Storage, this._Parent, l, u);
+            return new RecordReaderIndexData(this._Header, this._Storage, this._Parent, l, u);
         }
 
-        public virtual ReadStream OpenStrictReader(Record Key)
+        /// <summary>
+        /// Opens a reader, but if the key is not found, it will return null
+        /// </summary>
+        /// <param name="Key"></param>
+        /// <returns></returns>
+        public virtual RecordReader OpenStrictReader(Record Key)
         {
             RecordKey l = this._Tree.SeekFirst(Key, true);
             RecordKey u = this._Tree.SeekLast(Key, true);
             if (l.IsNotFound || u.IsNotFound)
                 return null;
-            return new IndexDataReadStream(this._Header, this._Storage, this._Parent, l, u);
+            return new RecordReaderIndexData(this._Header, this._Storage, this._Parent, l, u);
         }
 
+        /// <summary>
+        /// Calibrates the index
+        /// </summary>
         public virtual void Calibrate()
         {
 
             if (this._Header.RecordCount != 0 || this._Parent.RecordCount == 0)
                 return;
 
-            ReadStream stream = this._Parent.OpenReader();
+            RecordReader stream = this._Parent.OpenReader();
             while (stream.CanAdvance)
             {
 
@@ -163,25 +206,59 @@ namespace Pulse.Data
         }
 
         // Statics //
+        /// <summary>
+        /// Creates the (Key, Pointer) record
+        /// </summary>
+        /// <param name="Key"></param>
+        /// <param name="Pointer"></param>
+        /// <param name="IndexColumns"></param>
+        /// <returns></returns>
         public static Record GetIndexElement(Record Element, RecordKey Pointer, Key IndexColumns)
         {
 
-            Cell[] c = new Cell[IndexColumns.Count + 1];
-            for (int i = 0; i < IndexColumns.Count; i++)
-            {
-                c[i] = Element[IndexColumns[i]];
-            }
-            c[c.Length - 1] = Pointer.Element;
-            return new Record(c);
+            //Cell[] c = new Cell[IndexColumns.Count + 1];
+            //for (int i = 0; i < IndexColumns.Count; i++)
+            //{
+            //    c[i] = Element[IndexColumns[i]];
+            //}
+            //c[c.Length - 1] = Pointer.Element;
+            //return new Record(c);
+
+            Record t = (Element * IndexColumns) + Pointer.Element;
+            return t;
 
         }
 
+        /// <summary>
+        /// Creates an external index, but does not load it
+        /// </summary>
+        /// <param name="Parent"></param>
+        /// <param name="IndexColumns"></param>
+        /// <returns></returns>
         public static Index CreateExternalIndex(Table Parent, Key IndexColumns)
         {
 
             Schema columns = Cluster.NonClusteredIndexColumns(Parent.Columns, IndexColumns);
-            ShellScribeTable storage = new ShellScribeTable(Parent.Host, Host.RandomName, Parent.Host.TempDB, columns, Page.DEFAULT_SIZE);
+            ShellTable storage = new ShellTable(Parent.Host, Host.RandomName, Parent.Host.TempDB, columns, Page.DEFAULT_SIZE);
             return new Index(storage, Parent, Host.RandomName, IndexColumns);
+
+        }
+
+        /// <summary>
+        /// Creates and builds a temporary index
+        /// </summary>
+        /// <param name="Parent"></param>
+        /// <param name="IndexColumns"></param>
+        /// <returns></returns>
+        public static Index BuildTemporaryIndex(Table Parent, Key IndexColumns)
+        {
+
+            Schema columns = Cluster.NonClusteredIndexColumns(Parent.Columns, IndexColumns);
+            ShellTable storage = new ShellTable(Parent.Host, Host.RandomName, Parent.Host.TempDB, columns, Page.DEFAULT_SIZE);
+            Index idx = new Index(storage, Parent, Host.RandomName, IndexColumns);
+            idx.Calibrate();
+            Parent.Host.Store.PlaceInRecycleBin(storage.Key);
+            return idx;
 
         }
 

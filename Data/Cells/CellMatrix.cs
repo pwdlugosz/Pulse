@@ -19,6 +19,7 @@ namespace Pulse.Data
         protected int _Columns = -1; // Columns
         protected Cell[,] _Data;
         protected CellAffinity _Affinity;
+        protected int _Size;
 
         // Constructors //
         /// <summary>
@@ -35,6 +36,8 @@ namespace Pulse.Data
             {
                 throw new IndexOutOfRangeException("Row " + Rows.ToString() + " or column  " + Columns.ToString() + "  submitted is invalid");
             }
+
+            this._Size = Value.DataCost;
 
             // Build Matrix //
             this._Rows = Rows;
@@ -53,9 +56,10 @@ namespace Pulse.Data
         /// </summary>
         /// <param name="Rows"></param>
         /// <param name="Columns"></param>
-        public CellMatrix(int Rows, int Columns, CellAffinity UseAffinity)
+        public CellMatrix(int Rows, int Columns, CellAffinity UseAffinity, int Size)
             : this(Rows, Columns, new Cell(UseAffinity))
         {
+            this._Size = Size;
         }
 
         /// <summary>
@@ -68,6 +72,7 @@ namespace Pulse.Data
             // Build Matrix //
             this._Rows = A._Rows;
             this._Columns = A._Columns;
+            this._Size = A._Size;
 
             this._Data = new Cell[this._Rows, this._Columns];
             for (int i = 0; i < this._Rows; i++)
@@ -77,8 +82,13 @@ namespace Pulse.Data
 
         }
 
-        public CellMatrix(Record Data, CellAffinity UseAffinity)
-            :this(Data.Count, 1, UseAffinity)
+        /// <summary>
+        /// Creates a matrix given a record
+        /// </summary>
+        /// <param name="Data"></param>
+        /// <param name="UseAffinity"></param>
+        public CellMatrix(Record Data, CellAffinity UseAffinity, int Size)
+            :this(Data.Count, 1, UseAffinity, Size)
         {
             for (int i = 0; i < Data.Count; i++)
             {
@@ -132,6 +142,11 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// Gets or sets an element
+        /// </summary>
+        /// <param name="Row"></param>
+        /// <returns></returns>
         public virtual Cell this[int Row]
         {
 
@@ -208,6 +223,17 @@ namespace Pulse.Data
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public int Size
+        {
+            get { return this._Size; }
+        }
+
+        /// <summary>
+        /// Computes the inverse of a matrix
+        /// </summary>
         public CellMatrix Inverse
         {
             get
@@ -216,6 +242,9 @@ namespace Pulse.Data
             }
         }
 
+        /// <summary>
+        /// Comuptes the transposition of a matrix
+        /// </summary>
         public CellMatrix Transposition
         {
             get
@@ -262,6 +291,10 @@ namespace Pulse.Data
             return sb.ToString();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public CellMatrix CloneOfMe()
         {
 
@@ -303,7 +336,7 @@ namespace Pulse.Data
         {
 
             // Build a matrix //
-            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity);
+            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity, A.Size);
 
             // Main loop //
             for (int i = 0; i < A.RowCount; i++)
@@ -331,11 +364,11 @@ namespace Pulse.Data
             // Check bounds are the same //
             if (CellMatrix.CheckDimensions(A, B) == false)
             {
-                throw new Exception(string.Format("Dimension mismatch A {0}OriginalNode{1} B {2}OriginalNode{3}", A.RowCount, A.ColumnCount, B.RowCount, B.ColumnCount));
+                throw new Exception(string.Format("Dimension mismatch A {0}OriginalPage{1} B {2}OriginalPage{3}", A.RowCount, A.ColumnCount, B.RowCount, B.ColumnCount));
             }
 
             // Build a matrix //
-            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity);
+            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity, A.Size);
 
             // Main loop //
             for (int i = 0; i < A.RowCount; i++)
@@ -351,9 +384,15 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
         public static CellMatrix operator +(Cell A, CellMatrix B)
         {
-            CellMatrix C = new CellMatrix(B.RowCount, B.ColumnCount, A.AFFINITY);
+            CellMatrix C = new CellMatrix(B.RowCount, B.ColumnCount, A.AFFINITY, B.Size);
             for (int i = 0; i < B.RowCount; i++)
             {
                 for (int j = 0; j < B.ColumnCount; j++)
@@ -364,9 +403,15 @@ namespace Pulse.Data
             return C;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
         public static CellMatrix operator +(CellMatrix A, Cell B)
         {
-            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity);
+            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity, A.Size);
             for (int i = 0; i < A.RowCount; i++)
             {
                 for (int j = 0; j < A.ColumnCount; j++)
@@ -386,7 +431,7 @@ namespace Pulse.Data
         {
 
             // Build a matrix //
-            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity);
+            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity, A.Size);
 
             // Main loop //
             for (int i = 0; i < A.RowCount; i++)
@@ -414,11 +459,11 @@ namespace Pulse.Data
             // Check bounds are the same //
             if (CellMatrix.CheckDimensions(A, B) == false)
             {
-                throw new Exception(string.Format("Dimension mismatch A {0}OriginalNode{1} B {2}OriginalNode{3}", A.RowCount, A.ColumnCount, B.RowCount, B.ColumnCount));
+                throw new Exception(string.Format("Dimension mismatch A {0}OriginalPage{1} B {2}OriginalPage{3}", A.RowCount, A.ColumnCount, B.RowCount, B.ColumnCount));
             }
 
             // Build a matrix //
-            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity);
+            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity, A.Size);
 
             // Main loop //
             for (int i = 0; i < A.RowCount; i++)
@@ -434,9 +479,15 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
         public static CellMatrix operator -(Cell A, CellMatrix B)
         {
-            CellMatrix C = new CellMatrix(B.RowCount, B.ColumnCount, A.AFFINITY);
+            CellMatrix C = new CellMatrix(B.RowCount, B.ColumnCount, A.AFFINITY, B.Size);
             for (int i = 0; i < B.RowCount; i++)
             {
                 for (int j = 0; j < B.ColumnCount; j++)
@@ -447,9 +498,15 @@ namespace Pulse.Data
             return C;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
         public static CellMatrix operator -(CellMatrix A, Cell B)
         {
-            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity);
+            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity, A.Size);
             for (int i = 0; i < A.RowCount; i++)
             {
                 for (int j = 0; j < A.ColumnCount; j++)
@@ -472,11 +529,11 @@ namespace Pulse.Data
             // Check bounds are the same //
             if (CellMatrix.CheckDimensions(A, B) == false)
             {
-                throw new Exception(string.Format("Dimension mismatch A {0}OriginalNode{1} B {2}OriginalNode{3}", A.RowCount, A.ColumnCount, B.RowCount, B.ColumnCount));
+                throw new Exception(string.Format("Dimension mismatch A {0}OriginalPage{1} B {2}OriginalPage{3}", A.RowCount, A.ColumnCount, B.RowCount, B.ColumnCount));
             }
 
             // Build a matrix //
-            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity);
+            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity, A.Size);
 
             // Main loop //
             for (int i = 0; i < A.RowCount; i++)
@@ -492,9 +549,15 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
         public static CellMatrix operator *(Cell A, CellMatrix B)
         {
-            CellMatrix C = new CellMatrix(B.RowCount, B.ColumnCount, A.AFFINITY);
+            CellMatrix C = new CellMatrix(B.RowCount, B.ColumnCount, A.AFFINITY, B.Size);
             for (int i = 0; i < B.RowCount; i++)
             {
                 for (int j = 0; j < B.ColumnCount; j++)
@@ -505,9 +568,15 @@ namespace Pulse.Data
             return C;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
         public static CellMatrix operator *(CellMatrix A, Cell B)
         {
-            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity);
+            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity, A.Size);
             for (int i = 0; i < A.RowCount; i++)
             {
                 for (int j = 0; j < A.ColumnCount; j++)
@@ -530,11 +599,11 @@ namespace Pulse.Data
             // Check bounds are the same //
             if (CellMatrix.CheckDimensions(A, B) == false)
             {
-                throw new Exception(string.Format("Dimension mismatch A {0}OriginalNode{1} B {2}OriginalNode{3}", A.RowCount, A.ColumnCount, B.RowCount, B.ColumnCount));
+                throw new Exception(string.Format("Dimension mismatch A {0}OriginalPage{1} B {2}OriginalPage{3}", A.RowCount, A.ColumnCount, B.RowCount, B.ColumnCount));
             }
 
             // Build a matrix //
-            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity);
+            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity, A.Size);
 
             // Main loop //
             for (int i = 0; i < A.RowCount; i++)
@@ -550,9 +619,15 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
         public static CellMatrix operator /(Cell A, CellMatrix B)
         {
-            CellMatrix C = new CellMatrix(B.RowCount, B.ColumnCount, A.AFFINITY);
+            CellMatrix C = new CellMatrix(B.RowCount, B.ColumnCount, A.AFFINITY, B.Size);
             for (int i = 0; i < B.RowCount; i++)
             {
                 for (int j = 0; j < B.ColumnCount; j++)
@@ -563,9 +638,15 @@ namespace Pulse.Data
             return C;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
         public static CellMatrix operator /(CellMatrix A, Cell B)
         {
-            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity);
+            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity, A.Size);
             for (int i = 0; i < A.RowCount; i++)
             {
                 for (int j = 0; j < A.ColumnCount; j++)
@@ -588,11 +669,11 @@ namespace Pulse.Data
             // Check bounds are the same //
             if (CellMatrix.CheckDimensions(A, B) == false)
             {
-                throw new Exception(string.Format("Dimension mismatch A {0}OriginalNode{1} B {2}OriginalNode{3}", A.RowCount, A.ColumnCount, B.RowCount, B.ColumnCount));
+                throw new Exception(string.Format("Dimension mismatch A {0}OriginalPage{1} B {2}OriginalPage{3}", A.RowCount, A.ColumnCount, B.RowCount, B.ColumnCount));
             }
 
             // Build a matrix //
-            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity);
+            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity, A.Size);
 
             // Main loop //
             for (int i = 0; i < A.RowCount; i++)
@@ -608,9 +689,15 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
         public static CellMatrix CheckDivide(Cell A, CellMatrix B)
         {
-            CellMatrix C = new CellMatrix(B.RowCount, B.ColumnCount, A.AFFINITY);
+            CellMatrix C = new CellMatrix(B.RowCount, B.ColumnCount, A.AFFINITY, B.Size);
             for (int i = 0; i < B.RowCount; i++)
             {
                 for (int j = 0; j < B.ColumnCount; j++)
@@ -621,9 +708,15 @@ namespace Pulse.Data
             return C;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
         public static CellMatrix CheckDivide(CellMatrix A, Cell B)
         {
-            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity);
+            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity, A.Size);
             for (int i = 0; i < A.RowCount; i++)
             {
                 for (int j = 0; j < A.ColumnCount; j++)
@@ -646,11 +739,11 @@ namespace Pulse.Data
             // Check bounds are the same //
             if (CellMatrix.CheckDimensions(A, B) == false)
             {
-                throw new Exception(string.Format("Dimension mismatch A {0}OriginalNode{1} B {2}OriginalNode{3}", A.RowCount, A.ColumnCount, B.RowCount, B.ColumnCount));
+                throw new Exception(string.Format("Dimension mismatch A {0}OriginalPage{1} B {2}OriginalPage{3}", A.RowCount, A.ColumnCount, B.RowCount, B.ColumnCount));
             }
 
             // Build a matrix //
-            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity);
+            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity, A.Size);
 
             // Main loop //
             for (int i = 0; i < A.RowCount; i++)
@@ -666,9 +759,15 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
         public static CellMatrix operator %(Cell A, CellMatrix B)
         {
-            CellMatrix C = new CellMatrix(B.RowCount, B.ColumnCount, A.AFFINITY);
+            CellMatrix C = new CellMatrix(B.RowCount, B.ColumnCount, A.AFFINITY, B.Size);
             for (int i = 0; i < B.RowCount; i++)
             {
                 for (int j = 0; j < B.ColumnCount; j++)
@@ -679,9 +778,15 @@ namespace Pulse.Data
             return C;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
         public static CellMatrix operator %(CellMatrix A, Cell B)
         {
-            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity);
+            CellMatrix C = new CellMatrix(A.RowCount, A.ColumnCount, A.Affinity, A.Size);
             for (int i = 0; i < A.RowCount; i++)
             {
                 for (int j = 0; j < A.ColumnCount; j++)
@@ -703,7 +808,7 @@ namespace Pulse.Data
 
             if (CellMatrix.CheckDimensions2(A, B) == false)
             {
-                throw new Exception(string.Format("Dimension mismatch A {0}OriginalNode{1} B {2}OriginalNode{3}", A.RowCount, A.ColumnCount, B.RowCount, B.ColumnCount));
+                throw new Exception(string.Format("Dimension mismatch A {0}OriginalPage{1} B {2}OriginalPage{3}", A.RowCount, A.ColumnCount, B.RowCount, B.ColumnCount));
             }
 
             CellMatrix C = new CellMatrix(A.RowCount, B.ColumnCount, Cell.ZeroValue(A.Affinity));
@@ -752,7 +857,7 @@ namespace Pulse.Data
         {
 
             // Create Another Matrix //
-            CellMatrix B = new CellMatrix(A.ColumnCount, A.RowCount, A.Affinity);
+            CellMatrix B = new CellMatrix(A.ColumnCount, A.RowCount, A.Affinity, A.Size);
 
             // Loop through A and copy element to B //
             for (int i = 0; i < A.RowCount; i++)
@@ -777,7 +882,7 @@ namespace Pulse.Data
                 throw new Exception("Dimension must be greater than or equal to 1");
 
             // Create a matrix //
-            CellMatrix A = new CellMatrix(Dimension, Dimension, Affinity);
+            CellMatrix A = new CellMatrix(Dimension, Dimension, Affinity, 8);
 
             for (int i = 0; i < Dimension; i++)
             {
@@ -794,6 +899,11 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
         public static CellMatrix Invert(CellMatrix A)
         {
 
@@ -807,6 +917,11 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
         public static Cell Sum(CellMatrix A)
         {
 
@@ -818,6 +933,11 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
         public static Cell SumSquare(CellMatrix A)
         {
 
@@ -829,11 +949,16 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
         public static CellMatrix Trace(CellMatrix A)
         {
 
             if (!A.IsSquare)
-                throw new Exception(string.Format("Cannot trace a non-square matrix : {0} OriginalNode {1}", A.RowCount, A.ColumnCount));
+                throw new Exception(string.Format("Cannot trace a non-square matrix : {0} OriginalPage {1}", A.RowCount, A.ColumnCount));
 
             CellMatrix B = new CellMatrix(A.RowCount, A.RowCount, Cell.ZeroValue(A.Affinity));
 
@@ -953,7 +1078,7 @@ namespace Pulse.Data
             public CellMatrix getL()
             {
 
-                CellMatrix L = new CellMatrix(m, n, LU.Affinity);
+                CellMatrix L = new CellMatrix(m, n, LU.Affinity, LU.Size);
                 for (int i = 0; i < m; i++)
                 {
                     for (int j = 0; j < n; j++)
@@ -979,7 +1104,7 @@ namespace Pulse.Data
             public CellMatrix getU()
             {
 
-                CellMatrix X = new CellMatrix(n, n, LU.Affinity);
+                CellMatrix X = new CellMatrix(n, n, LU.Affinity, LU.Size);
                 for (int i = 0; i < n; i++)
                 {
                     for (int j = 0; j < n; j++)
@@ -1085,7 +1210,7 @@ namespace Pulse.Data
             public CellMatrix getMatrix(CellMatrix A, int[] r, int j0, int j1)
             {
 
-                CellMatrix X = new CellMatrix(r.Length, j1 - j0 + 1, A.Affinity);
+                CellMatrix X = new CellMatrix(r.Length, j1 - j0 + 1, A.Affinity, A.Size);
 
                 for (int i = 0; i < r.Length; i++)
                 {

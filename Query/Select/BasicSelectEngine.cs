@@ -16,13 +16,13 @@ namespace Pulse.Query.Select
     public sealed class BasicSelectEngine : SelectEngine
     {
 
-        public override void Render(Host Host, WriteStream Output, Table Data, ScalarExpressionCollection Fields, Filter Where, long Limit, SelectMetaData MetaData)
+        public override void Render(Host Host, RecordWriter Output, Table Data, ScalarExpressionCollection Fields, Filter Where, long Limit, SelectMetaData MetaData)
         {
 
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
             long Ticker = 0;
 
-            ReadStream rs = Data.OpenReader();
+            RecordReader rs = Data.OpenReader();
 
             FieldResolver fr = new FieldResolver(Host);
             fr.AddSchema("T", Data.Columns);

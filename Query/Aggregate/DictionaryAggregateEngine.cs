@@ -36,14 +36,16 @@ namespace Pulse.Query.Aggregate
         /// <param name="Values">The aggregate functions over which to consolidate the data</param>
         /// <param name="Where">The filter to apply to the data</param>
         /// <param name="MetaData">The meta data to update</param>
-        public override void Render(Host Host, WriteStream Output, Table Data, ScalarExpressionCollection Keys, AggregateCollection Values, Filter Where, AggregateMetaData MetaData)
+        public override void Render(Host Host, RecordWriter Output, Table Data, ScalarExpressionCollection Keys, AggregateCollection Values, Filter Where, 
+            ScalarExpressionCollection Select, AggregateMetaData MetaData)
         {
 
+            
             // Start the timer //
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
 
             // Create a dictionary table //
-            DictionaryScribeTable Storage = Output.Source.Host.CreateTable(Host.TEMP, Host.RandomName, Keys.Columns, Values.Columns);
+            DictionaryTable Storage = Output.Source.Host.CreateTable(Host.TEMP, Host.RandomName, Keys.Columns, Values.WorkColumns);
 
             // Create the working record //
             Record r = this.GetWorkRecord(Keys, Values);
@@ -53,7 +55,7 @@ namespace Pulse.Query.Aggregate
             variant.AddSchema(Data.Name, Data.Columns);
 
             // Open a reader //
-            ReadStream reader = Data.OpenReader();
+            RecordReader reader = Data.OpenReader();
 
             // Scan the entire table //
             while (reader.CanAdvance)
@@ -69,7 +71,7 @@ namespace Pulse.Query.Aggregate
 
                 // Try to get a key //
                 Record v = Storage.GetValue(k);
-
+                
                 // Check if the dictionary contains this key, then update //
                 if (v != null)
                 {
@@ -104,11 +106,13 @@ namespace Pulse.Query.Aggregate
 
             // Open a reader //
             reader = Storage.OpenReader();
+            FieldResolver x = new FieldResolver(Host);
+            x.AddSchema("T", this.GetOutputSchema(Keys, Values));
 
             // Itterate over all key-values //
             while (reader.CanAdvance)
             {
-
+                
                 // Get the work data //
                 Record work = reader.ReadNext();
 
@@ -118,13 +122,14 @@ namespace Pulse.Query.Aggregate
                 Record v = Values.Evaluate(work, Offset);
 
                 // Append the data //
-                Output.Insert(Record.Join(k, v));
+                x.SetValue(0, Record.Join(k, v));
+                Output.Insert(Select.Evaluate(x));
 
             }
 
             // Burn the temp table //
             Host h = Storage.Host;
-            h.PageCache.DropTable(Storage.Key);
+            h.Store.DropTable(Storage.Key);
 
         }
 

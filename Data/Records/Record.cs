@@ -10,7 +10,7 @@ namespace Pulse.Data
     /// <summary>
     /// Represents an array of cells; unlike a CellVector, each cell is allowed to have different types
     /// </summary>
-    public class Record 
+    public class Record : ITextWritable
     {
 
         public const char DELIM = '\t';
@@ -117,6 +117,13 @@ namespace Pulse.Data
             return this.ToString(DELIM);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="K"></param>
+        /// <param name="Delim"></param>
+        /// <param name="Escape"></param>
+        /// <returns></returns>
         public string ToString(Key K, char Delim, char Escape)
         {
             StringBuilder sb = new StringBuilder();
@@ -184,6 +191,15 @@ namespace Pulse.Data
                 hxc += (i + 1) * this[K[i]].GetHashCode();
             }
             return hxc;
+        }
+
+        /// <summary>
+        /// Writes a record to a stream
+        /// </summary>
+        /// <param name="Writer"></param>
+        public void Write(System.IO.TextWriter Writer)
+        {
+            Writer.WriteLine(this.ToString());
         }
 
         // Comparers //
@@ -524,6 +540,68 @@ namespace Pulse.Data
             Cell[] c = new Cell[Length];
             Array.Copy(R.BaseArray, Start, c, 0, Length);
             return new Record(c);
+        }
+
+        // Opperators //
+        /// <summary>
+        /// Concatenates the cell and the record
+        /// </summary>
+        /// <param name="C"></param>
+        /// <param name="R"></param>
+        /// <returns></returns>
+        public static Record operator +(Cell C, Record R)
+        {
+            Cell[] x = new Cell[R.Count + 1];
+            Array.Copy(R._data, 0, x, 1, R.Count);
+            x[0] = C;
+            return new Record(x);
+        }
+
+        /// <summary>
+        /// Concatenates the cell and the record
+        /// </summary>
+        /// <param name="R"></param>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Record operator +(Record R, Cell C)
+        {
+            Cell[] x = new Cell[R.Count + 1];
+            Array.Copy(R._data, 0, x, 0, R.Count);
+            x[R.Count] = C;
+            return new Record(x);
+        }
+
+        /// <summary>
+        /// Concatenates two records
+        /// </summary>
+        /// <param name="R1"></param>
+        /// <param name="R2"></param>
+        /// <returns></returns>
+        public static Record operator +(Record R1, Record R2)
+        {
+
+            List<Cell> c = new List<Cell>();
+            for (int i = 0; i < R1.Count; i++)
+            {
+                c.Add(R1[i]);
+            }
+            for (int i = 0; i < R2.Count; i++)
+            {
+                c.Add(R2[i]);
+            }
+            return new Record(c.ToArray());
+
+        }
+
+        /// <summary>
+        /// Splits a record according to a key
+        /// </summary>
+        /// <param name="R"></param>
+        /// <param name="K"></param>
+        /// <returns></returns>
+        public static Record operator *(Record R, Key K)
+        {
+            return Record.Split(R, K);
         }
 
         // Costs //

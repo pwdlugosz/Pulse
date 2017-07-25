@@ -10,7 +10,7 @@ namespace Pulse.Data
     /// <summary>
     /// Represents a disk based key-value table
     /// </summary>
-    public class DictionaryScribeTable : ClusteredScribeTable
+    public class DictionaryTable : ClusteredTable
     {
 
         protected int _KeyCount = 0;
@@ -28,7 +28,7 @@ namespace Pulse.Data
         protected RecordKey _LastRef = RecordKey.RecordNotFound;
         protected Record _LastKey = null;
         
-        public DictionaryScribeTable(Host Host, TableHeader Header)
+        public DictionaryTable(Host Host, TableHeader Header)
             : base(Host, Header)
         {
             this._KeyCount = Header.ClusterKey.Count;
@@ -38,7 +38,7 @@ namespace Pulse.Data
             this._TableType = "DICTIONARY_SCRIBE";
         }
 
-        public DictionaryScribeTable(Host Host, string Name, string Dir, Schema KeyColumns, Schema ValueColumns, int PageSize)
+        public DictionaryTable(Host Host, string Name, string Dir, Schema KeyColumns, Schema ValueColumns, int PageSize)
             : base(Host, Name, Dir, Schema.Join(KeyColumns, ValueColumns), Data.Key.Build(KeyColumns.Count), ClusterState.Unique, PageSize)
         {
             this._KeyCount = KeyColumns.Count;
@@ -95,6 +95,9 @@ namespace Pulse.Data
         public void Add(Record Key, Record Value)
         {
 
+            // Step the version //
+            this._Version++;
+
             // Check that everything's ok //
             if (Key.Count != this._KeyCount || Value.Count != this._ValueCount)
                 throw new ArgumentException("Key or value passed is/are invalid");
@@ -112,6 +115,9 @@ namespace Pulse.Data
         /// <param name="Value"></param>
         public void SetValue(Record Key, Record Value)
         {
+
+            // Step the version //
+            this._Version++;
 
             // Get the final record value //
             Record r = Record.Join(Key, Value);

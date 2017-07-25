@@ -11,7 +11,7 @@ namespace Pulse.ScalarExpressions
     /// <summary>
     /// Represents the base class for all expressions
     /// </summary>
-    public abstract class ScalarExpression 
+    public abstract class ScalarExpression : IBindable
     {
 
         protected ScalarExpressionAffinity _Affinity;
@@ -113,7 +113,7 @@ namespace Pulse.ScalarExpressions
         /// <summary>
         /// Adds a child node
         /// </summary>
-        /// <param name="Node"></param>
+        /// <param name="OriginalNode"></param>
         public void AddChildNode(ScalarExpression Node)
         {
             Node.ParentNode = this;
@@ -142,7 +142,7 @@ namespace Pulse.ScalarExpressions
         /// <summary>
         /// Removes a single child node
         /// </summary>
-        /// <param name="Node"></param>
+        /// <param name="OriginalNode"></param>
         public void Deallocate(ScalarExpression Node)
         {
             if (this.IsTerminal) return;
@@ -211,6 +211,16 @@ namespace Pulse.ScalarExpressions
         /// </summary>
         /// <returns></returns>
         public abstract string Unparse(FieldResolver Variants);
+
+        /// <summary>
+        /// Binds an expression to the tree
+        /// </summary>
+        /// <param name="PointerRef"></param>
+        /// <param name="Value"></param>
+        public virtual void Bind(string PointerRef, ScalarExpression Value)
+        {
+            this._ChildNodes.ForEach((x) => { x.Bind(PointerRef, Value); });
+        }
 
         // Virtuals //
         /// <summary>
@@ -362,12 +372,32 @@ namespace Pulse.ScalarExpressions
             return new ScalarExpressionConstant(null, Value);
         }
 
+        public static ScalarExpression Value(CellAffinity Affinity)
+        {
+            return new ScalarExpressionConstant(null, new Cell(Affinity));
+        }
+
         public static ScalarExpression Field(IColumns Schema, string Name, int ResolverOffset)
         {
             int FieldOffset = Schema.Columns.ColumnIndex(Name);
             CellAffinity Affinity = Schema.Columns.ColumnAffinity(FieldOffset);
             int Size = Schema.Columns.ColumnSize(FieldOffset);
             return new ScalarExpressionFieldRef(null, ResolverOffset, FieldOffset, Affinity, Size);
+        }
+
+        public static ScalarExpression HeapRef(Host Host, string LibName, string ValName)
+        {
+            
+            if (!Host.Libraries.Exists(LibName))
+                throw new Exception(string.Format("Library does not exist '{0}'", LibName));
+            if (!Host.Libraries[LibName].Values.Exists(ValName))
+                throw new Exception(string.Format("Variable '{0}' does not exist in '{1}'", ValName, LibName));
+
+            int HeapRef = Host.Libraries.GetPointer(LibName);
+            int ValRef = Host.Libraries[LibName].Values.GetPointer(ValName);
+
+            return new ScalarExpressionScalarRef(null, HeapRef, ValRef, Host.Libraries[HeapRef].Values[ValRef].Affinity, Host.Libraries[HeapRef].Values[ValRef].DataCost);
+
         }
 
         // Constants //
@@ -401,12 +431,45 @@ namespace Pulse.ScalarExpressions
             get { return new ScalarExpressionConstant(null, new Cell(1)); }
         }
 
+        public static ScalarExpression EmptyString
+        {
+            get { return new ScalarExpressionConstant(null, new Cell("")); }
+        }
+
         public static ScalarExpression Now
         {
             get { return new ScalarExpressionConstant(null, new Cell(DateTime.Now)); }
         }
 
+        public static ScalarExpression NullBool
+        {
+            get { return new ScalarExpressionConstant(null, Cell.NULL_BOOL); }
+        }
 
+        public static ScalarExpression NullInt
+        {
+            get { return new ScalarExpressionConstant(null, Cell.NULL_INT); }
+        }
+
+        public static ScalarExpression NullNum
+        {
+            get { return new ScalarExpressionConstant(null, Cell.NULL_DOUBLE); }
+        }
+
+        public static ScalarExpression NullDate
+        {
+            get { return new ScalarExpressionConstant(null, Cell.NULL_DATE); }
+        }
+
+        public static ScalarExpression NullString
+        {
+            get { return new ScalarExpressionConstant(null, Cell.NULL_STRING); }
+        }
+
+        public static ScalarExpression NullBLOB
+        {
+            get { return new ScalarExpressionConstant(null, Cell.NULL_BLOB); }
+        }
     }
 
 }

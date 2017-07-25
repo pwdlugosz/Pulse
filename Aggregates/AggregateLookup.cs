@@ -57,7 +57,35 @@ namespace Pulse.Aggregates
         {
         }
 
-        public Aggregate Lookup(string Name, List<ScalarExpression> Parameters, Filter Where)
+        public bool Exists(string Name)
+        {
+
+            switch (Name.ToUpper().Trim())
+            {
+                case NAME_SUM:
+                case NAME_COUNT:
+                case NAME_COUNT_NULL:
+                case NAME_MIN:
+                case NAME_MAX:
+                case NAME_FIRST:
+                case NAME_LAST:
+                case NAME_AVG:
+                case NAME_VARP:
+                case NAME_STDEVP:
+                case NAME_VARS:
+                case NAME_STDEVS:
+                case NAME_COVAR:
+                case NAME_CORR:
+                case NAME_INTERCPT:
+                case NAME_SLOPE:
+                    return true;
+            }
+
+            return false;
+
+        }
+
+        public Aggregate Lookup(string Name, ScalarExpressionCollection Parameters, Filter Where)
         {
 
             // Check the parameters //

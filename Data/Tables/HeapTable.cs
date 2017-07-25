@@ -10,7 +10,7 @@ namespace Pulse.Data
     /// <summary>
     /// Represents a scribe table that keeps records in an unordered linked list
     /// </summary>
-    public class HeapScribeTable : ScribeTable
+    public class HeapTable : Table
     {
 
         protected Page _Terminis;
@@ -22,7 +22,7 @@ namespace Pulse.Data
         /// <param name="Host"></param>
         /// <param name="Header"></param>
         /// <param name="ClusterKey"></param>
-        public HeapScribeTable(Host Host, TableHeader Header)
+        public HeapTable(Host Host, TableHeader Header)
             : base(Host, Header)
         {
             this._Terminis = this.GetPage(this._Header.TerminalPageID);
@@ -38,7 +38,7 @@ namespace Pulse.Data
         /// <param name="Columns"></param>
         /// <param name="PageSize"></param>
         /// <param name="ClusterKey"></param>
-        public HeapScribeTable(Host Host, string Name, string Dir, Schema Columns, int PageSize)
+        public HeapTable(Host Host, string Name, string Dir, Schema Columns, int PageSize)
             : base(Host, Name, Dir, Columns, PageSize)
         {
             this._Header.OriginPageID = 0;
@@ -81,6 +81,7 @@ namespace Pulse.Data
             {
 
                 Page p = new Page(this.PageSize, this.GenerateNewPageID, this._Terminis.PageID, -1, this.Columns);
+                p.Version++;
                 this._Header.PageCount++;
                 this._Terminis.NextPageID = p.PageID;
                 this.SetPage(p);
@@ -96,6 +97,9 @@ namespace Pulse.Data
             // Get the pointer //
             this._LastKey = new RecordKey(this._Terminis.PageID, this._Terminis.Count - 1);
             this._Indexes.Insert(Value, this._LastKey);
+
+            // Step the version //
+            this._Version++;
 
         }
 

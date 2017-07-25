@@ -32,6 +32,11 @@ namespace Pulse.Data
             set;
         }
 
+        public override string ToString()
+        {
+            return this.Key + " :: " + this.PageID.ToString();
+        }
+
         public static IEqualityComparer<PageUID> DefaultComparer
         {
             get { return new PageUIDComparer(); }

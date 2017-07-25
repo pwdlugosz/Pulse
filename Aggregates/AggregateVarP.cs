@@ -65,9 +65,9 @@ namespace Pulse.Aggregates
 
         public override void Initialize(Record Work, int Offset)
         {
-            Work[Offset] = new Cell(0D);        // COUNT x
-            Work[Offset + 1] = new Cell(0D);    // SUM x
-            Work[Offset + 2] = new Cell(0D);    // SUM x * x
+            Work[Offset] = new Cell(0D);        // COUNT OriginalPage
+            Work[Offset + 1] = new Cell(0D);    // SUM OriginalPage
+            Work[Offset + 2] = new Cell(0D);    // SUM OriginalPage * OriginalPage
         }
 
         public override void Accumulate(FieldResolver Variants, Record Work, int Offset)

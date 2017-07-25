@@ -10,12 +10,12 @@ namespace Pulse.Data
     /// <summary>
     /// Writes the data to a temp table that uses a clustered index, then selects the data into the destination table
     /// </summary>
-    public class OrderedClusteredWriter : VanillaWriteStream
+    public class RecordWriterClustered : RecordWriterBase
     {
 
         private Table _t;
 
-        public OrderedClusteredWriter(Table Data, Key OrderedColumns)
+        public RecordWriterClustered(Table Data, Key OrderedColumns)
             : base(Data)
         {
             this._t = Data.Host.CreateTable(Host.TEMP, Host.RandomName, Data.Columns, OrderedColumns, ClusterState.Universal);
@@ -30,10 +30,10 @@ namespace Pulse.Data
         {
 
             // Open a writer over the parent
-            WriteStream ws = this._Parent.OpenWriter();
+            RecordWriter ws = this._Parent.OpenWriter();
 
             // Open a reader over the cluster table 
-            ReadStream rs = this._t.OpenReader();
+            RecordReader rs = this._t.OpenReader();
 
             // Consume the reader / close the writer
             ws.Consume(rs);
@@ -41,7 +41,7 @@ namespace Pulse.Data
 
             // Drop the table //
             Host h = this._t.Host;
-            h.PageCache.DropTable(this._t.Key);
+            h.Store.DropTable(this._t.Key);
 
         }
 

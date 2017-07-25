@@ -15,29 +15,29 @@ namespace Pulse.Query.Union
     public abstract class UnionEngine
     {
 
-        public abstract void Render(Host Host, WriteStream Output, IEnumerable<Table> Tables, UnionMetaData MetaData);
+        public abstract void Render(Host Host, RecordWriter Output, IEnumerable<Table> Tables, UnionMetaData MetaData);
 
-        public void Render(Host Host, WriteStream Output, IEnumerable<Table> Tables)
+        public void Render(Host Host, RecordWriter Output, IEnumerable<Table> Tables)
         {
             this.Render(Host, Output, Tables, new UnionMetaData());
         }
 
-        public ClusteredScribeTable Union(Host Host, string DB, string Name, Key ClusterColumns, IEnumerable<Table> Tables)
+        public ClusteredTable Union(Host Host, string DB, string Name, Key ClusterColumns, IEnumerable<Table> Tables)
         {
 
-            ClusteredScribeTable t = Host.CreateTable(DB, Name, Tables.First().Columns, ClusterColumns);
-            WriteStream w = t.OpenWriter();
+            ClusteredTable t = Host.CreateTable(DB, Name, Tables.First().Columns, ClusterColumns);
+            RecordWriter w = t.OpenWriter();
             this.Render(Host, w, Tables);
             w.Close();
             return t;
 
         }
 
-        public HeapScribeTable Union(Host Host, string DB, string Name, IEnumerable<Table> Tables)
+        public HeapTable Union(Host Host, string DB, string Name, IEnumerable<Table> Tables)
         {
 
-            HeapScribeTable t = Host.CreateTable(DB, Name, Tables.First().Columns);
-            WriteStream w = t.OpenWriter();
+            HeapTable t = Host.CreateTable(DB, Name, Tables.First().Columns);
+            RecordWriter w = t.OpenWriter();
             this.Render(Host, w, Tables);
             w.Close();
             return t;

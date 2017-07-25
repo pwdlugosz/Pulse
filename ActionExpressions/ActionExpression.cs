@@ -4,17 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Data;
+using Pulse.ScalarExpressions;
 
 namespace Pulse.ActionExpressions
 {
 
-    public abstract class ActionExpression
+    public abstract class ActionExpression : IBindable
     {
 
         protected Host _Host;
         protected ActionExpression _Parent;
         protected List<ActionExpression> _Children;
-
+        
         public ActionExpression(Host Host, ActionExpression Parent)
         {
             this._Host = Host;
@@ -46,6 +47,13 @@ namespace Pulse.ActionExpressions
             }
         }
 
+        // Escapes //
+        public virtual void TriggerEscapeCurrent()
+        {
+            if (this._Parent != null)
+                this._Parent.TriggerEscapeCurrent();
+        }
+
         // Virtuals and Abstracts //
         public virtual void BeginInvoke(FieldResolver Variant)
         {
@@ -55,10 +63,18 @@ namespace Pulse.ActionExpressions
         {
         }
 
-        public virtual void Invoke(FieldResolver Variant);
+        public virtual void Bind(string PointerRef, ScalarExpression Value)
+        {
+            this._Children.ForEach((x) => { x.Bind(PointerRef, Value); });
+        }
+
+        public virtual FieldResolver CreateResolver()
+        {
+            return new FieldResolver(this._Host);
+        }
+
+        public abstract void Invoke(FieldResolver Variant);
 
     }
-
-
 
 }

@@ -10,7 +10,7 @@ namespace Pulse.Data
     /// <summary>
     /// Represents a table whose only purpose is to temporarily store data
     /// </summary>
-    public sealed class ShellScribeTable : ScribeTable
+    public sealed class ShellTable : Table
     {
 
         /// <summary>
@@ -19,7 +19,7 @@ namespace Pulse.Data
         /// <param name="Host"></param>
         /// <param name="Header"></param>
         /// <param name="ClusterKey"></param>
-        public ShellScribeTable(Host Host, TableHeader Header)
+        public ShellTable(Host Host, TableHeader Header)
             : base(Host, Header)
         {
             this._TableType = "HEAP_SCRIBE";
@@ -34,7 +34,7 @@ namespace Pulse.Data
         /// <param name="Columns"></param>
         /// <param name="PageSize"></param>
         /// <param name="ClusterKey"></param>
-        public ShellScribeTable(Host Host, string Name, string Dir, Schema Columns, int PageSize)
+        public ShellTable(Host Host, string Name, string Dir, Schema Columns, int PageSize)
             : base(Host, Name, Dir, Columns, PageSize)
         {
             this._TableType = "HEAP_SCRIBE";

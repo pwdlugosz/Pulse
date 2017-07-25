@@ -10,7 +10,7 @@ namespace Pulse.Data
     /// <summary>
     /// Creates a table sorted usina a b+tree that can be saved to disk
     /// </summary>
-    public class ClusteredScribeTable : ScribeTable
+    public class ClusteredTable : Table
     {
 
         protected Cluster _Cluster;
@@ -21,7 +21,7 @@ namespace Pulse.Data
         /// <param name="Host"></param>
         /// <param name="Header"></param>
         /// <param name="ClusterKey"></param>
-        public ClusteredScribeTable(Host Host, TableHeader Header)
+        public ClusteredTable(Host Host, TableHeader Header)
             : base(Host, Header)
         {
 
@@ -50,7 +50,7 @@ namespace Pulse.Data
         /// <param name="Columns"></param>
         /// <param name="PageSize"></param>
         /// <param name="ClusterKey"></param>
-        public ClusteredScribeTable(Host Host, string Name, string Dir, Schema Columns, Key ClusterColumns, ClusterState State, int PageSize)
+        public ClusteredTable(Host Host, string Name, string Dir, Schema Columns, Key ClusterColumns, ClusterState State, int PageSize)
             : base(Host, Name, Dir, Columns, PageSize)
         {
 
@@ -68,7 +68,7 @@ namespace Pulse.Data
         /// <param name="Dir"></param>
         /// <param name="Columns"></param>
         /// <param name="ClusterColumns"></param>
-        public ClusteredScribeTable(Host Host, string Name, string Dir, Schema Columns, Key ClusterColumns, ClusterState State)
+        public ClusteredTable(Host Host, string Name, string Dir, Schema Columns, Key ClusterColumns, ClusterState State)
             : this(Host, Name, Dir, Columns, ClusterColumns, State, Page.DEFAULT_SIZE)
         {
         }
@@ -81,7 +81,7 @@ namespace Pulse.Data
         /// <param name="Dir"></param>
         /// <param name="Columns"></param>
         /// <param name="ClusterColumns"></param>
-        public ClusteredScribeTable(Host Host, string Name, string Dir, Schema Columns, Key ClusterColumns)
+        public ClusteredTable(Host Host, string Name, string Dir, Schema Columns, Key ClusterColumns)
             : this(Host, Name, Dir, Columns, ClusterColumns, ClusterState.Universal, Page.DEFAULT_SIZE)
         {
         }
@@ -100,7 +100,12 @@ namespace Pulse.Data
         /// <param name="Value"></param>
         public override void Insert(Record Value)
         {
+
+            // Step the version //
+            this._Version++;
+
             this._Cluster.Insert(Value);
+
         }
 
         /// <summary>
@@ -108,14 +113,14 @@ namespace Pulse.Data
         /// </summary>
         /// <param name="Key"></param>
         /// <returns></returns>
-        public override ReadStream OpenReader(Record Key)
+        public override RecordReader OpenReader(Record Key)
         {
 
             if (Key.Count != this._Cluster.IndexColumns.Count)
                 return this.OpenReader();
             RecordKey l = this._Cluster.SeekFirst(Key, false);
             RecordKey u = this._Cluster.SeekLast(Key, false);
-            return new VanillaReadStream(this, l, u);
+            return new RecordReaderBase(this, l, u);
 
         }
 
@@ -125,14 +130,14 @@ namespace Pulse.Data
         /// <param name="LKey"></param>
         /// <param name="UKey"></param>
         /// <returns></returns>
-        public override ReadStream OpenReader(Record LKey, Record UKey)
+        public override RecordReader OpenReader(Record LKey, Record UKey)
         {
 
             if (LKey.Count != UKey.Count || LKey.Count != this._Cluster.IndexColumns.Count)
                 return this.OpenReader();
             RecordKey lk = this._Cluster.SeekFirst(LKey, false);
             RecordKey uk = this._Cluster.SeekLast(UKey, false);
-            return new VanillaReadStream(this, lk, uk);
+            return new RecordReaderBase(this, lk, uk);
 
         }
 

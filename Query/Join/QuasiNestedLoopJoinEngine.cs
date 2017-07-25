@@ -34,7 +34,7 @@ namespace Pulse.Query.Join
         /// <param name="Where">The filter to apply</param>
         /// <param name="Type">The type of join to perform</param>
         /// <param name="ActualCost">Output of the actual cost of running this join</param>
-        public override void Render(Host Host, WriteStream Output, Table Left, Table Right, RecordMatcher Predicate, ScalarExpressionCollection Fields, Filter Where, JoinType Type, JoinMetaData MetaData)
+        public override void Render(Host Host, RecordWriter Output, Table Left, Table Right, RecordMatcher Predicate, ScalarExpressionCollection Fields, Filter Where, JoinType Type, JoinMetaData MetaData)
         {
 
             // Start the timer //
@@ -43,7 +43,7 @@ namespace Pulse.Query.Join
             // Get the right join index //
             Index ridx = Right.GetIndex(Predicate.RightKey);
             if (ridx == null)
-                throw new Exception("The right table must have an index over the right join columns");
+                ridx = Index.BuildTemporaryIndex(Right, Predicate.RightKey);
 
             // Get the expected join cost //
             MetaData.ExpectedJoinCost = CostCalculator.QuasiNestedLoopJoinCost(Left.RecordCount, Right.RecordCount, false);
@@ -52,7 +52,7 @@ namespace Pulse.Query.Join
             bool Intersection = (Type == JoinType.INNER || Type == JoinType.LEFT), Antisection = (Type == JoinType.LEFT || Type == JoinType.ANTI_LEFT);
 
             // Open a read stream //
-            ReadStream lstream = Left.OpenReader();
+            RecordReader lstream = Left.OpenReader();
 
             // Create a FieldResolver //
             FieldResolver variant = new FieldResolver(Left.Host);
@@ -65,7 +65,7 @@ namespace Pulse.Query.Join
 
                 // Open the right stream //
                 Record lrec = lstream.ReadNext();
-                ReadStream rstream = ridx.OpenStrictReader(Record.Split(lrec, Predicate.RightKey));
+                RecordReader rstream = ridx.OpenStrictReader(Record.Split(lrec, Predicate.RightKey));
                 MetaData.LeftReadCount++;
 
                 // Only Loop through if there's actually a match //

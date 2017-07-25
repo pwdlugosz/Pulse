@@ -47,17 +47,14 @@ namespace Pulse.ActionExpressions
         {
 
             Record Conditions = this._Scalars.Evaluate(Variant);
-
             for (int i = 0; i < Conditions.Count; i++)
             {
-
+                
                 if (Conditions[i].valueBOOL == true)
                 {
-
                     this._Children[i].Invoke(Variant);
-
+                    return;
                 }
-
             }
 
             if (this._HasElse)

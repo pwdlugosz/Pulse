@@ -10,15 +10,15 @@ namespace Pulse.Data
     /// <summary>
     /// Writes data to the underlying table, removing duplicate records first
     /// </summary>
-    public class DistinctWriteStream : VanillaWriteStream
+    public class RecordWriterDistinct : RecordWriterBase
     {
 
-        private DictionaryScribeTable _t;
+        private DictionaryTable _t;
 
-        public DistinctWriteStream(Table Data)
+        public RecordWriterDistinct(Table Data)
             : base(Data)
         {
-            this._t = new DictionaryScribeTable(Data.Host, Host.RandomName, Host.TEMP, Data.Columns, Data.Columns, Page.DEFAULT_SIZE);
+            this._t = new DictionaryTable(Data.Host, Host.RandomName, Host.TEMP, Data.Columns, Data.Columns, Page.DEFAULT_SIZE);
         }
 
         public override void Insert(Record Value)
@@ -35,7 +35,7 @@ namespace Pulse.Data
 
         public override void Close()
         {
-            this._Parent.Host.PageCache.DropTable(this._t.Key);
+            this._Parent.Host.Store.DropTable(this._t.Key);
         }
 
     }

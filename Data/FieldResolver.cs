@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Pulse.Libraries;
 
 namespace Pulse.Data
 {
@@ -18,9 +19,8 @@ namespace Pulse.Data
         /// </summary>
         public enum VariantType
         {
-            Field,
-            Scalar,
-            Matrix
+            Schema,
+            Library
         }
 
         /// <summary>
@@ -46,13 +46,8 @@ namespace Pulse.Data
         /// <summary>
         /// Scalars collection
         /// </summary>
-        private Heap<Heap<Cell>> _Scalars;
+        private Heap<Library> _Libraries;
         
-        /// <summary>
-        /// Cell matrix collection
-        /// </summary>
-        private Heap<Heap<CellMatrix>> _Matrixes;
-
         /// <summary>
         /// Creates a field resolver
         /// </summary>
@@ -64,13 +59,11 @@ namespace Pulse.Data
             this._Aliases = new Heap<VariantType>();
             this._Columns = new Heap<Schema>();
             this._Records = new Heap<Record>();
-            this._Scalars = new Heap<Heap<Cell>>();
-            this._Matrixes = new Heap<Heap<CellMatrix>>();
+            this._Libraries = new Heap<Library>();
 
             if (this._Host != null)
             {
-                this._Scalars.Allocate(Host.GLOBAL, this._Host.Scalars);
-                this._Matrixes.Allocate(Host.GLOBAL, this._Host.Matrixes);
+                this.AddLibrary(Host.GLOBAL, Host.BaseLibrary);
             }
 
         }
@@ -95,39 +88,22 @@ namespace Pulse.Data
         {
             if (this.AliasExists(Alias))
                 throw new Exception(string.Format("Alias '{0}' already exists"));
-            this._Aliases.Allocate(Alias, VariantType.Field);
+            this._Aliases.Allocate(Alias, VariantType.Library);
             this._Columns.Allocate(Alias, Columns);
             this._Records.Allocate(Alias, Columns.NullRecord);
         }
 
         /// <summary>
-        /// Adds a scalar heap to the resolver
+        /// 
         /// </summary>
         /// <param name="Alias"></param>
         /// <param name="Library"></param>
-        public void AddScalars(string Alias, Heap<Cell> Library)
+        public void AddLibrary(string Alias, Library Library)
         {
-
             if (this.AliasExists(Alias))
                 throw new Exception(string.Format("Alias '{0}' already exists"));
-            this._Aliases.Allocate(Alias, VariantType.Scalar);
-            this._Scalars.Allocate(Alias, Library);
-
-        }
-
-        /// <summary>
-        /// Adds a matrix heap to the resolver
-        /// </summary>
-        /// <param name="Alias"></param>
-        /// <param name="Library"></param>
-        public void AddMatrixes(string Alias, Heap<CellMatrix> Library)
-        {
-
-            if (this.AliasExists(Alias))
-                throw new Exception(string.Format("Alias '{0}' already exists"));
-            this._Aliases.Allocate(Alias, VariantType.Matrix);
-            this._Matrixes.Allocate(Alias, Library);
-
+            this._Aliases.Allocate(Alias, VariantType.Library);
+            this._Libraries.Allocate(Alias, Library);
         }
 
         /// <summary>
@@ -142,16 +118,10 @@ namespace Pulse.Data
                 this.AddSchema(Variants._Columns.Name(i), Variants._Columns[i]);
             }
 
-            for (int i = 0; i < Variants._Scalars.Count; i++)
+            for (int i = 0; i < Variants._Libraries.Count; i++)
             {
-                if (Variants._Scalars.Name(i) != Host.GLOBAL)
-                    this.AddScalars(Variants._Scalars.Name(i), Variants._Scalars[i]);
-            }
-
-            for (int i = 0; i < Variants._Matrixes.Count; i++)
-            {
-                if (Variants._Scalars.Name(i) != Host.GLOBAL)
-                    this.AddMatrixes(Variants._Matrixes.Name(i), Variants._Matrixes[i]);
+                if (Variants._Libraries.Name(i) != Host.GLOBAL)
+                    this.AddLibrary(Variants._Libraries.Name(i), Variants._Libraries[i]);
             }
 
         }
@@ -258,6 +228,41 @@ namespace Pulse.Data
 
         }
 
+        // Get library //
+        /// <summary>
+        /// Gets a library value
+        /// </summary>
+        /// <param name="HeapPointer"></param>
+        /// <param name="ScalarPointer"></param>
+        /// <returns></returns>
+        public Library GetLibrary(int HeapPointer)
+        {
+            return this._Libraries[HeapPointer];
+        }
+
+        /// <summary>
+        /// Gets a library value
+        /// </summary>
+        /// <param name="Alias"></param>
+        /// <param name="ScalarName"></param>
+        /// <returns></returns>
+        public Library GetLibrary(string Alias)
+        {
+            int tidx = this._Libraries.GetPointer(Alias);
+            return this._Libraries[tidx];
+        }
+
+        /// <summary>
+        /// Gets a library's name
+        /// </summary>
+        /// <param name="HeapPointer"></param>
+        /// <param name="ScalarPointer"></param>
+        /// <returns></returns>
+        public string GetLibraryName(int HeapPointer)
+        {
+            return this._Libraries[HeapPointer].Name;
+        }
+
         // Get scalars //
         /// <summary>
         /// Gets a scalar value
@@ -267,7 +272,7 @@ namespace Pulse.Data
         /// <returns></returns>
         public Cell GetScalar(int HeapPointer, int ScalarPointer)
         {
-            return this._Scalars[HeapPointer][ScalarPointer];
+            return this._Libraries[HeapPointer].Values[ScalarPointer];
         }
 
         /// <summary>
@@ -278,9 +283,9 @@ namespace Pulse.Data
         /// <returns></returns>
         public Cell GetScalar(string Alias, string ScalarName)
         {
-            int tidx = this._Scalars.GetPointer(Alias);
-            int fidx = this._Scalars[tidx].GetPointer(ScalarName);
-            return this._Scalars[tidx][fidx];
+            int tidx = this._Libraries.GetPointer(Alias);
+            int fidx = this._Libraries[tidx].Values.GetPointer(ScalarName);
+            return this._Libraries[tidx].Values[fidx];
         }
 
         /// <summary>
@@ -291,7 +296,7 @@ namespace Pulse.Data
         /// <returns></returns>
         public string GetScalarName(int HeapPointer, int ScalarPointer)
         {
-            return this._Scalars[HeapPointer].Name(ScalarPointer);
+            return this._Libraries[HeapPointer].Values.Name(ScalarPointer);
         }
 
         // Get matrixes //
@@ -303,7 +308,7 @@ namespace Pulse.Data
         /// <returns></returns>
         public CellMatrix GetMatrix(int HeapPointer, int MatrixPointer)
         {
-            return this._Matrixes[HeapPointer][MatrixPointer];
+            return this._Libraries[HeapPointer].Matrixes[MatrixPointer];
         }
 
         /// <summary>
@@ -314,9 +319,9 @@ namespace Pulse.Data
         /// <returns></returns>
         public CellMatrix GetMatrix(string Alias, string MatrixName)
         {
-            int tidx = this._Scalars.GetPointer(Alias);
-            int fidx = this._Scalars[tidx].GetPointer(MatrixName);
-            return this._Matrixes[tidx][fidx];
+            int tidx = this._Libraries.GetPointer(Alias);
+            int fidx = this._Libraries[tidx].Matrixes.GetPointer(MatrixName);
+            return this._Libraries[tidx].Matrixes[fidx];
         }
 
         /// <summary>
@@ -327,7 +332,7 @@ namespace Pulse.Data
         /// <returns></returns>
         public string GetMatrixName(int HeapPointer, int ScalarPointer)
         {
-            return this._Matrixes[HeapPointer].Name(ScalarPointer);
+            return this._Libraries[HeapPointer].Matrixes.Name(ScalarPointer);
         }
 
         // Signitures //

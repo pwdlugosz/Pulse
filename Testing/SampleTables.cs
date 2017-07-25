@@ -16,51 +16,29 @@ namespace Pulse.Testing
             return new Schema("KEY INT, GAUSS_VAL NUM, GROUP10 INT, GROUP100 INT, GROUP1000 INT, TXT STRING.9");
         }
 
-        public static HeapDreamTable SampleHeapDreamTable(Host Host, string Name, int Count, int Offset)
+        public static HeapTable SampleHeapTable(Host Host, string Name, int Count, int Offset)
         {
 
-            HeapDreamTable t = Host.Dream(Name, KeyValueColumns());
-            WriteStream w = t.OpenWriter();
+            HeapTable t = Host.CreateTable("TEMP", Name, KeyValueColumns());
+            RecordWriter w = t.OpenWriter();
             WriteKeyValue(w, Count, Offset);
             w.Close();
             return t;
 
         }
 
-        public static HeapScribeTable SampleHeapScribeTable(Host Host, string Name, int Count, int Offset)
+        public static ClusteredTable SampleClusteredTable(Host Host, string Name, int Count, int Offset)
         {
 
-            HeapScribeTable t = Host.CreateTable("TEMP", Name, KeyValueColumns());
-            WriteStream w = t.OpenWriter();
+            ClusteredTable t = Host.CreateTable("TEMP", Name, KeyValueColumns(), new Key(0));
+            RecordWriter w = t.OpenWriter();
             WriteKeyValue(w, Count, Offset);
             w.Close();
             return t;
 
         }
 
-        public static ClusteredDreamTable SampleClusteredDreamTable(Host Host, string Name, int Count, int Offset)
-        {
-
-            ClusteredDreamTable t = Host.Dream(Name, KeyValueColumns(), new Key(0));
-            WriteStream w = t.OpenWriter();
-            WriteKeyValue(w, Count, Offset);
-            w.Close();
-            return t;
-
-        }
-
-        public static ClusteredScribeTable SampleClusteredScribeTable(Host Host, string Name, int Count, int Offset)
-        {
-
-            ClusteredScribeTable t = Host.CreateTable("TEMP", Name, KeyValueColumns(), new Key(0));
-            WriteStream w = t.OpenWriter();
-            WriteKeyValue(w, Count, Offset);
-            w.Close();
-            return t;
-
-        }
-
-        private static void WriteKeyValue(WriteStream Writer, int Count, int Offset)
+        private static void WriteKeyValue(RecordWriter Writer, int Count, int Offset)
         {
 
             RandomCell rc = new RandomCell(127);

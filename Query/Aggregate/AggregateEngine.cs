@@ -25,7 +25,8 @@ namespace Pulse.Query.Aggregate
         /// <param name="Values">The aggregate functions over which to consolidate the data</param>
         /// <param name="Where">The filter to apply to the data</param>
         /// <param name="MetaData">The meta data to update</param>
-        public abstract void Render(Host Host, WriteStream Output, Table Data, ScalarExpressionCollection Keys, AggregateCollection Values, Filter Where, AggregateMetaData MetaData);
+        public abstract void Render(Host Host, RecordWriter Output, Table Data, ScalarExpressionCollection Keys, AggregateCollection Values, Filter Where, 
+            ScalarExpressionCollection Select, AggregateMetaData MetaData);
 
         /// <summary>
         /// Groups values by keys
@@ -36,10 +37,11 @@ namespace Pulse.Query.Aggregate
         /// <param name="Values">The aggregate functions over which to consolidate the data</param>
         /// <param name="Where">The filter to apply to the data</param>
         /// <param name="MetaData">The meta data to update</param>
-        public void Render(Host Host, WriteStream Output, Table Data, ScalarExpressionCollection Keys, AggregateCollection Values, Filter Where)
+        public void Render(Host Host, RecordWriter Output, Table Data, ScalarExpressionCollection Keys, AggregateCollection Values, Filter Where, 
+            ScalarExpressionCollection Select)
         {
             AggregateMetaData meta = new AggregateMetaData();
-            this.Render(Host, Output, Data, Keys, Values, Where, meta);
+            this.Render(Host, Output, Data, Keys, Values, Where, Select, meta);
         }
 
         // Supporting aggregates //

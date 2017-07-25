@@ -30,7 +30,7 @@ namespace Pulse.Data
          *      -- Null bit
          * -- Bools (BOOL) take up 1 byte
          * -- Longs (INT), Dates (DATE), floating points (DOUBLE) all take up 8 bytes
-         * -- Strings take up 4 + 2 OriginalNode n bytes of data (4 == length, each n takes up 2 bytes)
+         * -- Strings take up 4 + 2 OriginalPage n bytes of data (4 == length, each n takes up 2 bytes)
          * -- Blobs take up 4 + n bytes of data
          * 
          */

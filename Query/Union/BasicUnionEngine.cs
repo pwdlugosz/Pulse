@@ -15,13 +15,13 @@ namespace Pulse.Query.Union
     public sealed class BasicUnionEngine : UnionEngine
     {
 
-        public override void Render(Host Host, WriteStream Output, IEnumerable<Table> Tables, UnionMetaData MetaData)
+        public override void Render(Host Host, RecordWriter Output, IEnumerable<Table> Tables, UnionMetaData MetaData)
         {
 
             foreach (Table t in Tables)
             {
 
-                ReadStream rs = t.OpenReader();
+                RecordReader rs = t.OpenReader();
                 Output.Consume(rs);
 
                 MetaData.ReadCount += t.RecordCount;
