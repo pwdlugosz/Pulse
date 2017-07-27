@@ -666,12 +666,12 @@ namespace Pulse.Scripting
          *      TO SATISFY THIS CONSTRAINT, THE SCALAR AND MATRIX VISITORS NEED TO BE 
          * 
          */
-        public override ActionExpression VisitActionQuery(PulseParser.ActionQueryContext context)
+        public override ActionExpression VisitActionForEach(PulseParser.ActionForEachContext context)
         {
 
             // Render the table expression //
             TableExpression t = this._TableBuilder.Visit(context.table_expression());
-            string alias = context.K_AS() == null ? "T" : context.IDENTIFIER().GetText();
+            string alias = context.IDENTIFIER().GetText();
 
             // Save the scalar and matrix visitors //
             ScalarExpressionVisitor lsb = this._ScalarBuilder;
@@ -684,7 +684,7 @@ namespace Pulse.Scripting
             this._TableBuilder.SeedVisitor = this._ScalarBuilder;
 
             // Now we can actually render the query! //
-            ActionExpressionQuery aeq = new ActionExpressionQuery(this._Host, this._Master, t, alias, this._ScalarBuilder.ColumnCube.Count - 1);
+            ActionExpressionForEach aeq = new ActionExpressionForEach(this._Host, this._Master, t, alias, this._ScalarBuilder.ColumnCube.Count - 1);
             foreach (PulseParser.Action_expressionContext x in context.action_expression())
             {
                 ActionExpression ae = this.Visit(x);

@@ -9,14 +9,14 @@ using Pulse.TableExpressions;
 namespace Pulse.ActionExpressions
 {
     
-    public class ActionExpressionQuery : ActionExpression
+    public class ActionExpressionForEach : ActionExpression
     {
 
         private TableExpression _t;
         private string _a;
         private int _hidx = 0;
 
-        public ActionExpressionQuery(Host Host, ActionExpression Parent, TableExpression Data, string Alias, int HeapIndex)
+        public ActionExpressionForEach(Host Host, ActionExpression Parent, TableExpression Data, string Alias, int HeapIndex)
             : base(Host, Parent)
         {
             this._t = Data;

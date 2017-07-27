@@ -113,6 +113,14 @@ namespace Pulse.Data
 
         }
 
+        internal void Collide(string Name, T Value, int Pointer)
+        {
+            if (this.Exists(Name))
+                throw new Exception(string.Format("Cannot allocate '{0}', an allocation with that name already exists", Name));
+            this._RefSet.Add(Name, Pointer);
+            this._Heap.Add(Value);
+        }
+
         public void Vacum()
         {
 

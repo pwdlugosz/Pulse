@@ -263,6 +263,36 @@ namespace Pulse.Data
         }
 
         /// <summary>
+        /// Compares two keys only on their field offsets, and their affinities; if the left key is smaller, it ignores the remaining indexes; if the left key is larger than the right key, it returns false; this does consider key affinity
+        /// </summary>
+        /// <param name="K1">The left key</param>
+        /// <param name="K2">The right key</param>
+        /// <returns>Boolean indicating if both keys are the same</returns>
+        public static bool LeftSubsetWeak(Key K1, Key K2)
+        {
+            if (K1.Count > K2.Count) return false;
+            int n = K1.Count;
+            for (int i = 0; i < n; i++)
+                if (K1[i] != K2[i]) return false;
+            return true;
+        }
+
+        /// <summary>
+        /// Compares two keys only on their field offsets, and their affinities; if the left key is smaller, it ignores the remaining indexes; if the left key is larger than the right key, it returns false; this does not consider key affinity
+        /// </summary>
+        /// <param name="K1">The left key</param>
+        /// <param name="K2">The right key</param>
+        /// <returns>Boolean indicating if both keys are the same</returns>
+        public static bool LeftStrong(Key K1, Key K2)
+        {
+            if (K1.Count > K2.Count) return false;
+            int n = K1.Count;
+            for (int i = 0; i < n; i++)
+                if (K1[i] != K2[i] || K1.Affinity(i) != K2.Affinity(i)) return false;
+            return true;
+        }
+
+        /// <summary>
         /// Parses a key from a string
         /// </summary>
         /// <param name="Text">Text to parse</param>

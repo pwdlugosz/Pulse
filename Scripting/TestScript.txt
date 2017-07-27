@@ -56,9 +56,12 @@ PRINT TEMP.TEST5F TO 'C:\Users\pwdlu_000\Documents\Pulse_Projects\Temp\OutputTes
 PRINT TEMP.TEST5G TO 'C:\Users\pwdlu_000\Documents\Pulse_Projects\Temp\OutputTest5G.txt';
 PRINT TEMP.TEST6 TO 'C:\Users\pwdlu_000\Documents\Pulse_Projects\Temp\OutputTest6.txt';
 
-QUERY TEMP.TEST6 AS T
+TABLE TEMP.TEST7 = { STRING.1 KEY, INT VALUE };
+
+FOR_EACH T IN TEMP.TEST6
 {
-	PRINT T.S_VALUE;
-	PRINT T.VAL_CNT;
+	//PRINT X.S_VALUE AS X_VAL, T.S_VALUE AS T_VAL;
+	TEMP.TEST7 += TEMP.TEST4.AS(X).SELECT(X.S_VALUE, X.VAL_CNT, T.S_VALUE AS TS_VALUE);
 };
+PRINT TEMP.TEST7 TO 'C:\Users\pwdlu_000\Documents\Pulse_Projects\Temp\OutputTest7.txt';
 

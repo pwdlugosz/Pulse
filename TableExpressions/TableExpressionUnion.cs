@@ -19,12 +19,10 @@ namespace Pulse.TableExpressions
     public sealed class TableExpressionUnion : TableExpression
     {
 
-        private UnionEngine _Engine;
-
-        public TableExpressionUnion(Host Host, TableExpression Parent, UnionEngine Engine)
+        public TableExpressionUnion(Host Host, TableExpression Parent)
             : base(Host, Parent)
         {
-            this._Engine = Engine;
+            this.Alias = "UNION";
         }
 
         public override Schema Columns
@@ -52,7 +50,15 @@ namespace Pulse.TableExpressions
 
         public override void Evaluate(RecordWriter Writer)
         {
-            this._Engine.Render(this._Host, Writer, this.ChildTables);
+
+            foreach (Table t in this.ChildTables)
+            {
+
+                RecordReader rs = t.OpenReader();
+                Writer.Consume(rs);
+
+            }
+
         }
 
         public override long EstimatedCount

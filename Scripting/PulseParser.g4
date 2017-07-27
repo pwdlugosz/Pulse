@@ -48,7 +48,7 @@ action_expression
 	| LCURL action_expression+ RCURL																											# ActionSet				
 	| K_DO LCURL action_expression+ RCURL																										# ActionDo
 	
-	| K_QUERY table_expression (K_AS IDENTIFIER)? LCURL (action_expression SEMI_COLON)+	RCURL													# ActionQuery	
+	| K_FOR_EACH IDENTIFIER K_IN table_expression LCURL (action_expression SEMI_COLON)+	RCURL													# ActionForEach	
 	| K_FOR LPAREN (type)? var_name ASSIGN expression SEMI_COLON expression SEMI_COLON action_expression RPAREN 
 		LCURL (action_expression SEMI_COLON)+ RCURL 																							# ActionFor
 	| K_WHILE LPAREN expression RPAREN LCURL (action_expression SEMI_COLON)+ RCURL																# ActionWhile
@@ -66,14 +66,15 @@ increment : (PLUS PLUS | MINUS MINUS);
 // ----------------------------------------------- TABLES ---------------------------------------------- //
 // ----------------------------------------------------------------------------------------------------- //
 table_expression
-	: (K_JOIN | K_ALEFT_JOIN | K_LEFT_JOIN) LPAREN table_expression (DOT t_alias)? COMMA table_expression (DOT t_alias)? 
+	: (K_JOIN | K_ALEFT_JOIN | K_LEFT_JOIN) LPAREN table_expression COMMA table_expression 
 		COMMA t_join_on (K_AND t_join_on)* RPAREN DOT t_select (DOT where_clause)? tmod_distinct? tmod_order?							# TableExpressionJoin
-	| table_expression (DOT t_alias)? DOT t_fold (DOT where_clause)? (DOT t_select)? tmod_distinct? tmod_order?			# TableExpressionFold
-	| table_expression (DOT t_alias)? DOT t_select (DOT where_clause)? tmod_distinct? tmod_order?										# TableExpressionSelect
+	| table_expression DOT t_fold (DOT where_clause)? (DOT t_select)? tmod_distinct? tmod_order?										# TableExpressionFold
+	| table_expression DOT t_select (DOT where_clause)? tmod_distinct? tmod_order?														# TableExpressionSelect
 	| K_UNION LPAREN table_expression (COMMA table_expression)* RPAREN tmod_distinct? tmod_order?										# TableExpressionUnion
 	| IDENTIFIER DOT IDENTIFIER																											# TableExpressionLookup
 	| LCURL expression_or_wildcard_set (PIPE expression_or_wildcard_set)* RCURL															# TableExpressionLiteral
 	| LCURL type IDENTIFIER (COMMA type IDENTIFIER)* RCURL																				# TableExpressionShell
+	| table_expression DOT t_alias																										# TableExpressionAlias
 	| LPAREN table_expression RPAREN																									# TableExpressionParens
 	;
 

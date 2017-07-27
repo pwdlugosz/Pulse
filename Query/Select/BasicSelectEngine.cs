@@ -16,16 +16,13 @@ namespace Pulse.Query.Select
     public sealed class BasicSelectEngine : SelectEngine
     {
 
-        public override void Render(Host Host, RecordWriter Output, Table Data, ScalarExpressionCollection Fields, Filter Where, long Limit, SelectMetaData MetaData)
+        public override void Render(Host Host, RecordWriter Output, Table Data, FieldResolver Variants, int RecordRef, ScalarExpressionCollection Fields, Filter Where, long Limit, SelectMetaData MetaData)
         {
 
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
             long Ticker = 0;
 
             RecordReader rs = Data.OpenReader();
-
-            FieldResolver fr = new FieldResolver(Host);
-            fr.AddSchema("T", Data.Columns);
 
             while (rs.CanAdvance)
             {
@@ -35,12 +32,12 @@ namespace Pulse.Query.Select
 
                 MetaData.ReadCount++;
 
-                fr.SetValue(0, rs.ReadNext());
+                Variants.SetValue(RecordRef, rs.ReadNext());
 
-                if (Where.Evaluate(fr))
+                if (Where.Evaluate(Variants))
                 {
 
-                    Output.Insert(Fields.Evaluate(fr));
+                    Output.Insert(Fields.Evaluate(Variants));
 
                     MetaData.WriteCount++;
 

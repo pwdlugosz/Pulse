@@ -17,6 +17,7 @@ namespace Pulse.TableExpressions
             : base(Host, Parent)
         {
             this._Columns = Columns;
+            this.Alias = "SHELL";
         }
 
         public override Schema Columns
@@ -35,6 +36,11 @@ namespace Pulse.TableExpressions
             {
                 return 0;
             }
+        }
+
+        public override bool IsIndexedBy(Key IndexColumns)
+        {
+            return false;
         }
 
     }

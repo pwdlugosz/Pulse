@@ -57,7 +57,7 @@
     <Compile Include="ActionExpressions\ActionExpressionMatrixUnitAssign.cs" />
     <Compile Include="ActionExpressions\ActionExpressionMatrixUnitAssignAll.cs" />
     <Compile Include="ActionExpressions\ActionExpressionPrint.cs" />
-    <Compile Include="ActionExpressions\ActionExpressionQuery.cs" />
+    <Compile Include="ActionExpressions\ActionExpressionForEach.cs" />
     <Compile Include="ActionExpressions\ActionExpressionScalarAssign.cs" />
     <Compile Include="ActionExpressions\ActionExpressionTableAssign.cs" />
     <Compile Include="ActionExpressions\ActionExpressionWhile.cs" />

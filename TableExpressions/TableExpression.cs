@@ -4,14 +4,11 @@ using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using Pulse.Data;
 using Pulse.Query;
 using Pulse.ScalarExpressions;
 using Pulse.Aggregates;
-using Pulse.Query.Select;
-using Pulse.Query.Aggregate;
-using Pulse.Query.Join;
-using Pulse.Query.Union;
 
 namespace Pulse.TableExpressions
 {
@@ -24,7 +21,8 @@ namespace Pulse.TableExpressions
         protected Host _Host;
         protected List<Table> _RecycleBin;
         protected Key _OrderBy;
-
+        protected Stopwatch _Timer;
+        
         public TableExpression(Host Host, TableExpression Parent)
         {
             this._Host = Host;
@@ -75,6 +73,15 @@ namespace Pulse.TableExpressions
         public bool IsTerminal
         {
             get { return this._Children.Count == 0; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string Alias
+        {
+            get;
+            set;
         }
 
         // Optimizations //
@@ -310,6 +317,25 @@ namespace Pulse.TableExpressions
         public virtual long EstimatedCount
         {
             get { return 1; }
+        }
+
+        /// <summary>
+        /// Checks if an expression will yield an indexed table
+        /// </summary>
+        /// <param name="IndexColumns"></param>
+        /// <returns></returns>
+        public virtual bool IsIndexedBy(Key IndexColumns)
+        {
+            return Key.LeftStrong(IndexColumns, this.OrderBy);
+        }
+
+        /// <summary>
+        /// Returns meta data about the expression rendering
+        /// </summary>
+        /// <returns></returns>
+        public virtual string MetaData()
+        {
+            return "META_DATA";
         }
 
         // Internal Classes //

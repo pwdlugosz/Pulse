@@ -70,7 +70,16 @@ namespace Pulse.ActionExpressions
 
         public virtual FieldResolver CreateResolver()
         {
-            return new FieldResolver(this._Host);
+
+            FieldResolver f = new FieldResolver(this._Host);
+
+            foreach (ActionExpression x in this._Children)
+            {
+                f = FieldResolver.Union(f, x.CreateResolver());
+            }
+
+            return f;
+
         }
 
         public abstract void Invoke(FieldResolver Variant);

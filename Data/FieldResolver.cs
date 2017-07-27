@@ -228,6 +228,37 @@ namespace Pulse.Data
 
         }
 
+        /// <summary>
+        /// Removes a schema 
+        /// </summary>
+        /// <param name="Alias"></param>
+        public void RemoveSchema(string Alias)
+        {
+            this._Aliases.Deallocate(Alias);
+            this._Columns.Deallocate(Alias);
+            this._Records.Deallocate(Alias);
+        }
+
+        /// <summary>
+        /// Using an existing pointer, points the data to a different schema
+        /// </summary>
+        /// <param name="TablePointer"></param>
+        /// <param name="NewSchema"></param>
+        public void Reclaim(int TablePointer, Schema NewSchema)
+        {
+
+            string Alias = this._Aliases.Name(TablePointer);
+
+            this._Aliases.Deallocate(Alias);
+            this._Columns.Deallocate(Alias);
+            this._Records.Deallocate(Alias);
+
+            this._Aliases.Collide(Alias, VariantType.Schema, TablePointer);
+            this._Columns.Collide(Alias, NewSchema, TablePointer);
+            this._Records.Collide(Alias, NewSchema.NullRecord, TablePointer);
+
+        }
+
         // Get library //
         /// <summary>
         /// Gets a library value
@@ -355,6 +386,26 @@ namespace Pulse.Data
 
         }
 
+        // Other //
+        public FieldResolver CloneOfMe()
+        {
+
+            FieldResolver f = new FieldResolver(this._Host);
+
+            foreach (KeyValuePair<string, Schema> x in this._Columns.Entries)
+            {
+                f.AddSchema(x.Key, x.Value);
+            }
+
+            foreach (KeyValuePair<string, Library> x in this._Libraries.Entries)
+            {
+                if (!f._Libraries.Exists(x.Key)) f.AddLibrary(x.Key, x.Value); // In case we collide with 'GLOBAL'
+            }
+
+            return f;
+
+        }
+
         // Statics //
         public static FieldResolver Build(Host Host, params Table[] Tables)
         {
@@ -364,6 +415,35 @@ namespace Pulse.Data
                 fr.AddSchema(t.Name, t.Columns);
             }
             return fr;
+
+        }
+
+        public static FieldResolver Union(FieldResolver A, FieldResolver B)
+        {
+
+            FieldResolver f = new FieldResolver(A._Host);
+
+            foreach (KeyValuePair<string, Schema> x in A._Columns.Entries)
+            {
+                f.AddSchema(x.Key, x.Value);
+            }
+
+            foreach (KeyValuePair<string, Schema> x in B._Columns.Entries)
+            {
+                if (!f._Columns.Exists(x.Key)) f.AddSchema(x.Key, x.Value);
+            }
+
+            foreach (KeyValuePair<string, Library> x in A._Libraries.Entries)
+            {
+                if (!f._Libraries.Exists(x.Key)) f.AddLibrary(x.Key, x.Value); // In case we collide with 'GLOBAL'
+            }
+
+            foreach (KeyValuePair<string, Library> x in B._Libraries.Entries)
+            {
+                if (!f._Libraries.Exists(x.Key)) f.AddLibrary(x.Key, x.Value);
+            }
+
+            return f;
 
         }
 

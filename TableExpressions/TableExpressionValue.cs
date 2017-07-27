@@ -25,6 +25,7 @@ namespace Pulse.TableExpressions
             : base(Host, Parent)
         {
             this._t = Value;
+            this.Alias = "VALUE";
         }
 
         public override Schema Columns
@@ -55,6 +56,11 @@ namespace Pulse.TableExpressions
             {
                 return this._t.RecordCount;
             }
+        }
+
+        public override bool IsIndexedBy(Key IndexColumns)
+        {
+            return this._t.IsIndexedBy(IndexColumns);
         }
 
     }

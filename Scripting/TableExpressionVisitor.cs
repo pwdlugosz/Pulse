@@ -7,10 +7,6 @@ using Pulse.TableExpressions;
 using Pulse.ScalarExpressions;
 using Pulse.Data;
 using Pulse.Aggregates;
-using Pulse.Query.Aggregate;
-using Pulse.Query.Join;
-using Pulse.Query.Select;
-using Pulse.Query.Union;
 
 namespace Pulse.Scripting
 {
@@ -42,6 +38,16 @@ namespace Pulse.Scripting
         }
 
         // Expressions //
+        public override TableExpression VisitTableExpressionAlias(PulseParser.TableExpressionAliasContext context)
+        {
+
+            string a = context.t_alias().IDENTIFIER().GetText();
+            this._Master = this.Visit(context.table_expression());
+            this._Master.Alias = a;
+            return this._Master;
+
+        }
+
         public override TableExpression VisitTableExpressionJoin(PulseParser.TableExpressionJoinContext context)
         {
 
@@ -50,9 +56,9 @@ namespace Pulse.Scripting
             TableExpression t2 = this.Visit(context.table_expression()[1]);
 
             // Get the aliases //
-            string a1 = context.t_alias()[0].IDENTIFIER().GetText();
-            string a2 = context.t_alias()[1].IDENTIFIER().GetText();
-
+            string a1 = t1.Alias;
+            string a2 = t2.Alias;
+            
             // Build and load the keys //
             Key k1 = new Key(), k2 = new Key();
             foreach (PulseParser.T_join_onContext ctx in context.t_join_on())
@@ -62,23 +68,14 @@ namespace Pulse.Scripting
             RecordMatcher predicate = new RecordMatcher(k1, k2);
 
             // Get the affinity //
-            Query.Join.JoinType t = Query.Join.JoinType.INNER;
+            JoinType t = JoinType.INNER;
             if (context.K_ALEFT_JOIN() != null)
-                t = Query.Join.JoinType.ANTI_LEFT;
-            else if (context.K_LEFT_JOIN() == null)
-                t = Query.Join.JoinType.LEFT;
+                t = JoinType.ANTI_LEFT;
+            else if (context.K_LEFT_JOIN() != null)
+                t = JoinType.LEFT;
 
             // Get the join engine //
-            Query.Join.JoinAlgorithm ja = Query.Join.JoinOptimizer.LowestCost(t1.EstimatedCount, t2.EstimatedCount);
-
-            // Create the join engine //
-            JoinEngine je;
-            if (ja == JoinAlgorithm.SortMerge)
-                je = new SortMergeJoinEngine();
-            else if (ja == JoinAlgorithm.QuasiNestedLoop)
-                je = new QuasiNestedLoopJoinEngine();
-            else
-                je = new QuasiNestedLoopJoinEngine();
+            JoinAlgorithm ja = TableExpressionJoin.Optimize(t1.EstimatedCount, t2.EstimatedCount, t1.IsIndexedBy(k1), t2.IsIndexedBy(k2));
 
             // Get the expressions //
             ScalarExpressionVisitor sev = this.SeedVisitor.CloneOfMe();
@@ -87,8 +84,17 @@ namespace Pulse.Scripting
             ScalarExpressionCollection sec = sev.Render(context.t_select().expression_or_wildcard_set());
             Filter f = sev.Render(context.where_clause());
 
+            // Get the field resolver //
+            FieldResolver fr = sev.ImpliedResolver;
+            int lref = sev.ColumnCube.Count - 2;
+            int rref = sev.ColumnCube.Count - 1;
+
             // Create the expression //
-            TableExpressionJoin tej = new TableExpressionJoin(this._Host, this._Master, sec, predicate, f, je, t);
+            TableExpressionJoin tej = new TableExpressionJoinSortMerge(this._Host, this._Master, sec, predicate, f, t, fr);
+            //TableExpressionJoin tej = new TableExpressionJoinQuasiNestedLoop(this._Host, this._Master, sec, predicate, f, t, fr);
+            //TableExpressionJoin tej = new TableExpressionJoinNestedLoop(this._Host, this._Master, sec, predicate, f, t, fr);
+            tej.LeftRecordRef = lref;
+            tej.RightRecordRef = rref;
 
             // Handle the clustering, the distinct, and the ordering //
             this.AddModifications(tej, context.tmod_distinct(), context.tmod_order());
@@ -111,7 +117,7 @@ namespace Pulse.Scripting
             TableExpression te = this.Visit(context.table_expression());
 
             // Get the alias //
-            string a_prime = context.t_alias() == null ? "T" : context.t_alias().IDENTIFIER().GetText();
+            string a_prime = te.Alias;
             string a_val = context.t_fold().t_alias() == null ? "T" : context.t_fold().t_alias().IDENTIFIER().GetText();
             
             // Visitor used by the grouper //
@@ -132,12 +138,14 @@ namespace Pulse.Scripting
             if (context.t_select() != null)
                 selector = S_Visitor.Render(context.t_select().expression_or_wildcard_set());
 
-            // Build the engine //
-            AggregateEngine ae = new DictionaryAggregateEngine();
+            // Get the resolver //
+            FieldResolver fr = S_Visitor.ImpliedResolver;
+            int rref = S_Visitor.ColumnCube.Count - 1;
 
             // Create the expression //
-            TableExpressionFold tef = new TableExpressionFold(this._Host, this._Master, grouper, folds, where, selector, ae);
-
+            TableExpressionFold tef = new TableExpressionFold.TableExpressionFoldDictionary(this._Host, this._Master, grouper, folds, where, selector, fr, rref);
+            tef.Alias = a_prime;
+            
             // Add the mods //
             this.AddModifications(tef, context.tmod_distinct(), context.tmod_order());
 
@@ -153,11 +161,8 @@ namespace Pulse.Scripting
         public override TableExpression VisitTableExpressionUnion(PulseParser.TableExpressionUnionContext context)
         {
             
-            // Create a union engine //
-            UnionEngine ue = new BasicUnionEngine();
-
             // Create a union expression //
-            TableExpressionUnion teu = new TableExpressionUnion(this._Host, this._Master, ue);
+            TableExpressionUnion teu = new TableExpressionUnion(this._Host, this._Master);
 
             // Load all the tables //
             foreach (PulseParser.Table_expressionContext ctx in context.table_expression())
@@ -180,18 +185,23 @@ namespace Pulse.Scripting
             
             // Get the base expression //
             TableExpression t = this.Visit(context.table_expression());
-            string a_prime = context.t_alias() == null ? "T" : context.t_alias().IDENTIFIER().GetText();
-            
+            string a_prime = t.Alias;
+
             // Get the where and the fields //
             ScalarExpressionVisitor vis = this.SeedVisitor.CloneOfMe();
             vis.AddSchema(a_prime, t.Columns);
             ScalarExpressionCollection select = vis.Render(context.t_select().expression_or_wildcard_set());
             Filter where = vis.Render(context.where_clause());
 
-            // Create the expression //
-            TableExpression x = new TableExpressionSelect(this._Host, this._Master, select, where, new BasicSelectEngine());
-            x.AddChild(t);
+            // Resolver //
+            FieldResolver fr = vis.ImpliedResolver;
+            int rref = vis.ColumnCube.Count - 1;
 
+            // Create the expression //
+            TableExpression x = new TableExpressionSelect(this._Host, this._Master, select, where, fr, rref);
+            x.AddChild(t);
+            x.Alias = a_prime;
+            
             // Modifiers //
             this.AddModifications(x, context.tmod_distinct(), context.tmod_order());
             
@@ -206,8 +216,9 @@ namespace Pulse.Scripting
         {
 
             Table t = this._Host.OpenTable(context.IDENTIFIER()[0].GetText(), context.IDENTIFIER()[1].GetText());
-
-            return new TableExpressionValue(this._Host, this._Master, t);
+            TableExpression x = new TableExpressionValue(this._Host, this._Master, t);
+            x.Alias = t.Name;
+            return x;
 
         }
 
@@ -244,7 +255,9 @@ namespace Pulse.Scripting
             }
 
             // Return the table //
-            return new TableExpressionValue(this._Host, this._Master, t);
+            TableExpressionValue v = new TableExpressionValue(this._Host, this._Master, t);
+            v.Alias = "LITERAL";
+            return v;
 
         }
 
@@ -261,7 +274,9 @@ namespace Pulse.Scripting
                 s.Add(n, t, z);
             }
 
-            return new TableExpressionShell(this._Host, this._Master, s);
+            TableExpressionShell x = new TableExpressionShell(this._Host, this._Master, s);
+            x.Alias = "SHELL";
+            return x;
 
         }
 

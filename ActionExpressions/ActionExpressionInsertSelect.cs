@@ -40,6 +40,13 @@ namespace Pulse.ActionExpressions
             this._Writer.Close();
         }
 
+        public override FieldResolver CreateResolver()
+        {
+            FieldResolver x = new FieldResolver(this._Host);
+            x.AddSchema(this._Select.Alias, this._Select.Columns);
+            return x;
+        }
+
     }
 
 
