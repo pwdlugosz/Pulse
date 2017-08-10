@@ -28,6 +28,7 @@ namespace Pulse.Data
         /// </summary>
         public const string TEMP = "TEMP";
         public const string GLOBAL = "GLOBAL";
+        public const string RANDOM_NAME_PREFIX = "TEMP";
         
         private const string DIR_MAIN = "Pulse_Projects";
         private const string DIR_TEMP = "Temp";
@@ -44,6 +45,7 @@ namespace Pulse.Data
         private Stopwatch _Timer;
         private Heap<Library> _Libraries;
         private Library _Base;
+        public readonly long StartTicks = DateTime.Now.Ticks;
 
         /// <summary>
         /// Creates a host
@@ -320,6 +322,16 @@ namespace Pulse.Data
             return this._Cache.TableExists(TableHeader.DeriveV1Path(this._Connections[Alias], Name));
         }
 
+        /// <summary>
+        /// Checks if the table is system generated temporary table
+        /// </summary>
+        /// <param name="T"></param>
+        /// <returns></returns>
+        public bool IsSystemTemp(Table T)
+        {
+            return T.Name.StartsWith(RANDOM_NAME_PREFIX) && T.Header.Directory == this.TempDB;
+        }
+
         // Debugging //
         public void DebugPrint(string Text, params object[] Obj)
         {
@@ -336,6 +348,21 @@ namespace Pulse.Data
         {
             get;
             set;
+        }
+
+        public static long GetXID()
+        {
+            Cell x = new Cell(0);
+            byte[] y = Guid.NewGuid().ToByteArray();
+            x.B0 = (byte)(y[0] ^ y[8]);
+            x.B1 = (byte)(y[1] ^ y[9]);
+            x.B2 = (byte)(y[2] ^ y[10]);
+            x.B3 = (byte)(y[3] ^ y[11]);
+            x.B4 = (byte)(y[4] ^ y[12]);
+            x.B5 = (byte)(y[5] ^ y[13]);
+            x.B6 = (byte)(y[6] ^ y[14]);
+            x.B7 = (byte)(y[7] ^ y[15]);
+            return x.INT < 0 ? ~x.INT : x.INT;
         }
 
         // Directories //
@@ -378,7 +405,7 @@ namespace Pulse.Data
             get
             {
                 Guid x = Guid.NewGuid();
-                return "TEMP_" + x.ToString().Replace("-", "");
+                return RANDOM_NAME_PREFIX + "_" + x.ToString().Replace("-", "");
             }
         }
 

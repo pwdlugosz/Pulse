@@ -249,7 +249,7 @@ namespace Pulse.Data.XTree
             if (SearchType == XTreeSearchType.AnyElement)
                 return idx;
 
-            // Search Lower //
+            // Search Upper //
             int pos = 0;
             if (SearchType == XTreeSearchType.FirstElement)
             {
@@ -611,7 +611,7 @@ namespace Pulse.Data.XTree
             if (SearchType == XTreeSearchType.AnyElement)
                 return idx;
 
-            // Search Lower //
+            // Search Upper //
             int pos = 0;
             if (SearchType == XTreeSearchType.FirstElement)
             {

@@ -41,11 +41,11 @@ namespace Pulse.Scripting
             //// Create an executer object //
             //CommandVisitor processor = new CommandVisitor(this.Enviro);
 
-            //// Create the call stack and the error catch stack //
+            //// Create the call Intermediary and the error catch Intermediary //
             //List<RyeParser.CommandContext> CallStack = new List<RyeParser.CommandContext>();
             //List<string> Errors = new List<string>();
 
-            //// Load the call stack and/or parse the errors
+            //// Load the call Intermediary and/or parse the errors
             //try
             //{
 
@@ -82,7 +82,7 @@ namespace Pulse.Scripting
 
             //}
 
-            //// Execute each element in the call stack //
+            //// Execute each element in the call Intermediary //
             //int Runs = 0;
             //foreach (RyeParser.CommandContext ctx in CallStack)
             //{
@@ -208,7 +208,7 @@ namespace Pulse.Scripting
 
         public Table RenderTable(string Script)
         {
-            return this.ToTableExpression(Script).Evaluate();
+            return this.ToTableExpression(Script).Evaluate(new FieldResolver(this._Host));
         }
 
         public void RenderAction(string Script)

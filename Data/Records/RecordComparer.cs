@@ -28,8 +28,8 @@ namespace Pulse.Data
         /// Checks if a record is (inclusively) between two other records
         /// </summary>
         /// <param name="Key"></param>
-        /// <param name="Lower"></param>
         /// <param name="Upper"></param>
+        /// <param name="Lower"></param>
         /// <returns></returns>
         int Between(Record Element, Record Lower, Record Upper);
 
@@ -37,8 +37,8 @@ namespace Pulse.Data
         /// Checks if a record is (exclusively) between two other records
         /// </summary>
         /// <param name="Key"></param>
-        /// <param name="Lower"></param>
         /// <param name="Upper"></param>
+        /// <param name="Lower"></param>
         /// <returns></returns>
         int BetweenX(Record Element, Record Lower, Record Upper);
 

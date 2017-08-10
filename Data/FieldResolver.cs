@@ -60,6 +60,7 @@ namespace Pulse.Data
             this._Columns = new Heap<Schema>();
             this._Records = new Heap<Record>();
             this._Libraries = new Heap<Library>();
+            this.XID = Host.GetXID();
 
             if (this._Host != null)
             {
@@ -78,19 +79,55 @@ namespace Pulse.Data
             return this._Aliases.Exists(Alias);
         }
 
+        /// <summary>
+        /// Gets the XID in the field resolver
+        /// </summary>
+        public long XID
+        {
+            get;
+            protected set;
+        }
+
         // Adds //
         /// <summary>
         /// Adds a schema to the resolver
         /// </summary>
         /// <param name="Alias"></param>
         /// <param name="Columns"></param>
-        public void AddSchema(string Alias, Schema Columns)
+        /// <param name="RecordRef">The element that holds the index of the ref added</param>
+        public void AddSchema(string Alias, Schema Columns, out int RecordRef)
         {
             if (this.AliasExists(Alias))
                 throw new Exception(string.Format("Alias '{0}' already exists"));
             this._Aliases.Allocate(Alias, VariantType.Library);
             this._Columns.Allocate(Alias, Columns);
             this._Records.Allocate(Alias, Columns.NullRecord);
+            RecordRef = this._Columns.Count - 1;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Alias"></param>
+        /// <param name="Columns"></param>
+        public void AddSchema(string Alias, Schema Columns)
+        {
+            int x = 0;
+            this.AddSchema(Alias, Columns, out x);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Alias"></param>
+        /// <param name="Library"></param>
+        public void AddLibrary(string Alias, Library Library, out int RecordRef)
+        {
+            if (this.AliasExists(Alias))
+                throw new Exception(string.Format("Alias '{0}' already exists"));
+            this._Aliases.Allocate(Alias, VariantType.Library);
+            this._Libraries.Allocate(Alias, Library);
+            RecordRef = this._Libraries.Count - 1;
         }
 
         /// <summary>
@@ -100,10 +137,8 @@ namespace Pulse.Data
         /// <param name="Library"></param>
         public void AddLibrary(string Alias, Library Library)
         {
-            if (this.AliasExists(Alias))
-                throw new Exception(string.Format("Alias '{0}' already exists"));
-            this._Aliases.Allocate(Alias, VariantType.Library);
-            this._Libraries.Allocate(Alias, Library);
+            int x = 0;
+            this.AddLibrary(Alias, Library, out x);
         }
 
         /// <summary>
@@ -237,26 +272,6 @@ namespace Pulse.Data
             this._Aliases.Deallocate(Alias);
             this._Columns.Deallocate(Alias);
             this._Records.Deallocate(Alias);
-        }
-
-        /// <summary>
-        /// Using an existing pointer, points the data to a different schema
-        /// </summary>
-        /// <param name="TablePointer"></param>
-        /// <param name="NewSchema"></param>
-        public void Reclaim(int TablePointer, Schema NewSchema)
-        {
-
-            string Alias = this._Aliases.Name(TablePointer);
-
-            this._Aliases.Deallocate(Alias);
-            this._Columns.Deallocate(Alias);
-            this._Records.Deallocate(Alias);
-
-            this._Aliases.Collide(Alias, VariantType.Schema, TablePointer);
-            this._Columns.Collide(Alias, NewSchema, TablePointer);
-            this._Records.Collide(Alias, NewSchema.NullRecord, TablePointer);
-
         }
 
         // Get library //
@@ -400,6 +415,20 @@ namespace Pulse.Data
             foreach (KeyValuePair<string, Library> x in this._Libraries.Entries)
             {
                 if (!f._Libraries.Exists(x.Key)) f.AddLibrary(x.Key, x.Value); // In case we collide with 'GLOBAL'
+            }
+
+            return f;
+
+        }
+
+        public FieldResolver CloneOfMeFull()
+        {
+
+            FieldResolver f = this.CloneOfMe();
+
+            for (int i = 0; i < this._Records.Count; i++)
+            {
+                f._Records[i] = this._Records[i];
             }
 
             return f;

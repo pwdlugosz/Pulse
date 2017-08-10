@@ -85,9 +85,14 @@
     <Compile Include="Data\Indexes\DerivedIndex.cs" />
     <Compile Include="Data\Streams\RecordWriterDistinct.cs" />
     <Compile Include="Data\Streams\RecordWriterClustered.cs" />
+    <Compile Include="Data\Structures\BinaryTree.cs" />
     <Compile Include="Data\System\DebugUtil.cs" />
     <Compile Include="Data\System\TableStore.cs" />
     <Compile Include="Data\ITextWritable.cs" />
+    <Compile Include="Data\Tables\IReadable.cs" />
+    <Compile Include="Data\Tables\IRecyclable.cs" />
+    <Compile Include="Data\Tables\TableUtil.cs" />
+    <Compile Include="Views\View.cs" />
     <Compile Include="Data\XTree\XTreePage.cs" />
     <Compile Include="Library\BaseLibrary.cs" />
     <Compile Include="Library\IActionExpressionLookup.cs" />
@@ -180,6 +185,7 @@
     <Compile Include="ScalarExpressions\ScalarExpressionFilter.cs" />
     <Compile Include="ScalarExpressions\ScalarExpressionFunction.cs" />
     <Compile Include="ScalarExpressions\ScalarExpressionMatrixRef.cs" />
+    <Compile Include="ScalarExpressions\ScalarExpressionOptimizer.cs" />
     <Compile Include="ScalarExpressions\ScalarExpressionPointer.cs" />
     <Compile Include="ScalarExpressions\ScalarExpressionScalarRef.cs" />
     <Compile Include="Data\FieldResolver.cs" />
@@ -218,6 +224,7 @@
     <Compile Include="Testing\Testers.cs" />
     <Compile Include="Util\CostCalculator.cs" />
     <Compile Include="Util\SpecialFunctions.cs" />
+    <Compile Include="Util\StringMaker.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

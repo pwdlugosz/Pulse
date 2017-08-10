@@ -155,6 +155,8 @@ namespace Pulse.ScalarExpressions
         public const string NAME_SECOND = "SECOND";
         public const string NAME_MILISECOND = "MILISECOND";
         public const string NAME_TICKS = "TICKS";
+        public const string NAME_ELAPSED = "ELAPSED";
+        public const string NAME_TIME_SPAN = "TIME_SPAN";
 
         // String Functions //
         public const string NAME_SUBSTR = "SUBSTR";
@@ -1393,6 +1395,66 @@ namespace Pulse.ScalarExpressions
 
         }
 
+        public class ExpressionElapsed : ScalarExpressionFunction
+        {
+
+            private Host _Host;
+
+            public ExpressionElapsed(Host Host)
+                : base(null, NAME_ELAPSED, 0, CellAffinity.INT)
+            {
+                this._Host = Host;
+            }
+
+            public override bool IsVolatile
+            {
+                get { return true; }
+            }
+
+            public override ScalarExpression CloneOfMe()
+            {
+                return new ExpressionElapsed(this._Host);
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+
+                if (this._ChildNodes.Count != this._MaxParamterCount)
+                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+                return new Cell(DateTime.Now.Ticks - this._Host.StartTicks);
+
+            }
+
+        }
+
+        public class ExpressionTimeSpan : ScalarExpressionFunction
+        {
+
+            public ExpressionTimeSpan()
+                : base(null, NAME_TIME_SPAN, 1, CellAffinity.STRING)
+            {
+            }
+
+            public override ScalarExpression CloneOfMe()
+            {
+                return new ExpressionTimeSpan();
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+
+                if (this._ChildNodes.Count != this._MaxParamterCount)
+                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+                TimeSpan ts = new TimeSpan(this._ChildNodes[0].Evaluate(Variants).valueINT);
+
+                return new Cell(ts.ToString());
+
+            }
+
+        }
+
         // Strings //
         public class ExpressionSubstring : ScalarExpressionFunction
         {
@@ -2219,7 +2281,7 @@ namespace Pulse.ScalarExpressions
                     case NAME_XOR: return new ExpressionXor();
                     case NAME_IF: return new ExpressionIf();
                     case NAME_IFNULL: return new ExpressionIfNull();
-                    //case NAME_CAST: return new ExpressionCast(); // Note: cast has it's own syntax
+                    //case NAME_CAST: return new ExpressionCast(); // Note: CAST uses the C# syntax and is handeled in the parser not as a function
                     case NAME_LIKE: return new ExpressionLike();
                     case NAME_MATCH: return new ExpressionMatch();
                     case NAME_GUID: return new ExpressionGUID();
@@ -2240,6 +2302,8 @@ namespace Pulse.ScalarExpressions
                     case NAME_SECOND: return new ExpressionSecond();
                     case NAME_MILISECOND: return new ExpressionMillisecond();
                     case NAME_TICKS: return new ExpressionTicks();
+                    case NAME_ELAPSED: return new ExpressionElapsed(this.Enviro);
+                    case NAME_TIME_SPAN: return new ExpressionTimeSpan();
                     case NAME_SUBSTR: return new ExpressionSubstring();
                     case NAME_REPLACE: return new ExpressionReplace();
                     case NAME_POSITION: return new ExpressionPosition();

@@ -82,19 +82,19 @@ namespace Pulse.Data
         public abstract void Revert(int Itterations);
 
         /// <summary>
-        /// The position on the page of the current record
+        /// The position on the page of the Spike record
         /// </summary>
         /// <returns></returns>
         public abstract int RecordID();
 
         /// <summary>
-        /// The ID of the current page being read
+        /// The ID of the Spike page being read
         /// </summary>
         /// <returns></returns>
         public abstract int PageID();
 
         /// <summary>
-        /// The position, in terms of records read, of the current stream
+        /// The position, in terms of records read, of the Spike stream
         /// </summary>
         /// <returns></returns>
         public abstract long Position();
@@ -105,7 +105,7 @@ namespace Pulse.Data
         public abstract void Reset();
 
         /// <summary>
-        /// The current position of the stream expressed as a record key
+        /// The Spike position of the stream expressed as a record key
         /// </summary>
         public RecordKey PositionKey
         {

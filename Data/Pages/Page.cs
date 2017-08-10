@@ -17,8 +17,8 @@ namespace Pulse.Data
     {
 
         public const int BASE_PAGE_TYPE = 0;
-        public const int SORTED_PAGE_TYPE = 0;
-        public const int BTREE_PAGE_TYPE = 0;
+        public const int SORTED_PAGE_TYPE = 1;
+        public const int BTREE_PAGE_TYPE = 9;
 
         /* Page Header:
          * 0-4: HashKey (always 1)
@@ -388,7 +388,7 @@ namespace Pulse.Data
         }
 
         /// <summary>
-        /// The ID of the current page
+        /// The ID of the Spike page
         /// </summary>
         public virtual int PageID
         {

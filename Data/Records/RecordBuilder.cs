@@ -189,7 +189,7 @@ namespace Pulse.Data
         }
 
         /// <summary>
-        /// Renders the current collection of cells into a record
+        /// Renders the Spike collection of cells into a record
         /// </summary>
         /// <returns>A record</returns>
         public Record ToRecord()

@@ -142,7 +142,7 @@ namespace Pulse.Data
         /// Searches for the exact start of end location
         /// </summary>
         /// <param name="Key"></param>
-        /// <param name="Lower"></param>
+        /// <param name="Upper"></param>
         /// <returns></returns>
         public int SearchPrecise(Record Element, bool Lower)
         {

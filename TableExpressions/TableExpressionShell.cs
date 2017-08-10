@@ -25,7 +25,12 @@ namespace Pulse.TableExpressions
             get { return this._Columns; }
         }
 
-        public override void Evaluate(RecordWriter Writer)
+        public override FieldResolver CreateResolver(FieldResolver Variants)
+        {
+            return Variants.CloneOfMeFull();
+        }
+
+        public override void Evaluate(FieldResolver Variants, RecordWriter Writer)
         {
             
         }

@@ -12,7 +12,7 @@ namespace Pulse.Data
     /// <summary>
     /// This is the base class for all tables
     /// </summary>
-    public abstract class Table : IColumns
+    public abstract class Table : IReadable
     {
 
         /// <summary>
@@ -211,6 +211,14 @@ namespace Pulse.Data
         }
 
         /// <summary>
+        /// Gets an estimate of the record count
+        /// </summary>
+        public virtual long EstimatedRecordCount
+        {
+            get { return this.RecordCount; }
+        }
+
+        /// <summary>
         /// Gets a record from a table
         /// </summary>
         /// <param name="Position"></param>
@@ -283,6 +291,13 @@ namespace Pulse.Data
         /// This method gets called right before the table is removed from memory; 
         /// </summary>
         public virtual void PreSerialize()
+        {
+        }
+
+        /// <summary>
+        /// Recycles data
+        /// </summary>
+        public void Recycle()
         {
         }
 
@@ -457,7 +472,7 @@ namespace Pulse.Data
         {
 
             /*
-             * Basically, the current page chain looks like this ... p, r, ...
+             * Basically, the Spike page chain looks like this ... p, r, ...
              * But we are going to change it to: ... p', q, r, ...
              * where p' = the lower half of p, and q is the upper half of p on a new page
              * 
@@ -634,6 +649,126 @@ namespace Pulse.Data
             void IDisposable.Dispose()
             {
                 // Do nothing
+            }
+
+        }
+
+        public class PageWalker
+        {
+
+            private int _CurrentPageID = -1;
+            private Table _Store;
+            private IElementHeader _Header;
+
+            public PageWalker(Table Store, IElementHeader Header)
+            {
+                this._Store = Store;
+                this._CurrentPageID = (this._Store.PageCount == 0 ? -1 : this._Store.OriginPageID);
+                this._Header = Header;
+            }
+
+            public PageWalker(Table Store)
+                : this(Store, Store.Header)
+            {
+            }
+
+            public bool CanAdvance
+            {
+
+                get
+                {
+                    if (this._CurrentPageID == -1)
+                        return false;
+                    return true;
+                }
+
+            }
+
+            public bool CanRevert
+            {
+
+                get
+                {
+                    if (this._CurrentPageID == -1)
+                        return false;
+                    return true;
+                }
+
+            }
+
+            public Table Store
+            {
+                get { return this._Store; }
+            }
+
+            public Page Select()
+            {
+                return this._Store.GetPage(this._CurrentPageID);
+            }
+
+            public Page SelectNext()
+            {
+                Page p = this.Select();
+                this.Advance();
+                return p;
+            }
+
+            public void ToOrigin()
+            {
+                if (this._Store.PageCount == 0)
+                    return;
+                this._CurrentPageID = this._Header.OriginPageID;
+            }
+
+            public void ToEnd()
+            {
+                if (this._Store.PageCount == 0)
+                    return;
+                int id = this._Header.TerminalPageID;
+                this._CurrentPageID = this._Header.TerminalPageID;
+            }
+
+            public void ToPage(int ID)
+            {
+                if (this._Store.PageCount == 0)
+                    return;
+                this._CurrentPageID = ID;
+            }
+
+            public void Advance()
+            {
+
+                if (!this.CanAdvance)
+                    return;
+
+                this._CurrentPageID = this._Store.GetPage(this._CurrentPageID).NextPageID;
+
+            }
+
+            public void Advance(int Count)
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    this.Advance();
+                }
+            }
+
+            public void Revert()
+            {
+
+                if (!this.CanRevert)
+                    return;
+
+                this._CurrentPageID = this._Store.GetPage(this._CurrentPageID).LastPageID;
+
+            }
+
+            public void Revert(int Count)
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    this.Revert();
+                }
             }
 
         }

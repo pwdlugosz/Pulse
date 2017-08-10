@@ -677,7 +677,7 @@ namespace Pulse.Scripting
             ScalarExpressionVisitor lsb = this._ScalarBuilder;
             MatrixExpressionVisitor lmb = this._MatrixBuilder;
 
-            // Build the current context variables //
+            // Build the Spike context variables //
             this._ScalarBuilder = lsb.CloneOfMe();
             this._ScalarBuilder.AddSchema(alias, t.Columns);
             this._MatrixBuilder = new MatrixExpressionVisitor(this._Host, this._ScalarBuilder);

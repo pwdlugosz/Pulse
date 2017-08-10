@@ -45,8 +45,8 @@ action_expression
 	/*
 		both <set> {} and <do> DO {}; are nested actions but only DO can be used in alone: <set> must be a child in an expression tree;
 	*/
-	| LCURL action_expression+ RCURL																											# ActionSet				
-	| K_DO LCURL action_expression+ RCURL																										# ActionDo
+	| LCURL (action_expression SEMI_COLON)+ RCURL																								# ActionSet				
+	| K_DO LCURL (action_expression SEMI_COLON)+ RCURL																							# ActionDo
 	
 	| K_FOR_EACH IDENTIFIER K_IN table_expression LCURL (action_expression SEMI_COLON)+	RCURL													# ActionForEach	
 	| K_FOR LPAREN (type)? var_name ASSIGN expression SEMI_COLON expression SEMI_COLON action_expression RPAREN 

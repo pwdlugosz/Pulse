@@ -10,7 +10,7 @@ namespace Pulse.Data
     /// <summary>
     /// Represents a table whose only purpose is to temporarily store data
     /// </summary>
-    public sealed class ShellTable : Table
+    public sealed class ShellTable : Table, IReadable
     {
 
         /// <summary>

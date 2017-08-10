@@ -15,8 +15,6 @@ namespace Pulse.Data
 
         private int DEBUG_MAX_RECORDS = -1; // used only for debugging; set to -1 to revert to the classic logic
 
-        public const int XPAGE_TYPE = 9;
-
         public enum BPlusTreeSearchType : int
         {
             FirstElement = -1,
@@ -65,6 +63,7 @@ namespace Pulse.Data
                 this._WeakKeyColumns = BranchObjectiveClone(KeyColumns, true);
             }
             this._RefColumn = KeyColumns.Count;
+            this._Type = Page.BTREE_PAGE_TYPE;
 
         }
 
@@ -114,7 +113,7 @@ namespace Pulse.Data
         {
             get
             {
-                return XPAGE_TYPE;
+                return this._Type;
             }
         }
 
@@ -403,7 +402,7 @@ namespace Pulse.Data
             if (SearchType == BPlusTreeSearchType.AnyElement)
                 return idx;
 
-            // Search Lower //
+            // Search Upper //
             int pos = 0;
             if (SearchType == BPlusTreeSearchType.FirstElement)
             {
@@ -455,7 +454,7 @@ namespace Pulse.Data
             if (SearchType == BPlusTreeSearchType.AnyElement)
                 return idx;
 
-            // Search Lower //
+            // Search Upper //
             int pos = 0;
             if (SearchType == BPlusTreeSearchType.FirstElement)
             {
@@ -506,7 +505,7 @@ namespace Pulse.Data
         public static ClusterPage Mutate(Page Primitive, Key KeyColumns)
         {
 
-            if (Primitive.PageType != XPAGE_TYPE)
+            if (Primitive.PageType != Page.BTREE_PAGE_TYPE)
                 throw new Exception("Cannot convert to B+Tree");
 
             if (Primitive is ClusterPage)

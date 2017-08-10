@@ -10,7 +10,7 @@ namespace Pulse.Data
     /// <summary>
     /// Represents a scribe table that keeps records in an unordered linked list
     /// </summary>
-    public class HeapTable : Table
+    public class HeapTable : Table, IReadable
     {
 
         protected Page _Terminis;

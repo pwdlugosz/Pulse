@@ -25,19 +25,25 @@ namespace Pulse.TableExpressions
         protected AggregateCollection _Values;
         protected ScalarExpressionCollection _Select;
         protected Filter _Where;
-        protected FieldResolver _Resolver;
         protected int _RecordRef;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Host"></param>
+        /// <param name="Parent"></param>
+        /// <param name="Keys"></param>
+        /// <param name="Values"></param>
+        /// <param name="Where"></param>
+        /// <param name="Select"></param>
         public TableExpressionFold(Host Host, TableExpression Parent, ScalarExpressionCollection Keys, AggregateCollection Values, Filter Where, 
-            ScalarExpressionCollection Select, FieldResolver Variant, int RecordRef)
+            ScalarExpressionCollection Select)
             : base(Host, Parent)
         {
             this._Keys = Keys;
             this._Values = Values;
             this._Where = Where;
             this._Select = Select;
-            this._Resolver = Variant;
-            this._RecordRef = RecordRef;
             this.Alias = "FOLD";
         }
 
@@ -58,14 +64,6 @@ namespace Pulse.TableExpressions
             {
                 return this._Children.Max((x) => { return x.EstimatedCount; });
             }
-        }
-
-        /// <summary>
-        /// Gets the base resolver
-        /// </summary>
-        public FieldResolver BaseResolver
-        {
-            get { return this._Resolver; }
         }
 
         /// <summary>
@@ -124,6 +122,22 @@ namespace Pulse.TableExpressions
             return r;
         }
 
+        public override FieldResolver CreateResolver(FieldResolver Variants)
+        {
+
+            FieldResolver x = Variants.CloneOfMeFull();
+            x.AddSchema(this._Children[0].Alias, this._Children[0].Columns, out this._RecordRef);
+            return x;
+
+        }
+
+        public FieldResolver CreateSecondaryResolver(FieldResolver Variants, string Alias)
+        {
+            FieldResolver x = Variants.CloneOfMeFull();
+            x.AddSchema(Alias, this.GetOutputSchema(this._Keys, this._Values), out this._RecordRef);
+            return x;
+        }
+
         /// <summary>
         /// Aggregates data using a dictionary
         /// </summary>
@@ -131,15 +145,19 @@ namespace Pulse.TableExpressions
         {
 
             public TableExpressionFoldDictionary(Host Host, TableExpression Parent, ScalarExpressionCollection Keys, AggregateCollection Values, Filter Where,
-                ScalarExpressionCollection Select, FieldResolver Variant, int RecordRef)
-                : base(Host, Parent, Keys, Values, Where, Select, Variant, RecordRef)
+                ScalarExpressionCollection Select)
+                : base(Host, Parent, Keys, Values, Where, Select)
             {
             }
 
-            public override void Evaluate(RecordWriter Writer)
+            public override void Evaluate(FieldResolver Variants, RecordWriter Writer)
             {
 
-                Table t = this._Children[0].Evaluate();
+                // Get the source table //
+                Table t = this._Children[0].Evaluate(Variants);
+
+                // Get the resolver we're going to use //
+                FieldResolver pointer = this.CreateResolver(Variants);
 
                 // Create a dictionary table //
                 DictionaryTable Storage = this._Host.CreateTable(Host.TEMP, Host.RandomName, this._Keys.Columns, this._Values.WorkColumns);
@@ -155,10 +173,10 @@ namespace Pulse.TableExpressions
                 {
 
                     // Prime the resolver //
-                    this._Resolver.SetValue(this._RecordRef, reader.ReadNext());
+                    pointer.SetValue(this._RecordRef, reader.ReadNext());
 
                     // Evaluate the record //
-                    Record k = this._Keys.Evaluate(this._Resolver);
+                    Record k = this._Keys.Evaluate(pointer);
 
                     // Try to get a key //
                     Record v = Storage.GetValue(k);
@@ -168,7 +186,7 @@ namespace Pulse.TableExpressions
                     {
 
                         // Accumulate the value //
-                        this._Values.Accumulate(this._Resolver, v, 0);
+                        this._Values.Accumulate(pointer, v, 0);
 
                         // Update the working data //
                         Storage.SetValue(k, v);
@@ -182,7 +200,7 @@ namespace Pulse.TableExpressions
                         this._Values.Initialize(v, 0);
 
                         // Accumulate the workd record //
-                        this._Values.Accumulate(this._Resolver, v, 0);
+                        this._Values.Accumulate(pointer, v, 0);
 
                         // Add it to the storage //
                         Storage.Add(k, v);
@@ -197,8 +215,7 @@ namespace Pulse.TableExpressions
 
                 // Open a reader //
                 reader = Storage.OpenReader();
-                FieldResolver x = this._Resolver.CloneOfMe();
-                x.Reclaim(this._RecordRef, this.GetOutputSchema(this._Keys, this._Values));
+                FieldResolver pointer2 = this.CreateSecondaryResolver(Variants, "T"); 
 
                 // Itterate over all key-values //
                 while (reader.CanAdvance)
@@ -213,14 +230,17 @@ namespace Pulse.TableExpressions
                     Record v = this._Values.Evaluate(work, Offset);
 
                     // Append the data //
-                    x.SetValue(this._RecordRef, Record.Join(k, v));
-                    Writer.Insert(this._Select.Evaluate(x));
+                    pointer2.SetValue(this._RecordRef, Record.Join(k, v));
+                    Writer.Insert(this._Select.Evaluate(pointer2));
 
                 }
 
                 // Burn the temp table //
-                Host h = Storage.Host;
-                h.Store.DropTable(Storage.Key);
+                this._Host.Store.DropTable(Storage.Key);
+
+                // Burn the source table //
+                if (this._Host.IsSystemTemp(t))
+                    this._Host.Store.DropTable(t.Key);
 
             }
 
@@ -233,15 +253,18 @@ namespace Pulse.TableExpressions
         {
 
             public TableExpressionFoldIndexed(Host Host, TableExpression Parent, ScalarExpressionCollection Keys, AggregateCollection Values, Filter Where,
-                ScalarExpressionCollection Select, FieldResolver Variant, int RecordRef)
-                : base(Host, Parent, Keys, Values, Where, Select, Variant, RecordRef)
+                ScalarExpressionCollection Select)
+                : base(Host, Parent, Keys, Values, Where, Select)
             {
             }
 
-            public override void Evaluate(RecordWriter Writer)
+            public override void Evaluate(FieldResolver Variants, RecordWriter Writer)
             {
 
-                Table t = this._Children[0].Evaluate();
+                Table t = this._Children[0].Evaluate(Variants);
+
+                //  Create a resolver //
+                FieldResolver pointer = this.CreateResolver(Variants);
 
                 // Create the working record //
                 Record r = this.GetWorkRecord(this._Keys, this._Values);
@@ -250,8 +273,8 @@ namespace Pulse.TableExpressions
                 RecordReader reader = t.OpenReader();
 
                 // Set up the pre-itteration steps //
-                this._Resolver.SetValue(this._RecordRef, reader.Read());
-                Record CurrentKey = this._Keys.Evaluate(this._Resolver);
+                pointer.SetValue(this._RecordRef, reader.Read());
+                Record CurrentKey = this._Keys.Evaluate(pointer);
                 Record LastKey = CurrentKey;
 
                 // Create the work data //
@@ -259,22 +282,21 @@ namespace Pulse.TableExpressions
                 this._Values.Initialize(WorkData, 0);
 
                 // Create select resolver //
-                FieldResolver q = this._Resolver.CloneOfMe();
-                q.Reclaim(this._RecordRef, this.GetOutputSchema(this._Keys, this._Values));
+                FieldResolver pointer2 = this.CreateSecondaryResolver(Variants, "T");
 
                 // Loop //
                 while (reader.CanAdvance)
                 {
 
                     // Prime the resolver //
-                    this._Resolver.SetValue(this._RecordRef, reader.ReadNext());
+                    pointer.SetValue(this._RecordRef, reader.ReadNext());
 
                     // First, check that we satisfy the where statement //
-                    if (this._Where.Evaluate(this._Resolver))
+                    if (this._Where.Evaluate(pointer))
                     {
 
                         // Calculate the key //
-                        CurrentKey = this._Keys.Evaluate(this._Resolver);
+                        CurrentKey = this._Keys.Evaluate(pointer);
 
                         // If the key changes, append the stream //
                         if (Record.Compare(CurrentKey, LastKey) != 0)
@@ -282,8 +304,8 @@ namespace Pulse.TableExpressions
 
                             // Create the final record //
                             Record x = Record.Join(CurrentKey, this._Values.Evaluate(WorkData, 0));
-                            q.SetValue(this._RecordRef, x);
-                            x = this._Select.Evaluate(q);
+                            pointer2.SetValue(this._RecordRef, x);
+                            x = this._Select.Evaluate(pointer2);
 
                             // Append it to the stream //
                             Writer.Insert(x);
@@ -295,7 +317,7 @@ namespace Pulse.TableExpressions
                         }
 
                         // Update the work data //
-                        this._Values.Accumulate(this._Resolver, WorkData, 0);
+                        this._Values.Accumulate(pointer, WorkData, 0);
 
                         // Set the lag key //
                         LastKey = CurrentKey;
@@ -308,17 +330,19 @@ namespace Pulse.TableExpressions
 
                 // Append the last working record //
                 Record y = Record.Join(CurrentKey, this._Values.Evaluate(WorkData, 0));
-                q.SetValue(this._RecordRef, y);
+                pointer2.SetValue(this._RecordRef, y);
 
                 // Select //
-                y = this._Select.Evaluate(q);
+                y = this._Select.Evaluate(pointer2);
 
                 // Append it to the stream //
                 Writer.Insert(y);
 
+                // Clean up //
+                if (this._Host.IsSystemTemp(t))
+                    this._Host.Store.DropTable(t.Key);
 
             }
-
 
         }
 

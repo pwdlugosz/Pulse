@@ -26,9 +26,7 @@ namespace Pulse.ActionExpressions
 
         public override void Invoke(FieldResolver Variant)
         {
-
-            Table t = this._Data.RenderTable(this._DataBase, this._Name);
-
+            Table t = this._Data.RenderTable(this._DataBase, this._Name, Variant);
         }
 
     }

@@ -44,7 +44,7 @@ namespace Pulse.Data
         private long _MaxMemory = DEFAULT_MAX_MEMORY;
 
         /// <summary>
-        /// The current memory being used
+        /// The Spike memory being used
         /// </summary>
         private long _CurrentMemory = 0;
 
@@ -226,6 +226,70 @@ namespace Pulse.Data
         }
 
         /// <summary>
+        /// Renames a table
+        /// </summary>
+        /// <param name="Element"></param>
+        /// <param name="NewDir"></param>
+        /// <param name="NewName"></param>
+        public void RenameTable(Table Element, string NewDir, string NewName)
+        {
+
+            // Need to remove the table from memory completely //
+            this.CloseTable(Element.Key);
+
+            // Save the key //
+            string OldPath = Element.Header.Path;
+
+            // Change the dir and name //
+            Element.Header.Directory = NewDir;
+            Element.Header.Name = NewName;
+
+            // Save the new file name //
+            string NewPath = Element.Header.Path;
+
+            // Change the file name //
+            File.Move(OldPath, NewPath);
+
+            // Save the header //
+            Flush(NewPath, Element.Header);
+
+            // Buffer the table back //
+            this.RequestTable(Element.Key);
+
+        }
+
+        /// <summary>
+        /// Copies a table to a new directory
+        /// </summary>
+        /// <param name="Element"></param>
+        /// <param name="NewDir"></param>
+        /// <param name="NewName"></param>
+        public void CopyTable(Table Element, string NewDir, string NewName)
+        {
+
+            // Need to save the current copy to disk //
+            this.FlushTable(Element.Key);
+
+            // Save the key //
+            string OldPath = Element.Header.Path;
+            string NewPath = TableHeader.DeriveV1Path(NewDir, NewName);
+
+            // Copy the file //
+            File.Copy(OldPath, NewPath);
+
+            // Buffer the header //
+            TableHeader h = Buffer(NewPath);
+
+            // Change the dir and name //
+            h.Directory = NewDir;
+            h.Name = NewName;
+
+            // Save the header //
+            Flush(NewPath, h);
+
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="Key"></param>
@@ -296,6 +360,7 @@ namespace Pulse.Data
             this.ReleaseAllPages(Key); // Releases all pages 
             this._TableStore[Key].IsOpen = false; // Communicates to the in memory object that it's now out of memory 
             this._TableStore.Remove(Key); // Removes the table from the store
+            this._PageInMemoryCounts.Remove(Key);
             this._CurrentMemory -= TableHeader.SIZE; // Decrements the memory size
 
         }
@@ -381,7 +446,7 @@ namespace Pulse.Data
             // Tag in the recycling bin //
             this._PageBurnStack.EnqueueOrTag(ID);
 
-            this._Host.DebugPrint("TableStore.RequestPage->page added to burn stack({0})", ID.ToString()); // #DEBUG#
+            this._Host.DebugPrint("TableStore.RequestPage->page added to burn Intermediary({0})", ID.ToString()); // #DEBUG#
 
             // Page //
             Page p = TableStore.Buffer(ID.Key, ID.PageID, Size);
@@ -417,7 +482,7 @@ namespace Pulse.Data
 
                 // #DEBUG# //
                 this._Host.DebugPrint("TableStore.PushPage-> page found in memory({0})", id.ToString());
-                this._Host.DebugPrint("TableStore.PushPage-> page added to burn stack({0})", id.ToString());
+                this._Host.DebugPrint("TableStore.PushPage-> page added to burn Intermediary({0})", id.ToString());
 
                 this._PageStore[id] = Element;
                 this._PageBurnStack.EnqueueOrTag(id);
@@ -496,6 +561,8 @@ namespace Pulse.Data
                 this._CurrentMemory -= this._PageStore[ID].PageSize;
                 this._PageInMemoryCounts[ID.Key]--;
                 this._PageStore.Remove(ID);
+                if (this._PageBurnStack.Contains(ID))
+                    this._PageBurnStack.Remove(ID);
                 this._Host.DebugPrint("TableStore.ReleasePage-> page released from memory({0}) : used/free memory {1}/{2}", ID.ToString(), this.UsedMemory, this.FreeMemory); // #DEBUG#
             }
             else
@@ -689,6 +756,9 @@ namespace Pulse.Data
             // #DEBUG# //
             this._Host.DebugPrint("TableStore.ShutDown");
 
+            // Memory Dump //
+            this.MemoryDump(Host.LogDir + "Memory_Dump.txt");
+
             // Empty the recycle bin //
             this.EmptyRecycleBin();
 
@@ -700,7 +770,7 @@ namespace Pulse.Data
 
         // Debugging //
         /// <summary>
-        /// Dumps the current object meta data in memory to disk
+        /// Dumps the Spike object meta data in memory to disk
         /// </summary>
         /// <param name="Path"></param>
         public void MemoryDump(string Path)
@@ -738,6 +808,13 @@ namespace Pulse.Data
                 foreach (string x in this._RecycleBin)
                 {
                     sw.WriteLine("Path={0}", x);
+                }
+
+                // Dump the page counts //
+                sw.WriteLine("----- Page Counts -----");
+                foreach (KeyValuePair<string, int> kv in this._PageInMemoryCounts)
+                {
+                    sw.WriteLine("Path={0}; Count={1}", kv.Key, kv.Value);
                 }
 
                 // Dump the burn pile //
@@ -847,7 +924,7 @@ namespace Pulse.Data
         }
 
         /// <summary>
-        /// Reads the table header from disk, but does NOT allocate in the current heap
+        /// Reads the table header from disk, but does NOT allocate in the Spike heap
         /// </summary>
         /// <param name="Path"></param>
         /// <returns></returns>

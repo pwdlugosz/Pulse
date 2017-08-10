@@ -22,6 +22,12 @@ namespace Pulse.ScalarExpressions
             this._Value = Value;
         }
 
+        public Cell Value
+        {
+            get { return this._Value; }
+            set { this._Value = value; }
+        }
+
         // Overrides //
         public override string Unparse(FieldResolver Variants)
         {

@@ -10,7 +10,7 @@ namespace Pulse.Data
     /// <summary>
     /// Represents a disk based key-value table
     /// </summary>
-    public class DictionaryTable : ClusteredTable
+    public class DictionaryTable : ClusteredTable, IReadable
     {
 
         protected int _KeyCount = 0;

@@ -334,7 +334,7 @@ namespace Pulse.Data
         #region Properties
 
         /// <summary>
-        /// The cell's current affinity
+        /// The cell's Spike affinity
         /// </summary>
         public CellAffinity Affinity
         {
@@ -488,7 +488,7 @@ namespace Pulse.Data
         }
 
         /// <summary>
-        /// Returns the current DATE_TIME if the affinity is DATE_TIME, otherwise return the minimum date time .Net Value
+        /// Returns the Spike DATE_TIME if the affinity is DATE_TIME, otherwise return the minimum date time .Net Value
         /// </summary>
         public DateTime valueDATE_TIME
         {
@@ -604,7 +604,7 @@ namespace Pulse.Data
         }
 
         /// <summary>
-        /// Casts an object as a cell then compares it to the current instance
+        /// Casts an object as a cell then compares it to the Spike instance
         /// </summary>
         /// <param name="obj">The object being tested for equality</param>
         /// <returns>A boolean indicating both objects are equal</returns>
@@ -3312,7 +3312,7 @@ namespace Pulse.Data
         /// <summary>
         /// IComparable implementation
         /// </summary>
-        /// <param name="C">A cell to compare to the current instance</param>
+        /// <param name="C">A cell to compare to the Spike instance</param>
         /// <returns>An integer Value</returns>
         int IComparable<Cell>.CompareTo(Cell C)
         {

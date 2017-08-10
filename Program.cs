@@ -21,38 +21,23 @@ namespace Pulse
 
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
 
+
+
             Host Enviro = new Host();
 
-            //XTable x = new XTable(Enviro, "XTest", @"C:\Users\pwdlu_000\Documents\Pulse_Projects\Temp", new Schema("KEY1 INT, KEY2 STRING.10, KEY3 DOUBLE, VALUE1 NUM, VALUE2 NUM"), new Key(0, 1, 2));
-            //RandomCell rand = new RandomCell(127);
+            Table x = Testing.SampleTables.SampleHeapTable(Enviro, "SortTest", 100000, 0);
 
-            //using (RecordWriter w = x.OpenWriter())
-            //{
-            
-            //    for (int i = 0; i < 1000; i++)
-            //    {
+            x.Dump(@"C:\Users\pwdlu_000\Documents\Pulse_Projects\Temp\Pre_Distinct.txt");
 
-            //        RecordBuilder rb = new RecordBuilder();
-            //        rb.Add(rand.NextLong());
-            //        rb.Add(rand.NextStringUpperText(10));
-            //        rb.Add(rand.NextDouble());
-            //        rb.Add(rand.NextDouble());
-            //        rb.Add(rand.NextDoubleGauss());
-            //        Record r = rb.ToRecord();
-            //        w.Insert(r);
+            TableUtil.Distinct(x, new Key(4, 5), new Key(4));
 
-            //    }
-            
-            //}
+            x.Dump(@"C:\Users\pwdlu_000\Documents\Pulse_Projects\Temp\Post_Distinct.txt");
 
-            //x.BaseTree.DumpTree(@"C:\Users\pwdlu_000\Documents\Pulse_Projects\Temp\XDataTree.txt");
-            //x.BaseTree.DumpData(@"C:\Users\pwdlu_000\Documents\Pulse_Projects\Temp\XDataDump.txt");
+            //Scripting.ScriptProcessor sp = new Scripting.ScriptProcessor(Enviro);
+            //string script = System.IO.File.ReadAllText(@"C:\Users\pwdlu_000\Documents\Pulse\Pulse\Scripting\TestScript.txt");
+            //sp.RenderAction(script);
 
-            Scripting.ScriptProcessor sp = new Scripting.ScriptProcessor(Enviro);
-            string script = System.IO.File.ReadAllText(@"C:\Users\pwdlu_000\Documents\Pulse\Pulse\Scripting\TestScript.txt");
-            sp.RenderAction(script);
-
-            Enviro.ShutDown();
+            //Enviro.ShutDown();
 
             Console.WriteLine("::::::::::::::::::::::::::::::::: Complete :::::::::::::::::::::::::::::::::");
             Console.WriteLine("Run Time: {0}", sw.Elapsed);

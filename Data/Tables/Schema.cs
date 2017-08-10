@@ -94,7 +94,7 @@ namespace Pulse.Data
         }
 
         /// <summary>
-        /// Returns a record filled with null cell elements based on the current schema
+        /// Returns a record filled with null cell elements based on the Spike schema
         /// </summary>
         public Record NullRecord
         {
@@ -447,7 +447,7 @@ namespace Pulse.Data
         /// <summary>
         /// Renames a column to another name
         /// </summary>
-        /// <param name="OldName">The current name</param>
+        /// <param name="OldName">The Spike name</param>
         /// <param name="NewName">The proposed name</param>
         public void Rename(string OldName, string NewName)
         {

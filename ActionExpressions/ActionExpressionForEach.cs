@@ -37,13 +37,17 @@ namespace Pulse.ActionExpressions
         public override void Invoke(FieldResolver Variant)
         {
 
-            Table t = this._t.RenderTempTable();
+            Table t = this._t.RenderTempTable(Variant);
             RecordReader rr = t.OpenReader();
+
             while (rr.CanAdvance)
             {
-                Variant.SetValue(0, rr.ReadNext());
+                Variant.SetValue(this._hidx, rr.ReadNext());
                 this._Children.ForEach((x) => { x.Invoke(Variant); });
             }
+
+            if (this._Host.IsSystemTemp(t))
+                this._Host.Store.DropTable(t.Key);
 
         }
 

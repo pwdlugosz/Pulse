@@ -33,12 +33,17 @@ namespace Pulse.TableExpressions
             get { return this._t.Columns; }
         }
 
-        public override Table Evaluate()
+        public override FieldResolver CreateResolver(FieldResolver Variants)
+        {
+            return Variants.CloneOfMeFull();
+        }
+
+        public override Table Evaluate(FieldResolver Variants)
         {
             return this._t;
         }
 
-        public override void Evaluate(RecordWriter Writer)
+        public override void Evaluate( FieldResolver Variants, RecordWriter Writer)
         {
 
             Writer.Consume(this._t.OpenReader());

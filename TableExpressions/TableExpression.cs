@@ -13,6 +13,9 @@ using Pulse.Aggregates;
 namespace Pulse.TableExpressions
 {
 
+    /// <summary>
+    /// Represents the base class for all table expressions
+    /// </summary>
     public abstract class TableExpression : IBindable
     {
 
@@ -41,14 +44,6 @@ namespace Pulse.TableExpressions
         public List<TableExpression> Children
         {
             get { return this._Children; }
-        }
-
-        /// <summary>
-        /// All child tables
-        /// </summary>
-        public IEnumerable<Table> ChildTables
-        {
-            get { return new TableCollection(this._Children); }
         }
 
         /// <summary>
@@ -175,28 +170,22 @@ namespace Pulse.TableExpressions
         /// <param name="DB"></param>
         /// <param name="Name"></param>
         /// <returns></returns>
-        public Table RenderTable(string DB, string Name)
+        public Table RenderTable(string DB, string Name, FieldResolver Variants)
         {
             Table t = this.CreateTable(DB, Name);
             using (RecordWriter w = this.CreateWriter(t))
             {
-                this.Evaluate(w);
+                this.Evaluate(Variants, w);
             }
             return t;
         }
 
         /// <summary>
-        /// Creates a temp table and loads it with the table expression
+        /// All child tables
         /// </summary>
-        /// <returns></returns>
-        public Table RenderTempTable()
+        public IEnumerable<Table> RenderChildTables(FieldResolver Variants)
         {
-            Table t = this.CreateTempTable();
-            using (RecordWriter w = this.CreateWriter(t))
-            {
-                this.Evaluate(w);
-            }
-            return t;
+            return new TableCollection(this._Children, Variants);
         }
 
         // Methods //
@@ -235,13 +224,33 @@ namespace Pulse.TableExpressions
         /// Writes the value of expression to a table
         /// </summary>
         /// <param name="Writer"></param>
-        public abstract void Evaluate(RecordWriter Writer);
+        public abstract void Evaluate(FieldResolver Variants, RecordWriter Writer);
 
         /// <summary>
-        /// Returns meta data around the expression
+        /// Creates and primes a resolver
         /// </summary>
+        /// <param name="Variants"></param>
         /// <returns></returns>
-        //public abstract string MetaData();
+        public abstract FieldResolver CreateResolver(FieldResolver Variants);
+
+        // Virtuals //
+        public virtual void EvaluateDistinct(FieldResolver Variants, RecordWriter Writer)
+        {
+
+            // Get the temp table //
+            Table t = this._Host.CreateTable(Host.TEMP, Host.RandomName, this.Columns);
+
+            // Write to the temp
+
+        }
+
+        public virtual void EvaluateOrdered(FieldResolver Variants, RecordWriter Writer)
+        {
+        }
+
+        public virtual void EvaluateDistinctOrdered(FieldResolver Variants, RecordWriter Writer)
+        {
+        }
 
         /// <summary>
         /// Evaluates the expression and returns a table
@@ -249,12 +258,12 @@ namespace Pulse.TableExpressions
         /// <param name="DB"></param>
         /// <param name="Name"></param>
         /// <returns></returns>
-        public virtual Table Evaluate(string DB, string Name)
+        public virtual Table Evaluate(FieldResolver Variants, string DB, string Name)
         {
 
             Table t = this.CreateTable(DB, Name);
             RecordWriter ws = this.CreateWriter(t);
-            this.Evaluate(ws);
+            this.Evaluate(Variants, ws);
             ws.Close();
 
             return t;
@@ -265,9 +274,23 @@ namespace Pulse.TableExpressions
         /// Evalutes the table into a temp table
         /// </summary>
         /// <returns></returns>
-        public virtual Table Evaluate()
+        public virtual Table Evaluate(FieldResolver Variants)
         {
-            return this.Evaluate(Host.TEMP, Host.RandomName);
+            return this.Evaluate(Variants, Host.TEMP, Host.RandomName);
+        }
+
+        /// <summary>
+        /// Creates a temp table and loads it with the table expression
+        /// </summary>
+        /// <returns></returns>
+        public virtual Table RenderTempTable(FieldResolver Variants)
+        {
+            Table t = this.CreateTempTable();
+            using (RecordWriter w = this.CreateWriter(t))
+            {
+                this.Evaluate(Variants, w);
+            }
+            return t;
         }
 
         /// <summary>
@@ -347,10 +370,12 @@ namespace Pulse.TableExpressions
 
             private int _Position = -1;
             private List<TableExpression> _Nodes;
+            private FieldResolver _Resolver;
 
-            public TableCollection(List<TableExpression> Nodes)
+            public TableCollection(List<TableExpression> Nodes, FieldResolver Variants)
             {
                 this._Nodes = Nodes;
+                this._Resolver = Variants;
             }
 
             public bool MoveNext()
@@ -376,7 +401,7 @@ namespace Pulse.TableExpressions
             {
                 get
                 {
-                    return this._Nodes[this._Position].Evaluate();
+                    return this._Nodes[this._Position].Evaluate(this._Resolver);
                 }
             }
 

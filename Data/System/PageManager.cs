@@ -536,7 +536,7 @@ namespace Pulse.Data
     //    }
 
     //    /// <summary>
-    //    /// Reads the table header from disk, but does NOT allocate in the current heap
+    //    /// Reads the table header from disk, but does NOT allocate in the Spike heap
     //    /// </summary>
     //    /// <param name="Path"></param>
     //    /// <returns></returns>

@@ -83,9 +83,16 @@ namespace Pulse.Scripting
         }
 
         // Support Filed Methods //
-        public void AddSchema(string Alias, Schema Columns)
+        public void AddSchema(string Alias, Schema Columns, out int Pointer)
         {
             this._Columns.Allocate(Alias, Columns);
+            Pointer = this._Columns.Count - 1;
+        }
+
+        public void AddSchema(string Alias, Schema Columns)
+        {
+            int x = 0;
+            this.AddSchema(Alias, Columns, out x);
         }
 
         public void AddPointer(string Alias, CellAffinity Affinity, int Size)

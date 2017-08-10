@@ -77,22 +77,19 @@ namespace Pulse.Scripting
             // Get the join engine //
             JoinAlgorithm ja = TableExpressionJoin.Optimize(t1.EstimatedCount, t2.EstimatedCount, t1.IsIndexedBy(k1), t2.IsIndexedBy(k2));
 
+            // Get the field resolver //
+            int lref = -1;
+            int rref = -1;
+
             // Get the expressions //
             ScalarExpressionVisitor sev = this.SeedVisitor.CloneOfMe();
-            sev.AddSchema(a1, t1.Columns);
-            sev.AddSchema(a2, t2.Columns);
+            sev.AddSchema(a1, t1.Columns, out lref);
+            sev.AddSchema(a2, t2.Columns, out rref);
             ScalarExpressionCollection sec = sev.Render(context.t_select().expression_or_wildcard_set());
             Filter f = sev.Render(context.where_clause());
 
-            // Get the field resolver //
-            FieldResolver fr = sev.ImpliedResolver;
-            int lref = sev.ColumnCube.Count - 2;
-            int rref = sev.ColumnCube.Count - 1;
-
             // Create the expression //
-            TableExpressionJoin tej = new TableExpressionJoinSortMerge(this._Host, this._Master, sec, predicate, f, t, fr);
-            //TableExpressionJoin tej = new TableExpressionJoinQuasiNestedLoop(this._Host, this._Master, sec, predicate, f, t, fr);
-            //TableExpressionJoin tej = new TableExpressionJoinNestedLoop(this._Host, this._Master, sec, predicate, f, t, fr);
+            TableExpressionJoin tej = new TableExpressionJoinSortMerge(this._Host, this._Master, sec, predicate, f, t);
             tej.LeftRecordRef = lref;
             tej.RightRecordRef = rref;
 
@@ -143,7 +140,7 @@ namespace Pulse.Scripting
             int rref = S_Visitor.ColumnCube.Count - 1;
 
             // Create the expression //
-            TableExpressionFold tef = new TableExpressionFold.TableExpressionFoldDictionary(this._Host, this._Master, grouper, folds, where, selector, fr, rref);
+            TableExpressionFold tef = new TableExpressionFold.TableExpressionFoldDictionary(this._Host, this._Master, grouper, folds, where, selector);
             tef.Alias = a_prime;
             
             // Add the mods //
@@ -193,12 +190,8 @@ namespace Pulse.Scripting
             ScalarExpressionCollection select = vis.Render(context.t_select().expression_or_wildcard_set());
             Filter where = vis.Render(context.where_clause());
 
-            // Resolver //
-            FieldResolver fr = vis.ImpliedResolver;
-            int rref = vis.ColumnCube.Count - 1;
-
             // Create the expression //
-            TableExpression x = new TableExpressionSelect(this._Host, this._Master, select, where, fr, rref);
+            TableExpression x = new TableExpressionSelect(this._Host, this._Master, select, where);
             x.AddChild(t);
             x.Alias = a_prime;
             

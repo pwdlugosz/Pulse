@@ -141,6 +141,11 @@ namespace Pulse.Data
 
         }
 
+        public bool Contains(T Value)
+        {
+            return this._Index.ContainsKey(Value);
+        }
+
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
             return this._Trail.GetEnumerator();

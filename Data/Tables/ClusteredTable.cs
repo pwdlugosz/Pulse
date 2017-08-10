@@ -10,7 +10,7 @@ namespace Pulse.Data
     /// <summary>
     /// Creates a table sorted usina a b+tree that can be saved to disk
     /// </summary>
-    public class ClusteredTable : Table
+    public class ClusteredTable : Table, IReadable
     {
 
         protected Cluster _Cluster;

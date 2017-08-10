@@ -15,22 +15,21 @@ using Pulse.Query.Union;
 namespace Pulse.TableExpressions
 {
 
-
+    /// <summary>
+    /// Represents a table  expression for a basic select statement
+    /// </summary>
     public sealed class TableExpressionSelect : TableExpression
     {
 
         private ScalarExpressionCollection _Fields;
         private Filter _Where;
-        private FieldResolver _Resolver;
-        private int _RecordRef;
+        private int _RecordRef = -1;
 
-        public TableExpressionSelect(Host Host, TableExpression Parent, ScalarExpressionCollection Fields, Filter Where, FieldResolver Variants, int RecordRef)
+        public TableExpressionSelect(Host Host, TableExpression Parent, ScalarExpressionCollection Fields, Filter Where)
             : base(Host, Parent)
         {
             this._Fields = Fields;
             this._Where = Where;
-            this._Resolver = Variants;
-            this._RecordRef = RecordRef;
             this.Alias = "SELECT";
         }
 
@@ -40,6 +39,20 @@ namespace Pulse.TableExpressions
         public override Schema Columns
         {
             get { return this._Fields.Columns; }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Variants"></param>
+        /// <returns></returns>
+        public override FieldResolver CreateResolver(FieldResolver Variants)
+        {
+
+            FieldResolver x = Variants.CloneOfMeFull();
+            x.AddSchema(this._Children[0].Alias, this._Children[0].Columns, out this._RecordRef);
+            return x;
+
         }
 
         /// <summary>
@@ -59,38 +72,37 @@ namespace Pulse.TableExpressions
         }
 
         /// <summary>
-        /// Gets the base resolver
-        /// </summary>
-        public FieldResolver BaseResolver
-        {
-            get { return this._Resolver; }
-        }
-
-        /// <summary>
-        /// Gets the pointer to the position in the field resolver to pull from
-        /// </summary>
-        public int RecordRef
-        {
-            get { return this._RecordRef; }
-            set { this._RecordRef = value; }
-        }
-
-        /// <summary>
         /// Renders the expression
         /// </summary>
         /// <param name="Writer"></param>
-        public override void Evaluate(RecordWriter Writer)
+        public override void Evaluate(FieldResolver Variants, RecordWriter Writer)
         {
-            
-            Table t = this.Children[0].Evaluate();
-            RecordReader rs = t.OpenReader();
 
+            // Render the base table //
+            Table t = this.Children[0].Evaluate(Variants);
+
+            // Create the resolver //
+            FieldResolver pointer = this.CreateResolver(Variants);
+
+            // Open the reader //
+            RecordReader rs = t.OpenReader();
+            
+            // Main read loop //
             while (rs.CanAdvance)
             {
-                this._Resolver.SetValue(this._RecordRef, rs.ReadNext());
-                if (Where.Evaluate(this._Resolver))
-                    Writer.Insert(Fields.Evaluate(this._Resolver));
+
+                pointer.SetValue(this._RecordRef, rs.ReadNext());
+
+                if (Where.Evaluate(pointer))
+                {
+                    Writer.Insert(Fields.Evaluate(pointer));
+                }
+
             }
+
+            // Clean up //
+            if (this._Host.IsSystemTemp(t))
+                this._Host.Store.DropTable(t.Key);
 
         }
 

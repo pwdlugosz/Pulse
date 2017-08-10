@@ -30,6 +30,11 @@ namespace Pulse.TableExpressions
             get { return this._Children.First().Columns; }
         }
 
+        public override FieldResolver CreateResolver(FieldResolver Variants)
+        {
+            return Variants.CloneOfMeFull();
+        }
+
         public override void AddChild(TableExpression Child)
         {
 
@@ -48,14 +53,23 @@ namespace Pulse.TableExpressions
 
         }
 
-        public override void Evaluate(RecordWriter Writer)
+        public override void Evaluate(FieldResolver Variants, RecordWriter Writer)
         {
 
-            foreach (Table t in this.ChildTables)
+            // Loop through each table //
+            foreach (Table t in this.RenderChildTables(Variants))
             {
 
+                // Open a reader //
                 RecordReader rs = t.OpenReader();
+
+                // Write //
                 Writer.Consume(rs);
+
+                // Clean up //
+                if (this._Host.IsSystemTemp(t))
+                    this._Host.Store.DropTable(t.Key);
+
 
             }
 

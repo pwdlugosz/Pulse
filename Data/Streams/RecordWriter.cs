@@ -53,7 +53,7 @@ namespace Pulse.Data
         public abstract void Close();
 
         /// <summary>
-        /// Reads all records form the readstream and writes to the current instance
+        /// Reads all records form the readstream and writes to the Spike instance
         /// </summary>
         /// <param name="Reader"></param>
         public virtual void Consume(RecordReader Reader)
