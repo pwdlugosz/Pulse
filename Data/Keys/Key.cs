@@ -69,6 +69,39 @@ namespace Pulse.Data
         }
 
         /// <summary>
+        /// Returns the index of field index passed
+        /// </summary>
+        /// <param name="Index">The field index</param>
+        /// <param name="Affinity">The sort type</param>
+        /// <returns>The key index or -1 if the index is not present</returns>
+        public int IndexOf(int Index, KeyAffinity Affinity)
+        {
+
+            for (int i = 0; i < this.Count; i++)
+            {
+                if (this[i] == Index && this.Affinity(i) == Affinity)
+                    return i;
+            }
+            return -1;
+
+        }
+
+        /// <summary>
+        /// Returns the index of field index passed
+        /// </summary>
+        /// <param name="Index">The field index</param>
+        /// <returns>The key index or -1 if the index is not present</returns>
+        public int IndexOf(int Index)
+        {
+            for (int i = 0; i < this.Count; i++)
+            {
+                if (this[i] == Index)
+                    return i;
+            }
+            return -1;
+        }
+
+        /// <summary>
         /// Field index
         /// </summary>
         /// <param name="Index">Index of the key field to be pulled</param>
@@ -153,11 +186,17 @@ namespace Pulse.Data
             return this._data.ConvertAll((t) => { return t.valueINT; }).ToArray();
         }
 
+        /// <summary>
+        /// Gets the memory cost
+        /// </summary>
         public int MemCost
         {
             get { return this.Count * 16 + 4; }
         }
 
+        /// <summary>
+        /// Gets the disk cost
+        /// </summary>
         public int DiskCost
         {
             get
@@ -167,11 +206,18 @@ namespace Pulse.Data
             }
         }
 
+        /// <summary>
+        /// Gets the data cost
+        /// </summary>
         public int DataCost
         {
             get { return this.Count * 8; }
         }
 
+        /// <summary>
+        /// Converts the key to a hash
+        /// </summary>
+        /// <returns></returns>
         public byte[] Bash()
         {
 
@@ -200,6 +246,22 @@ namespace Pulse.Data
 
         }
         
+        // Clones //
+        /// <summary>
+        /// Creates a clone of the key 
+        /// </summary>
+        /// <returns></returns>
+        public Key CloneOfMe()
+        {
+            Key k = new Key();
+            for (int i = 0; i < this.Count; i++)
+            {
+                k.Add(this[i], this.Affinity(i));
+            }
+            return k;
+        }
+
+        // Statics //
         /// <summary>
         /// Compares two keys only on their field offsets, not their affinities
         /// </summary>

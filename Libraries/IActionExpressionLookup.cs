@@ -13,7 +13,7 @@ namespace Pulse.Libraries
 
         bool Exists(string Name);
 
-        ActionExpression Lookup(string Name);
+        ActionExpressionParameterized Lookup(string Name);
 
     }
 

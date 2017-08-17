@@ -68,6 +68,11 @@ namespace Pulse.ScalarExpressions
             }
         }
 
+        public bool Exists(string Name)
+        {
+            return this._Expressions.Exists(Name);
+        }
+
         public string Alias(int IndexOf)
         {
             return this._Expressions.Name(IndexOf);

@@ -488,8 +488,8 @@ namespace Pulse.Scripting
         public override ScalarExpression VisitLibraryFunction(PulseParser.LibraryFunctionContext context)
         {
 
-            string LibName = context.IDENTIFIER()[0].GetText();
-            string FuncName = context.IDENTIFIER()[1].GetText();
+            string LibName = ScriptingHelper.GetLibName(context.var_name());
+            string FuncName = ScriptingHelper.GetVarName(context.var_name());
 
             if (!this._Libraries.Exists(LibName))
                 throw new Exception(string.Format("Library does not exist '{0}'", LibName));
@@ -527,8 +527,8 @@ namespace Pulse.Scripting
         {
 
             // Get the matrix //
-            string LibName = context.IDENTIFIER()[0].GetText();
-            string MatrixName = context.IDENTIFIER()[1].GetText();
+            string LibName = ScriptingHelper.GetLibName(context.var_name());
+            string MatrixName = ScriptingHelper.GetVarName(context.var_name());
 
             ScalarExpression row = this.Visit(context.expression()[0]);
             ScalarExpression col = this.Visit(context.expression()[1]);
@@ -571,8 +571,8 @@ namespace Pulse.Scripting
         public override ScalarExpression VisitMatrix1D(PulseParser.Matrix1DContext context)
         {
             // Get the matrix //
-            string LibName = context.IDENTIFIER()[0].GetText();
-            string MatrixName = context.IDENTIFIER()[1].GetText();
+            string LibName = ScriptingHelper.GetLibName(context.var_name());
+            string MatrixName = ScriptingHelper.GetVarName(context.var_name());
 
             ScalarExpression row = this.Visit(context.expression());
             ScalarExpression col = ScalarExpression.OneINT;

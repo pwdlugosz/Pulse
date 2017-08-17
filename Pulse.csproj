@@ -56,6 +56,7 @@
     <Compile Include="ActionExpressions\ActionExpressionMatrixAssign.cs" />
     <Compile Include="ActionExpressions\ActionExpressionMatrixUnitAssign.cs" />
     <Compile Include="ActionExpressions\ActionExpressionMatrixUnitAssignAll.cs" />
+    <Compile Include="ActionExpressions\ActionExpressionParameterized.cs" />
     <Compile Include="ActionExpressions\ActionExpressionPrint.cs" />
     <Compile Include="ActionExpressions\ActionExpressionForEach.cs" />
     <Compile Include="ActionExpressions\ActionExpressionScalarAssign.cs" />
@@ -92,11 +93,12 @@
     <Compile Include="Data\Tables\IReadable.cs" />
     <Compile Include="Data\Tables\IRecyclable.cs" />
     <Compile Include="Data\Tables\TableUtil.cs" />
+    <Compile Include="Libraries\LibraryTable.cs" />
     <Compile Include="Views\View.cs" />
     <Compile Include="Data\XTree\XTreePage.cs" />
-    <Compile Include="Library\BaseLibrary.cs" />
-    <Compile Include="Library\IActionExpressionLookup.cs" />
-    <Compile Include="Library\Library.cs" />
+    <Compile Include="Libraries\BaseLibrary.cs" />
+    <Compile Include="Libraries\IActionExpressionLookup.cs" />
+    <Compile Include="Libraries\Library.cs" />
     <Compile Include="MatrixExpressions\MatrixExpression.cs" />
     <Compile Include="MatrixExpressions\MatrixExpressionAdd.cs" />
     <Compile Include="MatrixExpressions\MatrixExpressionAddScalar.cs" />
@@ -189,7 +191,7 @@
     <Compile Include="ScalarExpressions\ScalarExpressionPointer.cs" />
     <Compile Include="ScalarExpressions\ScalarExpressionScalarRef.cs" />
     <Compile Include="Data\FieldResolver.cs" />
-    <Compile Include="Library\IScalarExpressionLookup.cs" />
+    <Compile Include="Libraries\IScalarExpressionLookup.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Query\Join\JoinAlgorithm.cs" />
@@ -224,7 +226,7 @@
     <Compile Include="Testing\Testers.cs" />
     <Compile Include="Util\CostCalculator.cs" />
     <Compile Include="Util\SpecialFunctions.cs" />
-    <Compile Include="Util\StringMaker.cs" />
+    <Compile Include="Util\StringUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

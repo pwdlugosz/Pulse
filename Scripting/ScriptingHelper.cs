@@ -40,13 +40,13 @@ namespace Pulse.Scripting
 
         public static string GetLibName(PulseParser.Var_nameContext context)
         {
-            if (context.IDENTIFIER().Length == 1) return Host.GLOBAL;
-            return context.IDENTIFIER()[0].GetText();
+            if (context.lib_name() == null) return Host.GLOBAL;
+            return context.lib_name().GetText();
         }
 
         public static string GetVarName(PulseParser.Var_nameContext context)
         {
-            return context.IDENTIFIER().Last().GetText();
+            return context.IDENTIFIER().GetText();
         }
 
         public static ActionExpressions.Assignment GetAssignment(PulseParser.AssignmentContext context)

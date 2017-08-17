@@ -208,7 +208,7 @@ namespace Pulse.Scripting
 
         public Table RenderTable(string Script)
         {
-            return this.ToTableExpression(Script).Evaluate(new FieldResolver(this._Host));
+            return this.ToTableExpression(Script).Select(new FieldResolver(this._Host));
         }
 
         public void RenderAction(string Script)

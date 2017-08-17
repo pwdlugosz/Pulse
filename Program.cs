@@ -25,19 +25,15 @@ namespace Pulse
 
             Host Enviro = new Host();
 
-            Table x = Testing.SampleTables.SampleHeapTable(Enviro, "SortTest", 100000, 0);
+            //Table x = Testing.SampleTables.SampleHeapTable(Enviro, "SortTest", 100000, 0);
+            //x.Dump(@"C:\Users\pwdlu_000\Documents\Pulse_Projects\Temp\Pre_Distinct.txt");
+            //TableUtil.Distinct(x, new Key(4, 5));
+            //x.Dump(@"C:\Users\pwdlu_000\Documents\Pulse_Projects\Temp\Post_Distinct.txt");
 
-            x.Dump(@"C:\Users\pwdlu_000\Documents\Pulse_Projects\Temp\Pre_Distinct.txt");
-
-            TableUtil.Distinct(x, new Key(4, 5), new Key(4));
-
-            x.Dump(@"C:\Users\pwdlu_000\Documents\Pulse_Projects\Temp\Post_Distinct.txt");
-
-            //Scripting.ScriptProcessor sp = new Scripting.ScriptProcessor(Enviro);
-            //string script = System.IO.File.ReadAllText(@"C:\Users\pwdlu_000\Documents\Pulse\Pulse\Scripting\TestScript.txt");
-            //sp.RenderAction(script);
-
-            //Enviro.ShutDown();
+            Scripting.ScriptProcessor sp = new Scripting.ScriptProcessor(Enviro);
+            string script = System.IO.File.ReadAllText(@"C:\Users\pwdlu_000\Documents\Pulse\Pulse\Scripting\TestScript.txt");
+            sp.RenderAction(script);
+            Enviro.ShutDown();
 
             Console.WriteLine("::::::::::::::::::::::::::::::::: Complete :::::::::::::::::::::::::::::::::");
             Console.WriteLine("Run Time: {0}", sw.Elapsed);

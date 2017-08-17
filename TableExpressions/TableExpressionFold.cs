@@ -154,7 +154,7 @@ namespace Pulse.TableExpressions
             {
 
                 // Get the source table //
-                Table t = this._Children[0].Evaluate(Variants);
+                Table t = this._Children[0].Select(Variants);
 
                 // Get the resolver we're going to use //
                 FieldResolver pointer = this.CreateResolver(Variants);
@@ -261,7 +261,7 @@ namespace Pulse.TableExpressions
             public override void Evaluate(FieldResolver Variants, RecordWriter Writer)
             {
 
-                Table t = this._Children[0].Evaluate(Variants);
+                Table t = this._Children[0].Select(Variants);
 
                 //  Create a resolver //
                 FieldResolver pointer = this.CreateResolver(Variants);

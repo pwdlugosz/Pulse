@@ -10,7 +10,7 @@ using Pulse.Data;
 namespace Pulse.Libraries
 {
 
-    public class Library
+    public sealed class Library
     {
 
         private IScalarExpressionLookup _Functions;
@@ -103,9 +103,19 @@ namespace Pulse.Libraries
         /// </summary>
         /// <param name="Name"></param>
         /// <returns></returns>
-        public ActionExpression LookupAction(string Name)
+        public ActionExpressionParameterized LookupAction(string Name)
         {
             return this._Actions.Lookup(Name);
+        }
+
+        /// <summary>
+        /// Gets the base library
+        /// </summary>
+        /// <param name="Host"></param>
+        /// <returns></returns>
+        public static Library BaseLibrary(Host Host)
+        {
+            return new Library("BASE", new ScalarExpressions.ScalarExpressionFunction.BaseLibrary(Host), null);
         }
 
     }

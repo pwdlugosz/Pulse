@@ -35,21 +35,9 @@ namespace Pulse.ActionExpressions
         public override void Invoke(FieldResolver Variant)
         {
 
-            // TODO: if the table doesnt have modifiers, then have it write directly to the stream rather than evaluating and then
-            // writing to the stream
-
-            // Get the source table //
-            Table t = this._Select.Evaluate(Variant);
-
             // Write the data to a table //
-            using (RecordReader rr = t.OpenReader())
-            {
-                this._Writer.Consume(rr);
-            }
+            this._Select.Append(Variant, this._Writer);
 
-            // Drop the table; we do this here in case we're in a loop, the processor would accumulate too many tables and crash //
-            this._Host.Store.DropTable(t.Key);
-            
         }
 
         public override void EndInvoke(FieldResolver Variant)

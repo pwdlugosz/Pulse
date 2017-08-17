@@ -37,7 +37,7 @@ namespace Pulse.ActionExpressions
         public override void Invoke(FieldResolver Variant)
         {
 
-            Table t = this._t.RenderTempTable(Variant);
+            Table t = this._t.Select(Variant);
             RecordReader rr = t.OpenReader();
 
             while (rr.CanAdvance)

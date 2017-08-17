@@ -603,6 +603,31 @@ namespace Pulse.Data
             return k;
         }
 
+        /// <summary>
+        /// Gets a key that links to all columns in the table
+        /// </summary>
+        /// <returns></returns>
+        public Key GetKey()
+        {
+            return Key.Build(this.Count);
+        }
+
+        /// <summary>
+        /// Given a key, will fill it in with the remaining column indexes that are not present in the key
+        /// </summary>
+        /// <param name="Key"></param>
+        /// <returns></returns>
+        public Key GetKey(Key Key)
+        {
+            Key k = Key.CloneOfMe();
+            for (int i = 0; i < this.Count; i++)
+            {
+                if (k.IndexOf(i) == -1)
+                    k.Add(i);
+            }
+            return k;
+        }
+
         // Prints //
         /// <summary>
         /// Prints the contents of a schema

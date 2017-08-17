@@ -79,7 +79,7 @@ namespace Pulse.TableExpressions
         {
 
             // Render the base table //
-            Table t = this.Children[0].Evaluate(Variants);
+            Table t = this.Children[0].Select(Variants);
 
             // Create the resolver //
             FieldResolver pointer = this.CreateResolver(Variants);

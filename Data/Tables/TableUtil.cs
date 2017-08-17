@@ -144,7 +144,7 @@ namespace Pulse.Data
         }
 
         // Distinct Support //
-        public static void Distinct(Table Element, RecordWriter Writer, RecordMatcher SortComparer, RecordMatcher DistinctComparer)
+        public static void Distinct(Table Element, RecordWriter Writer, RecordMatcher Comparer)
         {
 
             // Check if the table is a heap //
@@ -154,7 +154,7 @@ namespace Pulse.Data
                 throw new Exception("Can not sort a table with indexes");
 
             // Step 1: sort table //
-            Sort(Element, SortComparer);
+            Sort(Element, Comparer);
 
             // Step 2: create a shell //
             //Table t = Element.Host.CreateTempTable(Element.Columns);
@@ -171,7 +171,7 @@ namespace Pulse.Data
 
                 if (lag == null)
                     Writer.Insert(current);
-                else if (DistinctComparer.Compare(lag, current) != 0)
+                else if (Comparer.Compare(lag, current) != 0)
                     Writer.Insert(current);
 
                 lag = current;
@@ -180,7 +180,7 @@ namespace Pulse.Data
 
         }
 
-        public static void Distinct(Table Element, RecordMatcher SortComparer, RecordMatcher DistinctComparer)
+        public static void Distinct(Table Element, RecordMatcher Comparer)
         {
 
             // Check if the table is a heap //
@@ -195,10 +195,9 @@ namespace Pulse.Data
             // Step 4: write to the shell //
             using (RecordWriter Writer = t.OpenWriter())
             {
-                Distinct(Element, Writer, SortComparer, DistinctComparer);
+                Distinct(Element, Writer, Comparer);
             }
             
-
             // Step 5: drop the table //
             string dir = Element.Header.Directory, name = Element.Header.Name;
             Drop(Element.Host, Element.Key);
@@ -214,14 +213,14 @@ namespace Pulse.Data
 
         }
 
-        public static void Distinct(Table Element, RecordWriter Writer, Key SortColumns, Key DistinctColumns)
+        public static void Distinct(Table Element, RecordWriter Writer, Key Columns)
         {
-            Distinct(Element, Writer, new RecordMatcher(SortColumns), new RecordMatcher(DistinctColumns));
+            Distinct(Element, Writer, new RecordMatcher(Columns));
         }
 
-        public static void Distinct(Table Element, Key SortColumns, Key DistinctColumns)
+        public static void Distinct(Table Element, Key Columns)
         {
-            Distinct(Element, new RecordMatcher(SortColumns), new RecordMatcher(DistinctColumns));
+            Distinct(Element, new RecordMatcher(Columns));
         }
 
         // Drop Table //

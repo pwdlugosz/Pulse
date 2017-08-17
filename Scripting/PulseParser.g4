@@ -41,6 +41,9 @@ action_expression
 	| K_PRINT table_expression (K_TO expression)? 											# ActionPrintTable
 	| K_PRINT matrix_expression (K_TO expression)? 											# ActionPrintMatrix
 	| K_PRINT expression_or_wildcard_set (K_TO expression)? 								# ActionPrintExpression
+
+	| var_name LPAREN (parameter (COMMA parameter)?)? RPAREN								# ActionCallSeq
+	| var_name LPAREN (parameter_name (COMMA parameter_name)?)? RPAREN						# ActionCallNamed
 	
 	/*
 		both <set> {} and <do> DO {}; are nested actions but only DO can be used in alone: <set> must be a child in an expression tree;
@@ -55,8 +58,16 @@ action_expression
 	| K_IF LPAREN expression RPAREN action_expression (K_ELSE K_IF LPAREN expression RPAREN action_expression)* (K_ELSE action_expression)?		# ActionIF
 	;
 
-var_name : (IDENTIFIER DOT)? IDENTIFIER;
 sub_if : K_IF LCURL action_expression+ RCURL;
+
+parameter_name : PARAM lib_name ASSIGN parameter;
+parameter 
+	: var_name
+	| table_expression
+	| matrix_expression
+	| LCURL expression_or_wildcard_set RCURL
+	| expression
+	;
 
 // Compound Opperators //
 assignment : (ASSIGN | PLUS ASSIGN | MINUS ASSIGN | MUL ASSIGN | DIV ASSIGN | DIV2 ASSIGN | MOD ASSIGN);
@@ -182,15 +193,19 @@ expression
 	| expression IF_OP expression (ELSE_OP expression)?													# IfOp
 	| LPAREN type RPAREN expression																		# Cast
 	| IDENTIFIER LPAREN ( expression ( COMMA expression )* )? RPAREN									# BaseFunction
-	| IDENTIFIER DOT IDENTIFIER LPAREN ( expression ( COMMA expression )* )? RPAREN						# LibraryFunction
+	| var_name LPAREN ( expression ( COMMA expression )* )? RPAREN										# LibraryFunction
 
-	| IDENTIFIER DOT IDENTIFIER LBRAC expression COMMA expression RBRAC									# Matrix2D
-	| IDENTIFIER DOT IDENTIFIER LBRAC expression RBRAC													# Matrix1D
+	| var_name LBRAC expression COMMA expression RBRAC													# Matrix2D
+	| var_name LBRAC expression RBRAC																	# Matrix1D
 	| IDENTIFIER LBRAC expression COMMA expression RBRAC												# Matrix2DNaked
 	| IDENTIFIER LBRAC expression RBRAC																	# Matrix1DNaked
 
 	| LPAREN expression RPAREN																			# Parens
 	;
+
+// Library //
+var_name : (lib_name DOT)? IDENTIFIER;
+lib_name : IDENTIFIER | K_TABLE | T_BLOB | T_BOOL | T_DATE | T_DOUBLE | T_INT | T_STRING;
 
 // Table logic //  
 table_name 

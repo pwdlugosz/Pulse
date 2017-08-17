@@ -641,31 +641,7 @@ namespace Pulse.Scripting
 
         }
 
-        /* Query
-         *      Query is special because it involves possible layered contexes. Consider the following:
-         *      
-         *      QUERY TEMP.TEST1 AS A
-         *      {
-         *          
-         *          // HERE, ONLY 'A' EXISTS //
-         *          
-         *          QUERY TEMP.TEST2 AS B
-         *          {
-         *          
-         *              // BOTH 'A' AND 'B' EXIST HERE
-         *              
-         *              IF (A.KEY == B.KEY) THEN TEMP.TEST3 += { A.KEY, B.VALUE };
-         *              
-         *          }
-         * 
-         *          // WE'RE BACK TO ONLY 'A' EXISTING
-         * 
-         *      }
-         * 
-         *      
-         *      TO SATISFY THIS CONSTRAINT, THE SCALAR AND MATRIX VISITORS NEED TO BE 
-         * 
-         */
+        // For Each //
         public override ActionExpression VisitActionForEach(PulseParser.ActionForEachContext context)
         {
 
@@ -702,6 +678,194 @@ namespace Pulse.Scripting
 
         }
 
+        // Method calls //
+        public override ActionExpression VisitActionCallNamed(PulseParser.ActionCallNamedContext context)
+        {
+
+            string lib = ScriptingHelper.GetLibName(context.var_name());
+            string name = ScriptingHelper.GetVarName(context.var_name());
+
+            ActionExpressionParameterized x = this._Host.Libraries[lib].LookupAction(name);
+
+            ScalarExpressionVisitor s = this._ScalarBuilder;
+
+            string[] names = new string[] { };
+            ActionExpressionParameterized.Parameter[] p = new ActionExpressionParameterized.Parameter[] { };
+
+            this.Render(context.parameter_name(), out p, out names);
+
+            for (int i = 0; i < names.Length; i++)
+            {
+                x.AddParameter(names[i], p[i]);
+            }
+
+            return x;
+
+        }
+
+        public override ActionExpression VisitActionCallSeq(PulseParser.ActionCallSeqContext context)
+        {
+
+            string lib = ScriptingHelper.GetLibName(context.var_name());
+            string name = ScriptingHelper.GetVarName(context.var_name());
+
+            ActionExpressionParameterized x = this._Host.Libraries[lib].LookupAction(name);
+
+            ScalarExpressionVisitor s = this._ScalarBuilder;
+
+            foreach (ActionExpressionParameterized.Parameter p in this.Render(context.parameter()))
+            {
+                x.AddParameter(p);
+            }
+
+            return x;
+
+        }
+
+        private bool IsTabular(PulseParser.ParameterContext context)
+        {
+            if (context.var_name() != null)
+            {
+                string lib = ScriptingHelper.GetLibName(context.var_name());
+                string name = ScriptingHelper.GetVarName(context.var_name());
+                return this._Host.TableExists(lib, name);
+            }
+            else if (context.table_expression() != null)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private ActionExpressionParameterized.Parameter Render(PulseParser.ParameterContext context)
+        {
+
+            // Var Name //
+            if (context.var_name() != null)
+            {
+
+                string lib = ScriptingHelper.GetLibName(context.var_name());
+                string name = ScriptingHelper.GetVarName(context.var_name());
+
+                if (this._Host.TableExists(lib, name))
+                {
+
+                    TableExpression t = new TableExpressionValue(this._Host, null, this._Host.OpenTable(lib, name));
+                    ActionExpressionParameterized.Parameter p = new ActionExpressionParameterized.Parameter(t);
+                    int idx = this._ScalarBuilder.ColumnCube.Count;
+                    this._ScalarBuilder = this._ScalarBuilder.CloneOfMe();
+                    this._ScalarBuilder.AddSchema(t.Alias, t.Columns);
+                    this._TableBuilder.SeedVisitor = this._ScalarBuilder;
+                    this._MatrixBuilder.SeedVisitor = this._ScalarBuilder;
+                    p.HeapRef = idx;
+                    return p;
+
+                }
+                else if (this._Host.ScalarExists(lib, name))
+                {
+
+                    int href = this._Host.Libraries.GetPointer(lib);
+                    int sref = this._Host.Libraries[href].Values.GetPointer(name);
+                    CellAffinity stype = this._Host.Libraries[href].Values[sref].Affinity;
+                    int ssize = this._Host.Libraries[href].Values[sref].DataCost;
+                    ScalarExpressionScalarRef x = new ScalarExpressionScalarRef(null, href, sref, stype, ssize);
+                    ActionExpressionParameterized.Parameter p = new ActionExpressionParameterized.Parameter(x);
+
+                }
+
+                throw new Exception(string.Format("Table or value '{0}.{1}' does not exist", lib, name));
+
+            }
+            // Table expression //
+            else if (context.table_expression() != null)
+            {
+
+                TableExpression t = this._TableBuilder.Visit(context.table_expression());
+                ActionExpressionParameterized.Parameter p = new ActionExpressionParameterized.Parameter(t);
+                int idx = this._ScalarBuilder.ColumnCube.Count;
+                this._ScalarBuilder = this._ScalarBuilder.CloneOfMe();
+                this._ScalarBuilder.AddSchema(t.Alias, t.Columns);
+                this._TableBuilder.SeedVisitor = this._ScalarBuilder;
+                this._MatrixBuilder.SeedVisitor = this._ScalarBuilder;
+                p.HeapRef = idx;
+                return p;
+
+            }
+            // Matrix expression //
+            else if (context.matrix_expression() != null)
+            {
+
+                MatrixExpression m = this._MatrixBuilder.Visit(context.matrix_expression());
+                ActionExpressionParameterized.Parameter p = new ActionExpressionParameterized.Parameter(m);
+                return p;
+
+            }
+            // Record //
+            else if (context.expression_or_wildcard_set() != null)
+            {
+
+                ScalarExpressionCollection r = this._ScalarBuilder.Render(context.expression_or_wildcard_set());
+                ActionExpressionParameterized.Parameter p = new ActionExpressionParameterized.Parameter(r);
+                return p;
+
+            }
+            else if (context.expression() != null)
+            {
+                ScalarExpression x = this._ScalarBuilder.Render(context.expression());
+                ActionExpressionParameterized.Parameter p = new ActionExpressionParameterized.Parameter(x);
+                return p;
+            }
+
+            throw new Exception(string.Format("Parameter '{0}' is invalid", context.GetText()));
+            
+        }
+
+        private ActionExpressionParameterized.Parameter[] Render(PulseParser.ParameterContext[] context)
+        {
+
+            if (context.Length == 0)
+                return new ActionExpressionParameterized.Parameter[] { };
+
+            ActionExpressionParameterized.Parameter[] s = new ActionExpressionParameterized.Parameter[context.Length];
+            Queue<PulseParser.ParameterContext> p = new Queue<PulseParser.ParameterContext>();
+            Queue<int> q = new Queue<int>();
+            int i = 0;
+
+            foreach (PulseParser.ParameterContext ctx in context)
+            {
+
+                if (IsTabular(ctx))
+                {
+                    s[i] = this.Render(ctx);
+                }
+                else
+                {
+                    p.Enqueue(ctx);
+                    q.Enqueue(i);
+                }
+                i++;
+
+            }
+
+            while (p.Count != 0)
+            {
+                s[q.Dequeue()] = this.Render(p.Dequeue());
+            }
+
+            return s;
+
+        }
+
+        private void Render(PulseParser.Parameter_nameContext[] context, out ActionExpressionParameterized.Parameter[] Parameters, out string[] Names)
+        {
+
+            Names = context.Select((x) => { return x.lib_name().GetText(); }).ToArray();
+
+            PulseParser.ParameterContext[] c = context.Select((x) => { return x.parameter(); }).ToArray();
+
+            Parameters = this.Render(c);
+
+        }
 
     }
 

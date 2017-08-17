@@ -21,6 +21,7 @@ SET_REDUCTIONS
 	;
 
 // Opperators //
+PARAM : '@';
 PLUS : '+';
 MINUS : '-';
 MUL : '*';
@@ -134,9 +135,6 @@ LITERAL_STRING
 	;
 
 // Base Token //
-PARAMETER 
-	: '@' IDENTIFIER
-	;
 IDENTIFIER
 	: [a-zA-Z_] [a-zA-Z_0-9]*
 	;

@@ -16,7 +16,7 @@ namespace Pulse.TableExpressions
     /// <summary>
     /// Represents the base class for all table expressions
     /// </summary>
-    public abstract class TableExpression : IBindable
+    public abstract class TableExpression : IBindable, IDisposable, IColumns, IRecyclable
     {
 
         protected List<TableExpression> _Children;
@@ -221,78 +221,174 @@ namespace Pulse.TableExpressions
         }
 
         /// <summary>
-        /// Writes the value of expression to a table
-        /// </summary>
-        /// <param name="Writer"></param>
-        public abstract void Evaluate(FieldResolver Variants, RecordWriter Writer);
-
-        /// <summary>
         /// Creates and primes a resolver
         /// </summary>
         /// <param name="Variants"></param>
         /// <returns></returns>
         public abstract FieldResolver CreateResolver(FieldResolver Variants);
 
-        // Virtuals //
-        public virtual void EvaluateDistinct(FieldResolver Variants, RecordWriter Writer)
+        // Appends //
+        /// <summary>
+        /// Writes the value of expression to a table
+        /// </summary>
+        /// <param name="Writer"></param>
+        public abstract void Evaluate(FieldResolver Variants, RecordWriter Writer);
+
+        /// <summary>
+        /// Evaluates the table expression, removing duplicates before appending
+        /// </summary>
+        /// <param name="Variants"></param>
+        /// <param name="Writer"></param>
+        public virtual void AppendDistinct(FieldResolver Variants, RecordWriter Writer)
         {
 
             // Get the temp table //
             Table t = this._Host.CreateTable(Host.TEMP, Host.RandomName, this.Columns);
 
-            // Write to the temp
+            // Write to the temp //
+            using (RecordWriter rw = t.OpenWriter())
+            {
+                this.Evaluate(Variants, rw);
+            }
 
-        }
+            // Distinct the table //
+            TableUtil.Distinct(t, Writer, this.Columns.GetKey());
 
-        public virtual void EvaluateOrdered(FieldResolver Variants, RecordWriter Writer)
-        {
-        }
-
-        public virtual void EvaluateDistinctOrdered(FieldResolver Variants, RecordWriter Writer)
-        {
         }
 
         /// <summary>
-        /// Evaluates the expression and returns a table
+        /// Evaluates the table expression, sorting before appending
         /// </summary>
-        /// <param name="DB"></param>
-        /// <param name="Name"></param>
-        /// <returns></returns>
-        public virtual Table Evaluate(FieldResolver Variants, string DB, string Name)
+        /// <param name="Variants"></param>
+        /// <param name="Writer"></param>
+        public virtual void AppendOrdered(FieldResolver Variants, RecordWriter Writer)
         {
 
-            Table t = this.CreateTable(DB, Name);
-            RecordWriter ws = this.CreateWriter(t);
-            this.Evaluate(Variants, ws);
-            ws.Close();
+            // Get the temp table //
+            Table t = this._Host.CreateTable(Host.TEMP, Host.RandomName, this.Columns);
 
+            // Write to the temp //
+            using (RecordWriter rw = t.OpenWriter())
+            {
+                this.Evaluate(Variants, rw);
+            }
+
+            // Sort the table //
+            TableUtil.Sort(t, Key.Build(this.Columns.Count));
+
+            // Write to the source table //
+            using (RecordReader rr = t.OpenReader())
+            {
+                Writer.Consume(rr);
+            }
+
+        }
+
+        /// <summary>
+        /// Evaluates the table expression, removing duplicates and sorting before appending
+        /// </summary>
+        /// <param name="Variants"></param>
+        /// <param name="Writer"></param>
+        public virtual void AppendDistinctOrdered(FieldResolver Variants, RecordWriter Writer)
+        {
+
+            // Get the temp table //
+            Table t = this._Host.CreateTable(Host.TEMP, Host.RandomName, this.Columns);
+
+            // Write to the temp //
+            using (RecordWriter rw = t.OpenWriter())
+            {
+                this.Evaluate(Variants, rw);
+            }
+
+            // Distinct the table //
+            TableUtil.Distinct(t, Writer, t.Columns.GetKey(this.OrderBy));
+
+        }
+
+        /// <summary>
+        /// Appends data to the table, sorting, distincting, or both, before inserting the records
+        /// </summary>
+        /// <param name="Variants"></param>
+        /// <param name="Writer"></param>
+        public virtual void Append(FieldResolver Variants, RecordWriter Writer)
+        {
+
+            // Check the modifiers //
+            if (this.IsDistinct && this.IsOrdered)
+            {
+                this.AppendDistinctOrdered(Variants, Writer);
+            }
+            else if (this.IsDistinct)
+            {
+                this.AppendDistinct(Variants, Writer);
+            }
+            else if (this.IsOrdered)
+            {
+                this.AppendOrdered(Variants, Writer);
+            }
+            else
+            {
+                this.Evaluate(Variants, Writer);
+            }
+
+        }
+
+        // Creates //
+        public virtual Table CreateDistinct(FieldResolver Variants, string DB, string Name)
+        {
+
+            Table t = this._Host.CreateTable(DB, Name, this.Columns);
+            using (RecordWriter rw = t.OpenWriter())
+            {
+                this.AppendDistinct(Variants, rw);
+            }
             return t;
 
         }
 
-        /// <summary>
-        /// Evalutes the table into a temp table
-        /// </summary>
-        /// <returns></returns>
-        public virtual Table Evaluate(FieldResolver Variants)
+        public virtual Table CreateOrdered(FieldResolver Variants, string DB, string Name)
         {
-            return this.Evaluate(Variants, Host.TEMP, Host.RandomName);
+
+            Table t = this._Host.CreateTable(DB, Name, this.Columns);
+            using (RecordWriter rw = t.OpenWriter())
+            {
+                this.AppendOrdered(Variants, rw);
+            }
+            return t;
+
         }
 
-        /// <summary>
-        /// Creates a temp table and loads it with the table expression
-        /// </summary>
-        /// <returns></returns>
-        public virtual Table RenderTempTable(FieldResolver Variants)
+        public virtual Table CreateDistinctOrdered(FieldResolver Variants, string DB, string Name)
         {
-            Table t = this.CreateTempTable();
-            using (RecordWriter w = this.CreateWriter(t))
+
+            Table t = this._Host.CreateTable(DB, Name, this.Columns);
+            using (RecordWriter rw = t.OpenWriter())
             {
-                this.Evaluate(Variants, w);
+                this.AppendDistinctOrdered(Variants, rw);
+            }
+            return t;
+
+        }
+
+        public virtual Table Create(FieldResolver Variants, string DB, string Name)
+        {
+            Table t = this._Host.CreateTable(DB, Name, this.Columns);
+            using (RecordWriter rw = t.OpenWriter())
+            {
+                this.Append(Variants, rw);
             }
             return t;
         }
 
+        public virtual Table Select(FieldResolver Variants)
+        {
+            Table t = this.Create(Variants, Host.TEMP, Host.RandomName);
+            this._RecycleBin.Add(t);
+            return this.Create(Variants, Host.TEMP, Host.RandomName);
+        }
+
+        // Recycling //
         /// <summary>
         /// Cleans up any resources no longer needed
         /// </summary>
@@ -304,7 +400,7 @@ namespace Pulse.TableExpressions
             {
                 this._Host.Store.DropTable(t.Key);
             }
-
+            this._RecycleBin = new List<Table>();
 
         }
 
@@ -361,6 +457,11 @@ namespace Pulse.TableExpressions
             return "META_DATA";
         }
 
+        public void Dispose()
+        {
+            this.RecycleAll();
+        }
+
         // Internal Classes //
         /// <summary>
         /// Represents a way to enumerate over all the child tables
@@ -401,7 +502,7 @@ namespace Pulse.TableExpressions
             {
                 get
                 {
-                    return this._Nodes[this._Position].Evaluate(this._Resolver);
+                    return this._Nodes[this._Position].Select(this._Resolver);
                 }
             }
 

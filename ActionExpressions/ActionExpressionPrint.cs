@@ -49,7 +49,7 @@ namespace Pulse.ActionExpressions
             if (this._t != null)
             {
 
-                using (RecordReader rr = this._t.Evaluate(Variant).OpenReader())
+                using (RecordReader rr = this._t.Select(Variant).OpenReader())
                 {
                     this._Host.IO.WriteLine(rr.Columns.ToNameString(','));
                     while (rr.CanAdvance)
@@ -137,7 +137,7 @@ namespace Pulse.ActionExpressions
             if (this._t != null)
             {
 
-                using (RecordReader rr = this._t.Evaluate(Variant).OpenReader())
+                using (RecordReader rr = this._t.Select(Variant).OpenReader())
                 {
                     sw.WriteLine(rr.Columns.ToNameString(','));
                     while (rr.CanAdvance)

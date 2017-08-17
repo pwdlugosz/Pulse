@@ -66,7 +66,7 @@ namespace Pulse.Data
             this._RNG = new RandomCell();
             this._Timer = Stopwatch.StartNew();
             this._Libraries = new Heap<Library>();
-            this._Base = new Libraries.BaseLibrary(this);
+            this._Base = Library.BaseLibrary(this);
 
             // Add the base library to the library collection //
             this._Libraries.Allocate("GLOBAL", this._Base);
@@ -223,6 +223,20 @@ namespace Pulse.Data
         }
 
         /// <summary>
+        /// Opens a table given a string of the form 'DB.Name'
+        /// </summary>
+        /// <param name="ScriptingName"></param>
+        /// <returns></returns>
+        public Table OpenTableUI(string ScriptingName)
+        {
+            string[] vars = ScriptingName.Split('.');
+            string db = (vars.Length == 1 ? TEMP : vars[0]);
+            string name = vars.Last();
+            string path = TableHeader.DeriveV1Path(this._Connections[db], name);
+            return this.OpenTable(path);
+        }
+
+        /// <summary>
         /// Creates a table with a cluster index
         /// </summary>
         /// <param name="Alias"></param>
@@ -320,6 +334,19 @@ namespace Pulse.Data
             if (!this._Connections.Exists(Alias))
                 return false;
             return this._Cache.TableExists(TableHeader.DeriveV1Path(this._Connections[Alias], Name));
+        }
+
+        /// <summary>
+        /// Checks if a scalar exists
+        /// </summary>
+        /// <param name="Alias"></param>
+        /// <param name="Name"></param>
+        /// <returns></returns>
+        public bool ScalarExists(string Alias, string Name)
+        {
+            if (!this._Libraries.Exists(Alias))
+                return false;
+            return this._Libraries[Alias].Values.Exists(Name);
         }
 
         /// <summary>

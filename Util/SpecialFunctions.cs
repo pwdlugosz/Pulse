@@ -81,7 +81,6 @@ namespace Pulse.Util
 
         #region ProbabilityDistributions
 
-
         // Normal //
         public static double NormalPDF(double Value)
         {
@@ -325,7 +324,6 @@ namespace Pulse.Util
             }
             return x;
         }
-
 
         #endregion
 

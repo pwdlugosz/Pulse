@@ -78,6 +78,12 @@ namespace Pulse.Data
         }
 
         // Overrides //
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Delim"></param>
+        /// <param name="Escape"></param>
+        /// <returns></returns>
         public string ToString(char Delim, char Escape)
         {
             StringBuilder sb = new StringBuilder();

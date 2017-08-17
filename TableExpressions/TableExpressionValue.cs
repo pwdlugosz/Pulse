@@ -38,16 +38,15 @@ namespace Pulse.TableExpressions
             return Variants.CloneOfMeFull();
         }
 
-        public override Table Evaluate(FieldResolver Variants)
+        // Evaluates //
+        public override void Evaluate(FieldResolver Variants, RecordWriter Writer)
         {
-            return this._t;
+            Writer.Consume(this._t.OpenReader());
         }
 
-        public override void Evaluate( FieldResolver Variants, RecordWriter Writer)
+        public override Table Select(FieldResolver Variants)
         {
-
-            Writer.Consume(this._t.OpenReader());
-
+            return this._t;
         }
 
         public override void Recycle()

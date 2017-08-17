@@ -167,8 +167,8 @@ namespace Pulse.TableExpressions
             this.CheckRender();
 
             // Render each table //
-            Table Left = this._Children[0].Evaluate(Variants);
-            Table Right = this._Children[1].Evaluate(Variants);
+            Table Left = this._Children[0].Select(Variants);
+            Table Right = this._Children[1].Select(Variants);
 
             // Create a resolver //
             FieldResolver pointer = this.CreateResolver(Variants);
@@ -313,8 +313,8 @@ namespace Pulse.TableExpressions
             this.CheckRender();
 
             // Render each table //
-            Table Left = this._Children[0].Evaluate(Variants);
-            Table Right = this._Children[1].Evaluate(Variants);
+            Table Left = this._Children[0].Select(Variants);
+            Table Right = this._Children[1].Select(Variants);
 
             // Create a resolver //
             FieldResolver pointer = this.CreateResolver(Variants);
@@ -418,8 +418,8 @@ namespace Pulse.TableExpressions
             this.CheckRender();
 
             // Render each table //
-            Table Left = this._Children[0].Evaluate(Variants);
-            Table Right = this._Children[1].Evaluate(Variants);
+            Table Left = this._Children[0].Select(Variants);
+            Table Right = this._Children[1].Select(Variants);
 
             // Create a resolver //
             FieldResolver pointer = this.CreateResolver(Variants);
