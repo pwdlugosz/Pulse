@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Pulse.Data;
+using Pulse.Elements;
+using Pulse.Tables;
 
 namespace Pulse.Testing
 {
@@ -13,7 +14,7 @@ namespace Pulse.Testing
 
         public static Schema KeyValueColumns()
         {
-            return new Schema("KEY INT, GAUSS_VAL NUM, GROUP10 INT, GROUP100 INT, GROUP1000 INT, TXT STRING.9");
+            return new Schema("KEY LONG, GAUSS_VAL NUM, GROUP10 LONG, GROUP100 LONG, GROUP1000 LONG, TXT STRING.9");
         }
 
         public static HeapTable SampleHeapTable(Host Host, string Name, int Count, int Offset)

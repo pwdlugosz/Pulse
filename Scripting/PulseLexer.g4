@@ -15,57 +15,28 @@ SET_REDUCTIONS
 	| M A X 
 	| M I N 
 	| S L O P E 
-	| S T D E V 
+	| S T D E V P
+	| S T D E V S
 	| S U M 
 	| V A R
 	;
 
-// Opperators //
-PARAM : '@';
-PLUS : '+';
-MINUS : '-';
-MUL : '*';
-DIV : '/';
-DIV2 : '/?';
-MOD : '%';
-POW : '^';
-EQ : '==';
-NEQ : '!=';
-LT : '<';
-LTE : '<=';
-GT : '>';
-GTE : '>=';
-NULL_OP : '??';
-IF_OP : '?';
-ELSE_OP : ':';
-LPAREN : '(';
-RPAREN : ')';
-LBRAC : '[';
-RBRAC : ']';
-LCURL : '{';
-RCURL : '}';
-COMMA : ',';
-SEMI_COLON : ';';
-CAST : '->';
-LAMBDA : '=>';
-DOT : '.';
-ASSIGN : '=';
-TILDA : '~';
-PIPE : '|';
-OR : O R;
-AND : A N D;
-XOR : X O R;
-NOT : N O T | '!';
-
 // Keywods //
+K_AS : A S | COLON;									// AS or @; A S | ':'
+K_JOIN : J O I N | '**';							// JOIN or **; J O I N | '**'
+K_ALEFT_JOIN : A L E F T '_' J O I N | '*!';		// ALEFT_JOIN or *!; ALEFT_JOIN | '*!'
+K_LEFT_JOIN : L E F T '_' J O I N | '*|';			// LEFT_JOIN or *|; LEFT_JOIN | '*|'
+K_ON : O N | AT;									// ON or @;	O N | AT
+K_ORDER : O R D E R | PIPE;							// ORDER or |; O R D E R | '^'
+K_WHERE : W H E R E | AMPER;						// WHERE or @; W H E R E | ':';
+K_DISTINCT : D I S T I N C T | HASH;				// DISTINCT or #; D I S T I N C T | DOLLAR;
+
 K_APPEND : A P P E N D;
-K_AS : A S;
 K_ASC : A S C;
 K_BY : B Y;
 K_CLUSTER : C L U S T E R;
 K_CONNECT : C O N N E C T;
 K_DESC : D E S C;
-K_DISTINCT : D I S T I N C T;
 K_DO : D O;
 K_ELSE : E L S E;
 K_ESCAPE : E X I T;
@@ -78,29 +49,69 @@ K_GROUP : G R O U P;
 K_IDENTITY : I D E N T I T Y | I D E N T;
 K_IF : I F;
 K_IN : I N;
-K_JOIN : J O I N;
-K_ALEFT_JOIN : A L E F T '_' J O I N;
-K_LEFT_JOIN : L E F T '_' J O I N;
-K_ON : O N;
-K_OPEN_TABLE : O P E N '_' T A B L E;
-K_ORDER : O R D E R | O R D E R '_' B Y;
+K_MATRIX : M A T R I X;
 K_PRINT : P R I N T;
-K_QUERY : Q U E R Y;
+K_RECORD : R E C O R D;
 K_SELECT : S E L E C T;
-K_SIZE : S I Z E;
 K_TABLE : T A B L E;
 K_THEN : T H E N;
 K_TO : T O;
 K_UNION : U N I O N;
-K_WHERE : W H E R E;
 K_WHILE : W H I L E;
 
+// Opperators //
+OR : O R | PIPE PIPE;
+AND : A N D | AMPER AMPER;
+XOR : X O R | HASH HASH;
+NOT : N O T | '!';
+PLUS : '+';
+MINUS : '-';
+MUL : '*';
+DIV : '/';
+DIV2 : '/?';
+MOD : '%';
+POW : '^';
+EQ : '==';
+NEQ : '!=';
+LT : '<';
+LTE : '<=';
+LSHIFT : '<<';
+GT : '>';
+GTE : '>=';
+RSHIFT : '>>';
+NULL_OP : '??';
+IF_OP : '?';
+LPAREN : '(';
+RPAREN : ')';
+LBRAC : '[';
+RBRAC : ']';
+LCURL : '{';
+RCURL : '}';
+COMMA : ',';
+SEMI_COLON : ';';
+ARROW : '->';
+ARROW2 : '=>';
+DOT : '.';
+ASSIGN : '=';
+TILDA : '~';
+PIPE : '|';
+AMPER : '&';
+COLON : ':';
+MONEY : '$';
+AT : '@';
+HASH : '#';
+
 // Core types //
-T_BLOB : B L O B;
 T_BOOL : B O O L;
 T_DATE : D A T E;
-T_DOUBLE : D O U B L E | N U M;
+T_BYTE : B Y T E;
+T_SHORT : S H O R T;
 T_INT : I N T;
+T_LONG : L O N G;
+T_FLOAT : S I N G L E | F L O A T;
+T_DOUBLE : D O U B L E | N U M;
+T_BLOB : B L O B;
+T_TEXT : T E X T;
 T_STRING : S T R I N G;
 
 // Cell Literal Support //
@@ -118,13 +129,28 @@ LITERAL_DATE
 	| '\'' DIGIT+ '-' DIGIT+ '-' DIGIT+ ':' DIGIT+ ':' DIGIT+ ':' DIGIT+ '\'' T				// 'YYYY-MM-DD:HH:MM:SS'T
 	| '\'' DIGIT+ '-' DIGIT+ '-' DIGIT+ ':' DIGIT+ ':' DIGIT+ ':' DIGIT+ '.' DIGIT+ '\'' T	// 'YYYY-MM-DD:HH:MM:SS.LLLLLLLL'T
 	;
+LITERAL_FLOAT 
+	: DIGIT+ '.' DIGIT+ F  // FLOAT
+	| (DIGIT+) F			// 'F' MEANS THIS HAS THE FORM OF AN INT, BUT WE WANT IT TO BE A FLOAT; AVOIDS HAVING TO DO A CAST
+	;
 LITERAL_DOUBLE 
 	: DIGIT+ '.' DIGIT+ (D)?  // DOUBLE
 	| (DIGIT+) D			// 'D' MEANS THIS HAS THE FORM OF AN INT, BUT WE WANT IT TO BE A DOUBLE; AVOIDS HAVING TO DO A CAST
 	;
-LITERAL_INT 
-	: DIGIT+ 
+LITERAL_BYTE 
+	: DIGIT+ B
 	;
+LITERAL_SHORT 
+	: DIGIT+ S
+	;
+LITERAL_INT 
+	: DIGIT+ (I)?
+	;
+LITERAL_LONG
+	: DIGIT+ L 
+	;
+LITERAL_TEXT
+	: LITERAL_STRING U;
 LITERAL_STRING 
 	: '\'' ( ~'\'' | '\'\'' )* '\'' // NORMAL STRING -> 'abcdef'
 	| '"' ( ~'"' | '""')* '"'		// NORMAL STRING -> "ABCDEF"

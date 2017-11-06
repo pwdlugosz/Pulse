@@ -3,28 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Pulse.ScalarExpressions;
-using Pulse.ActionExpressions;
-using Pulse.Data;
+using Pulse.Expressions.ScalarExpressions;
+using Pulse.Expressions.ActionExpressions;
+using Pulse.Elements;
+using Pulse.Elements.Structures;
 
 namespace Pulse.Libraries
 {
 
-    public sealed class Library
+    /// <summary>
+    /// Represents a base class for all libraries
+    /// </summary>
+    public abstract class Library 
     {
 
-        private IScalarExpressionLookup _Functions;
-        private IActionExpressionLookup _Actions;
-        private Heap<Cell> _Values;
-        private Heap<CellMatrix> _Matrixes;
-        private string _Name;
+        protected Host _Host;
+        protected Heap<Cell> _Values;
+        protected Heap<CellMatrix> _Matrixes;
+        protected Heap<AssociativeRecord> _Records;
+        protected string _Name;
 
-        public Library(string Name, IScalarExpressionLookup Functions, IActionExpressionLookup Actions)
+        public Library(Host Host, string Name)
         {
-            this._Functions = Functions;
-            this._Actions = Actions;
+            this._Host = Host;
             this._Values = new Heap<Cell>();
             this._Matrixes = new Heap<CellMatrix>();
+            this._Records = new Heap<AssociativeRecord>();
+
             this._Name = Name;
         }
 
@@ -45,6 +50,14 @@ namespace Pulse.Libraries
         }
 
         /// <summary>
+        /// Represents a collection of structures
+        /// </summary>
+        public Heap<AssociativeRecord> Records
+        {
+            get { return this._Records; }
+        }
+
+        /// <summary>
         /// The name of the library
         /// </summary>
         public string Name
@@ -53,19 +66,11 @@ namespace Pulse.Libraries
         }
 
         /// <summary>
-        /// Inner function set
+        /// Shuts down the library
         /// </summary>
-        public IScalarExpressionLookup FunctionSet
+        public virtual void ShutDown()
         {
-            get { return this._Functions; }
-        }
-
-        /// <summary>
-        /// Inner action set
-        /// </summary>
-        public IActionExpressionLookup ActionSet
-        {
-            get { return this._Actions; }
+            // do something
         }
 
         /// <summary>
@@ -73,49 +78,63 @@ namespace Pulse.Libraries
         /// </summary>
         /// <param name="Name"></param>
         /// <returns></returns>
-        public bool FunctionExists(string Name)
-        {
-            return this._Functions.Exists(Name);
-        }
+        public abstract bool FunctionExists(string Name);
 
         /// <summary>
         /// Gets a function
         /// </summary>
         /// <param name="Name"></param>
         /// <returns></returns>
-        public ScalarExpressionFunction LookupFunction(string Name)
-        {
-            return this._Functions.Lookup(Name);
-        }
+        public abstract ScalarExpressionFunction FunctionLookup(string Name);
 
         /// <summary>
         /// Checks if an action exists
         /// </summary>
         /// <param name="Name"></param>
         /// <returns></returns>
-        public bool ActionExists(string Name)
-        {
-            return this._Actions.Exists(Name);
-        }
+        public abstract bool ActionExists(string Name);
 
         /// <summary>
         /// Gets an action
         /// </summary>
         /// <param name="Name"></param>
         /// <returns></returns>
-        public ActionExpressionParameterized LookupAction(string Name)
-        {
-            return this._Actions.Lookup(Name);
-        }
+        public abstract ActionExpressionParameterized ActionLookup(string Name);
 
         /// <summary>
-        /// Gets the base library
+        /// Represents the base library
         /// </summary>
-        /// <param name="Host"></param>
-        /// <returns></returns>
-        public static Library BaseLibrary(Host Host)
+        public sealed class BaseLibrary : Library
         {
-            return new Library("BASE", new ScalarExpressions.ScalarExpressionFunction.BaseLibrary(Host), null);
+
+            private ScalarExpressionFunction.BaseLibraryFunctions _x;
+
+            public BaseLibrary(Host Host)
+                :base(Host, Host.GLOBAL)
+            {
+                this._x = new ScalarExpressionFunction.BaseLibraryFunctions(Host);
+            }
+
+            public override bool ActionExists(string Name)
+            {
+                return false;
+            }
+
+            public override ActionExpressionParameterized ActionLookup(string Name)
+            {
+                return null;
+            }
+
+            public override bool FunctionExists(string Name)
+            {
+                return this._x.Exists(Name);
+            }
+
+            public override ScalarExpressionFunction FunctionLookup(string Name)
+            {
+                return this._x.Lookup(Name);
+            }
+
         }
 
     }

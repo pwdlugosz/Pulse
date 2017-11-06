@@ -17,7 +17,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>true</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -37,191 +37,220 @@
       <HintPath>..\packages\Antlr4.Runtime.4.6.1\lib\net45\Antlr4.Runtime.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="FSharp.Core, Version=4.4.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\FSharp.Core.4.0.0.1\lib\net40\FSharp.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="HtmlAgilityPack, Version=1.4.9.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.CssSelectors.1.0.2\lib\net45\HtmlAgilityPack.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="HtmlAgilityPack.CssSelectors, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.CssSelectors.1.0.2\lib\net45\HtmlAgilityPack.CssSelectors.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="RazorHosting, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleBrowser.0.5.79.0\lib\net40\RazorHosting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ScrapySharp.Core, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ScrapySharp.2.6.2\lib\net45\ScrapySharp.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="ScrapySharpAsync, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ScrapySharp.2.6.2\lib\net45\ScrapySharpAsync.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="SimpleBrowser, Version=0.5.79.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleBrowser.0.5.79.0\lib\net40\SimpleBrowser.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WebDriver, Version=3.5.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Selenium.WebDriver.3.5.1\lib\net40\WebDriver.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ActionExpressions\ActionExpression.cs" />
-    <Compile Include="ActionExpressions\ActionExpressionDeclare.cs" />
-    <Compile Include="ActionExpressions\ActionExpressionDo.cs" />
-    <Compile Include="ActionExpressions\ActionExpressionFor.cs" />
-    <Compile Include="ActionExpressions\ActionExpressionIf.cs" />
-    <Compile Include="ActionExpressions\ActionExpressionInsert.cs" />
-    <Compile Include="ActionExpressions\ActionExpressionInsertSelect.cs" />
-    <Compile Include="ActionExpressions\ActionExpressionMatrixAssign.cs" />
-    <Compile Include="ActionExpressions\ActionExpressionMatrixUnitAssign.cs" />
-    <Compile Include="ActionExpressions\ActionExpressionMatrixUnitAssignAll.cs" />
-    <Compile Include="ActionExpressions\ActionExpressionParameterized.cs" />
-    <Compile Include="ActionExpressions\ActionExpressionPrint.cs" />
-    <Compile Include="ActionExpressions\ActionExpressionForEach.cs" />
-    <Compile Include="ActionExpressions\ActionExpressionScalarAssign.cs" />
-    <Compile Include="ActionExpressions\ActionExpressionTableAssign.cs" />
-    <Compile Include="ActionExpressions\ActionExpressionWhile.cs" />
-    <Compile Include="ActionExpressions\AssignmentLogic.cs" />
-    <Compile Include="Aggregates\Aggregate.cs" />
-    <Compile Include="Aggregates\AggregateAvg.cs" />
-    <Compile Include="Aggregates\AggregateCollection.cs" />
-    <Compile Include="Aggregates\AggregateCorrelation.cs" />
-    <Compile Include="Aggregates\AggregateCount.cs" />
-    <Compile Include="Aggregates\AggregateCountNull.cs" />
-    <Compile Include="Aggregates\AggregateCountStar.cs" />
-    <Compile Include="Aggregates\AggregateCovariance.cs" />
-    <Compile Include="Aggregates\AggregateFirst.cs" />
-    <Compile Include="Aggregates\AggregateIntercept.cs" />
-    <Compile Include="Aggregates\AggregateLast.cs" />
-    <Compile Include="Aggregates\AggregateLookup.cs" />
-    <Compile Include="Aggregates\AggregateMax.cs" />
-    <Compile Include="Aggregates\AggregateMaxOf.cs" />
-    <Compile Include="Aggregates\AggregateMin.cs" />
-    <Compile Include="Aggregates\AggregateMinOf.cs" />
-    <Compile Include="Aggregates\AggregateSlope.cs" />
-    <Compile Include="Aggregates\AggregateStdevP.cs" />
-    <Compile Include="Aggregates\AggregateStdevS.cs" />
-    <Compile Include="Data\ClusterTrees\ClusterState.cs" />
-    <Compile Include="Data\Indexes\DerivedIndex.cs" />
-    <Compile Include="Data\Streams\RecordWriterDistinct.cs" />
-    <Compile Include="Data\Streams\RecordWriterClustered.cs" />
-    <Compile Include="Data\Structures\BinaryTree.cs" />
-    <Compile Include="Data\System\DebugUtil.cs" />
-    <Compile Include="Data\System\TableStore.cs" />
-    <Compile Include="Data\ITextWritable.cs" />
-    <Compile Include="Data\Tables\IReadable.cs" />
-    <Compile Include="Data\Tables\IRecyclable.cs" />
-    <Compile Include="Data\Tables\TableUtil.cs" />
+    <Compile Include="Alpha\UTF8.cs" />
+    <Compile Include="Expressions\ActionExpressions\ActionExpression.cs" />
+    <Compile Include="Expressions\ActionExpressions\ActionExpressionCTOR.cs" />
+    <Compile Include="Expressions\ActionExpressions\ActionExpressionDeclare.cs" />
+    <Compile Include="Expressions\ActionExpressions\ActionExpressionDo.cs" />
+    <Compile Include="Expressions\ActionExpressions\ActionExpressionFor.cs" />
+    <Compile Include="Expressions\ActionExpressions\ActionExpressionIf.cs" />
+    <Compile Include="Expressions\ActionExpressions\ActionExpressionInsert.cs" />
+    <Compile Include="Expressions\ActionExpressions\ActionExpressionInsertSelect.cs" />
+    <Compile Include="Expressions\ActionExpressions\ActionExpressionMatrixAssign.cs" />
+    <Compile Include="Expressions\ActionExpressions\ActionExpressionMatrixUnitAssign.cs" />
+    <Compile Include="Expressions\ActionExpressions\ActionExpressionMatrixUnitAssignAll.cs" />
+    <Compile Include="Expressions\ActionExpressions\ActionExpressionParameterized.cs" />
+    <Compile Include="Expressions\ActionExpressions\ActionExpressionPrint.cs" />
+    <Compile Include="Expressions\ActionExpressions\ActionExpressionForEach.cs" />
+    <Compile Include="Expressions\ActionExpressions\ActionExpressionScalarAssign.cs" />
+    <Compile Include="Expressions\ActionExpressions\ActionExpressionTableAssign.cs" />
+    <Compile Include="Expressions\ActionExpressions\ActionExpressionWhile.cs" />
+    <Compile Include="Expressions\ActionExpressions\AssignmentLogic.cs" />
+    <Compile Include="Expressions\Aggregates\Aggregate.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateAvg.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateCollection.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateCorrelation.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateCount.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateCountNull.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateCountStar.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateCovariance.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateFirst.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateIntercept.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateLast.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateLookup.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateMax.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateMaxOf.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateMin.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateMinOf.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateSlope.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateStdevP.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateStdevS.cs" />
+    <Compile Include="Elements\CellComparer.cs" />
+    <Compile Include="Elements\CellConverter.cs" />
+    <Compile Include="Elements\CellFormater.cs" />
+    <Compile Include="Elements\CellFunctions.cs" />
+    <Compile Include="Elements\CellParser.cs" />
+    <Compile Include="Elements\CellSerializer.cs" />
+    <Compile Include="Elements\CellValues.cs" />
+    <Compile Include="Expressions\HyperFunction\ExpressionParameter.cs" />
+    <Compile Include="Expressions\HyperFunction\SuperAffinity.cs" />
+    <Compile Include="Expressions\HyperFunction\SuperExpression.cs" />
+    <Compile Include="Expressions\Parameter.cs" />
+    <Compile Include="Expressions\ScalarExpressions\ScalarExpressionRecordRef.cs" />
+    <Compile Include="Scripting\Visitors\RecordExpressionVisitor.cs" />
+    <Compile Include="Tables\ClusterState.cs" />
+    <Compile Include="Tables\DerivedIndex.cs" />
+    <Compile Include="Tables\RecordWriterDistinct.cs" />
+    <Compile Include="Tables\RecordWriterClustered.cs" />
+    <Compile Include="Alpha\BinaryTree.cs" />
+    <Compile Include="Alpha\Structure.cs" />
+    <Compile Include="System\DebugUtil.cs" />
+    <Compile Include="Tables\TableStore.cs" />
+    <Compile Include="Elements\ITextWritable.cs" />
+    <Compile Include="Tables\IReadable.cs" />
+    <Compile Include="Tables\IRecyclable.cs" />
+    <Compile Include="Tables\TableUtil.cs" />
+    <Compile Include="Libraries\LibraryFile.cs" />
+    <Compile Include="Libraries\LibraryStat.cs" />
     <Compile Include="Libraries\LibraryTable.cs" />
-    <Compile Include="Views\View.cs" />
-    <Compile Include="Data\XTree\XTreePage.cs" />
-    <Compile Include="Libraries\BaseLibrary.cs" />
+    <Compile Include="Libraries\LibraryWeb.cs" />
+    <Compile Include="Alpha\Views\View.cs" />
+    <Compile Include="Alpha\XTree\XTreePage.cs" />
     <Compile Include="Libraries\IActionExpressionLookup.cs" />
     <Compile Include="Libraries\Library.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpression.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionAdd.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionAddScalar.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionCheckDivide.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionCheckDivideScalar.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionDivide.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionDivideScalar.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionHeap.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionIdentity.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionInverse.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionLiteral.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionMatrixMultiply.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionMinus.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionMultiply.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionMultiplyScalar.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionNullLiteral.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionSubtract.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionSubtractScalar.cs" />
-    <Compile Include="MatrixExpressions\MatrixExpressionTranspose.cs" />
-    <Compile Include="Query\Aggregate\AggregateEngine.cs" />
-    <Compile Include="Data\Tables\DreamTables\DictionaryDreamTable.cs" />
-    <Compile Include="Data\Tables\DictionaryTable.cs" />
-    <Compile Include="Aggregates\AggregateSum.cs" />
-    <Compile Include="Aggregates\AggregateVarP.cs" />
-    <Compile Include="Aggregates\AggregateVarS.cs" />
-    <Compile Include="Data\ClusterTrees\Cluster.cs" />
-    <Compile Include="Data\ClusterTrees\ClusterPage.cs" />
-    <Compile Include="Data\Cells\Cell.cs" />
-    <Compile Include="Data\Cells\CellAffinity.cs" />
-    <Compile Include="Data\Cells\CellAffinityHelper.cs" />
-    <Compile Include="Data\Indexes\IndexCollection.cs" />
-    <Compile Include="Data\Indexes\IndexHeader.cs" />
-    <Compile Include="Data\Indexes\RecordKey.cs" />
-    <Compile Include="Data\Keys\KeyComparer.cs" />
-    <Compile Include="Data\Pages\PageUID.cs" />
-    <Compile Include="Data\Pages\SortedPage.cs" />
-    <Compile Include="Data\Records\RecordBuilder.cs" />
-    <Compile Include="Data\Records\RecordComparer.cs" />
-    <Compile Include="Data\Streams\RecordReaderIndexData.cs" />
-    <Compile Include="Data\Streams\RecordReaderIndexKey.cs" />
-    <Compile Include="Data\Streams\RecordReaderBase.cs" />
-    <Compile Include="Data\Streams\RecordWriterBase.cs" />
-    <Compile Include="Data\Streams\RecordWriter.cs" />
-    <Compile Include="Data\System\Communicator.cs" />
-    <Compile Include="Data\System\Host.cs" />
-    <Compile Include="Data\Indexes\Index.cs" />
-    <Compile Include="Data\Keys\Key.cs" />
-    <Compile Include="Data\Keys\KeyAffinity.cs" />
-    <Compile Include="Data\Cells\CellMatrix.cs" />
-    <Compile Include="Data\Cells\RandomCell.cs" />
-    <Compile Include="Data\Pages\Page.cs" />
-    <Compile Include="Data\Records\Record.cs" />
-    <Compile Include="Data\Streams\RecordReader.cs" />
-    <Compile Include="Data\Structures\FloatingQueue.cs" />
-    <Compile Include="Data\Structures\Heap.cs" />
-    <Compile Include="Data\System\PageManager.cs" />
-    <Compile Include="Data\Tables\DerivedTable.cs" />
-    <Compile Include="Data\Tables\DreamTables\ClusteredDreamTable.cs" />
-    <Compile Include="Data\Tables\DreamTables\DreamTable.cs" />
-    <Compile Include="Data\Tables\DreamTables\HeapDreamTable.cs" />
-    <Compile Include="Data\Tables\IColumns.cs" />
-    <Compile Include="Data\Tables\IElementHeader.cs" />
-    <Compile Include="Data\Tables\ClusteredTable.cs" />
-    <Compile Include="Data\Tables\HeapTable.cs" />
-    <Compile Include="Data\Tables\ShellTable.cs" />
-    <Compile Include="Data\Tables\ScribeTable.cs" />
-    <Compile Include="Data\Tables\Table.cs" />
-    <Compile Include="Data\Tables\Schema.cs" />
-    <Compile Include="Data\Tables\TableHeader.cs" />
-    <Compile Include="Query\Aggregate\AggregateMetaData.cs" />
-    <Compile Include="Query\Aggregate\DictionaryAggregateEngine.cs" />
-    <Compile Include="Query\Aggregate\OrderedAggregateEngine.cs" />
-    <Compile Include="Query\Modifier.cs" />
-    <Compile Include="Query\Select\BasicSelectEngine.cs" />
-    <Compile Include="Query\Select\SelectEngine.cs" />
-    <Compile Include="Query\Select\SelectMetaData.cs" />
-    <Compile Include="Query\Union\BasicUnionEngine.cs" />
-    <Compile Include="Query\Union\UnionEngine.cs" />
-    <Compile Include="Query\Union\UnionMetaData.cs" />
-    <Compile Include="ScalarExpressions\IBindable.cs" />
-    <Compile Include="ScalarExpressions\ScalarExpression.cs" />
-    <Compile Include="ScalarExpressions\ScalarExpressionAffinity.cs" />
-    <Compile Include="ScalarExpressions\ScalarExpressionCollection.cs" />
-    <Compile Include="ScalarExpressions\ScalarExpressionConstant.cs" />
-    <Compile Include="ScalarExpressions\ScalarExpressionFieldRef.cs" />
-    <Compile Include="ScalarExpressions\ScalarExpressionFilter.cs" />
-    <Compile Include="ScalarExpressions\ScalarExpressionFunction.cs" />
-    <Compile Include="ScalarExpressions\ScalarExpressionMatrixRef.cs" />
-    <Compile Include="ScalarExpressions\ScalarExpressionOptimizer.cs" />
-    <Compile Include="ScalarExpressions\ScalarExpressionPointer.cs" />
-    <Compile Include="ScalarExpressions\ScalarExpressionScalarRef.cs" />
-    <Compile Include="Data\FieldResolver.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpression.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionAdd.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionAddScalar.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionCheckDivide.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionCheckDivideScalar.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionDivide.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionDivideScalar.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionHeap.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionIdentity.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionInverse.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionLiteral.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionMatrixMultiply.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionMinus.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionMultiply.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionMultiplyScalar.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionNullLiteral.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionSubtract.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionSubtractScalar.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionTranspose.cs" />
+    <Compile Include="Tables\DictionaryTable.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateSum.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateVarP.cs" />
+    <Compile Include="Expressions\Aggregates\AggregateVarS.cs" />
+    <Compile Include="Tables\Cluster.cs" />
+    <Compile Include="Tables\ClusterPage.cs" />
+    <Compile Include="Elements\Cell.cs" />
+    <Compile Include="Elements\CellAffinity.cs" />
+    <Compile Include="Elements\CellAffinityHelper.cs" />
+    <Compile Include="Tables\IndexCollection.cs" />
+    <Compile Include="Tables\IndexHeader.cs" />
+    <Compile Include="Tables\RecordKey.cs" />
+    <Compile Include="Elements\KeyComparer.cs" />
+    <Compile Include="Tables\PageUID.cs" />
+    <Compile Include="Tables\SortedPage.cs" />
+    <Compile Include="Elements\RecordBuilder.cs" />
+    <Compile Include="Elements\RecordComparer.cs" />
+    <Compile Include="Tables\RecordReaderIndexData.cs" />
+    <Compile Include="Tables\RecordReaderIndexKey.cs" />
+    <Compile Include="Tables\RecordReaderBase.cs" />
+    <Compile Include="Tables\RecordWriterBase.cs" />
+    <Compile Include="Tables\RecordWriter.cs" />
+    <Compile Include="System\Communicator.cs" />
+    <Compile Include="System\Host.cs" />
+    <Compile Include="Tables\Index.cs" />
+    <Compile Include="Elements\Key.cs" />
+    <Compile Include="Elements\KeyAffinity.cs" />
+    <Compile Include="Elements\CellMatrix.cs" />
+    <Compile Include="Elements\RandomCell.cs" />
+    <Compile Include="Tables\Page.cs" />
+    <Compile Include="Elements\Record.cs" />
+    <Compile Include="Tables\RecordReader.cs" />
+    <Compile Include="Elements\FloatingQueue.cs" />
+    <Compile Include="Elements\Heap.cs" />
+    <Compile Include="Tables\IColumns.cs" />
+    <Compile Include="Tables\IElementHeader.cs" />
+    <Compile Include="Tables\ClusteredTable.cs" />
+    <Compile Include="Tables\HeapTable.cs" />
+    <Compile Include="Tables\ShellTable.cs" />
+    <Compile Include="Tables\Table.cs" />
+    <Compile Include="Tables\Schema.cs" />
+    <Compile Include="Tables\TableHeader.cs" />
+    <Compile Include="Expressions\ScalarExpressions\IBindable.cs" />
+    <Compile Include="Expressions\ScalarExpressions\ScalarExpression.cs" />
+    <Compile Include="Expressions\ScalarExpressions\ScalarExpressionAffinity.cs" />
+    <Compile Include="Expressions\RecordExpressions\RecordExpression.cs" />
+    <Compile Include="Expressions\ScalarExpressions\ScalarExpressionConstant.cs" />
+    <Compile Include="Expressions\ScalarExpressions\ScalarExpressionFieldRef.cs" />
+    <Compile Include="Expressions\ScalarExpressions\ScalarExpressionFilter.cs" />
+    <Compile Include="Expressions\ScalarExpressions\ScalarExpressionFunction.cs" />
+    <Compile Include="Expressions\ScalarExpressions\ScalarExpressionMatrixRef.cs" />
+    <Compile Include="Expressions\ScalarExpressions\ScalarExpressionOptimizer.cs" />
+    <Compile Include="Expressions\ScalarExpressions\ScalarExpressionPointer.cs" />
+    <Compile Include="Expressions\ScalarExpressions\ScalarExpressionScalarRef.cs" />
+    <Compile Include="Expressions\FieldResolver.cs" />
     <Compile Include="Libraries\IScalarExpressionLookup.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Query\Join\JoinAlgorithm.cs" />
-    <Compile Include="Query\Join\JoinEngine.cs" />
-    <Compile Include="Query\Join\JoinMetaData.cs" />
-    <Compile Include="Query\Join\JoinOptimizer.cs" />
-    <Compile Include="Query\Join\JoinType.cs" />
-    <Compile Include="Query\Join\NestedLoopJoinEngine.cs" />
-    <Compile Include="Query\Join\QuasiNestedLoopJoinEngine.cs" />
-    <Compile Include="Query\Join\SortMergeJoinEngine.cs" />
-    <Compile Include="Query\TableExpressionHelper.cs" />
-    <Compile Include="Scripting\ActionExpressionVisitor.cs" />
-    <Compile Include="Scripting\MatrixExpressionParser.cs" />
+    <Compile Include="Scripting\Visitors\ActionExpressionVisitor.cs" />
+    <Compile Include="Scripting\Visitors\MatrixExpressionParser.cs" />
     <Compile Include="Scripting\PulseLexer.g4.cs">
       <DependentUpon>PulseLexer.g4</DependentUpon>
     </Compile>
     <Compile Include="Scripting\PulseParser.g4.cs">
       <DependentUpon>PulseParser.g4</DependentUpon>
     </Compile>
-    <Compile Include="Scripting\ScalarExpressionVisitor.cs" />
+    <Compile Include="Scripting\Visitors\ScalarExpressionVisitor.cs" />
     <Compile Include="Scripting\ScriptingHelper.cs" />
     <Compile Include="Scripting\ScriptProcessor.cs" />
-    <Compile Include="Scripting\TableExpressionVisitor.cs" />
-    <Compile Include="TableExpressions\TableExpression.cs" />
-    <Compile Include="TableExpressions\TableExpressionFold.cs" />
-    <Compile Include="TableExpressions\TableExpressionJoin.cs" />
-    <Compile Include="TableExpressions\TableExpressionSelect.cs" />
-    <Compile Include="TableExpressions\TableExpressionShell.cs" />
-    <Compile Include="TableExpressions\TableExpressionUnion.cs" />
-    <Compile Include="TableExpressions\TableExpressionValue.cs" />
+    <Compile Include="Scripting\Visitors\TableExpressionVisitor.cs" />
+    <Compile Include="Expressions\TableExpressions\TableExpression.cs" />
+    <Compile Include="Expressions\TableExpressions\TableExpressionFold.cs" />
+    <Compile Include="Expressions\TableExpressions\TableExpressionJoin.cs" />
+    <Compile Include="Expressions\TableExpressions\TableExpressionSelect.cs" />
+    <Compile Include="Expressions\TableExpressions\TableExpressionShell.cs" />
+    <Compile Include="Expressions\TableExpressions\TableExpressionUnion.cs" />
+    <Compile Include="Expressions\TableExpressions\TableExpressionValue.cs" />
     <Compile Include="Testing\SampleTables.cs" />
     <Compile Include="Testing\Testers.cs" />
     <Compile Include="Util\CostCalculator.cs" />
@@ -240,10 +269,7 @@
       <CustomToolNamespace>Pulse.Scripting</CustomToolNamespace>
     </Antlr4>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Query\Distinct\" />
-    <Folder Include="Query\OrderBy\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="Scripting\TestScript.txt" />
   </ItemGroup>
@@ -254,8 +280,10 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Antlr4.CodeGenerator.4.6.1\build\Antlr4.CodeGenerator.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Antlr4.CodeGenerator.4.6.1\build\Antlr4.CodeGenerator.props'))" />
     <Error Condition="!Exists('..\packages\Antlr4.CodeGenerator.4.6.1\build\Antlr4.CodeGenerator.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Antlr4.CodeGenerator.4.6.1\build\Antlr4.CodeGenerator.targets'))" />
+    <Error Condition="!Exists('..\packages\Selenium.Chrome.WebDriver.2.30\build\Selenium.Chrome.WebDriver.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Selenium.Chrome.WebDriver.2.30\build\Selenium.Chrome.WebDriver.targets'))" />
   </Target>
   <Import Project="..\packages\Antlr4.CodeGenerator.4.6.1\build\Antlr4.CodeGenerator.targets" Condition="Exists('..\packages\Antlr4.CodeGenerator.4.6.1\build\Antlr4.CodeGenerator.targets')" />
+  <Import Project="..\packages\Selenium.Chrome.WebDriver.2.30\build\Selenium.Chrome.WebDriver.targets" Condition="Exists('..\packages\Selenium.Chrome.WebDriver.2.30\build\Selenium.Chrome.WebDriver.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

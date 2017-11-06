@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Pulse.Data;
-using Pulse.ScalarExpressions;
-using Pulse.MatrixExpressions;
-using Pulse.TableExpressions;
-using Pulse.ActionExpressions;
+using Pulse.Elements;
+using Pulse.Expressions.ScalarExpressions;
+using Pulse.Expressions.MatrixExpressions;
+using Pulse.Expressions.TableExpressions;
+using Pulse.Expressions.ActionExpressions;
 using Antlr4;
 using Antlr4.Runtime;
+using Pulse.Tables;
+using Pulse.Expressions;
 
 namespace Pulse.Scripting
 {
@@ -22,75 +24,6 @@ namespace Pulse.Scripting
         public ScriptProcessor(Host Host)
         {
             this._Host = Host;
-        }
-
-        public void Execute(string Script)
-        {
-
-            //// Create a token stream and do lexal analysis //
-            //AntlrInputStream TextStream = new AntlrInputStream(Script);
-            //PulseLexer HorseLexer = new PulseLexer(TextStream);
-
-            //// Parse the script //
-            //CommonTokenStream RyeTokenStream = new CommonTokenStream(HorseLexer);
-            //PulseParser HeartBeat = new PulseParser(RyeTokenStream);
-
-            //// Handle the error listener //
-            //HeartBeat.RemoveErrorListeners();
-            
-            //// Create an executer object //
-            //CommandVisitor processor = new CommandVisitor(this.Enviro);
-
-            //// Create the call Intermediary and the error catch Intermediary //
-            //List<RyeParser.CommandContext> CallStack = new List<RyeParser.CommandContext>();
-            //List<string> Errors = new List<string>();
-
-            //// Load the call Intermediary and/or parse the errors
-            //try
-            //{
-
-            //    foreach (RyeParser.CommandContext ctx in rye.compile_unit().command_set().command())
-            //    {
-            //        CallStack.Add(ctx);
-            //    }
-
-            //}
-            //catch (RyeParseException e1)
-            //{
-
-            //    Errors.Add("\tParsing Error Detected 1: ");
-            //    Errors.Add("\t" + "\t" + e1.Message);
-
-            //}
-            //catch (RyeCompileException e2)
-            //{
-
-            //    Errors.Add("\tCompile Error Detected 2: ");
-            //    Errors.Add("\t" + "\t" + e2.Message);
-
-            //}
-            
-            //// Check to see if we found any errors //
-            //if (Errors.Count != 0)
-            //{
-
-            //    this.Enviro.IO.WriteLine("Rye encountered one or more critical errors; no statements executed:");
-            //    foreach (string s in Errors)
-            //    {
-            //        this.Enviro.IO.WriteLine(s);
-            //    }
-
-            //}
-
-            //// Execute each element in the call Intermediary //
-            //int Runs = 0;
-            //foreach (RyeParser.CommandContext ctx in CallStack)
-            //{
-
-            //    Runs += processor.Visit(ctx);
-
-            //}
-
         }
 
         public ScalarExpression ToExpression(string Script)
@@ -107,7 +40,7 @@ namespace Pulse.Scripting
             // Create an executer object //
             ScalarExpressionVisitor processor = new ScalarExpressionVisitor(this._Host);
 
-            PulseParser.ExpressionContext context = HeartBeat.compileUnit().expression();
+            PulseParser.Scalar_expressionContext context = HeartBeat.compileUnit().scalar_expression();
 
             // Handle no expressions //
             if (context == null)
@@ -135,7 +68,7 @@ namespace Pulse.Scripting
 
             // Handle no expressions //
             if (HeartBeat.compileUnit().matrix_expression() == null)
-                return new MatrixExpressionLiteral(null, new CellMatrix(1,1, Cell.NULL_INT));
+                return new MatrixExpressionLiteral(null, new CellMatrix(1, 1, CellValues.NullLONG));
 
             MatrixExpression x = processor.Visit(HeartBeat.compileUnit().matrix_expression());
 

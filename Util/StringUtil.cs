@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Pulse.Data;
+using Pulse.Elements;
+using Pulse.Tables;
+using Pulse.Expressions;
 
 namespace Pulse.Util
 {
@@ -131,7 +133,7 @@ namespace Pulse.Util
             RecordBuilder rb = new RecordBuilder();
             for (int i = 0; i < t.Length; i++)
             {
-                rb.Add(Cell.Parse(t[i], Columns.ColumnAffinity(i)));
+                rb.Add(CellParser.Parse(t[i], Columns.ColumnAffinity(i)));
             }
 
             return rb.ToRecord();

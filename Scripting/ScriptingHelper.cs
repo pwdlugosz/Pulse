@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Pulse.Data;
+using Pulse.Elements;
 
 namespace Pulse.Scripting
 {
@@ -14,7 +14,10 @@ namespace Pulse.Scripting
         public static int GetTypeSize(PulseParser.TypeContext context)
         {
             if (context.LITERAL_INT() == null)
-                return 8;
+            {
+                CellAffinity a = GetTypeAffinity(context);
+                return CellSerializer.DefaultLength(a);
+            }
             return int.Parse(context.LITERAL_INT().GetText());
         }
 
@@ -23,16 +26,36 @@ namespace Pulse.Scripting
 
             if (context.T_BOOL() != null)
                 return CellAffinity.BOOL;
+
+            else if (context.T_DATE() != null)
+                return CellAffinity.DATE;
+
+            else if (context.T_BYTE() != null)
+                return CellAffinity.BYTE;
+
+            else if (context.T_SHORT() != null)
+                return CellAffinity.SHORT;
+
             else if (context.T_INT() != null)
                 return CellAffinity.INT;
-            else if (context.T_DATE() != null)
-                return CellAffinity.DATE_TIME;
+
+            else if (context.T_LONG() != null)
+                return CellAffinity.LONG;
+
+            else if (context.T_FLOAT() != null)
+                return CellAffinity.FLOAT;
+
             else if (context.T_DOUBLE() != null)
                 return CellAffinity.DOUBLE;
-            else if (context.T_STRING() != null)
-                return CellAffinity.STRING;
+
             else if (context.T_BLOB() != null)
                 return CellAffinity.BLOB;
+
+            else if (context.T_TEXT() != null)
+                return CellAffinity.TEXT;
+
+            else if (context.T_STRING() != null)
+                return CellAffinity.STRING;
 
             throw new Exception(string.Format("Invalid type '{0}'", context.GetText()));
 
@@ -49,23 +72,23 @@ namespace Pulse.Scripting
             return context.IDENTIFIER().GetText();
         }
 
-        public static ActionExpressions.Assignment GetAssignment(PulseParser.AssignmentContext context)
+        public static Expressions.ActionExpressions.Assignment GetAssignment(PulseParser.AssignmentContext context)
         {
 
             if (context.PLUS() != null)
-                return ActionExpressions.Assignment.PlusEquals;
+                return Expressions.ActionExpressions.Assignment.PlusEquals;
             else if (context.MINUS() != null)
-                return ActionExpressions.Assignment.MinusEquals;
+                return Expressions.ActionExpressions.Assignment.MinusEquals;
             else if (context.MUL() != null)
-                return ActionExpressions.Assignment.ProductEquals;
+                return Expressions.ActionExpressions.Assignment.ProductEquals;
             else if (context.DIV() != null)
-                return ActionExpressions.Assignment.DivideEquals;
+                return Expressions.ActionExpressions.Assignment.DivideEquals;
             else if (context.DIV2() != null)
-                return ActionExpressions.Assignment.CheckDivideEquals;
+                return Expressions.ActionExpressions.Assignment.CheckDivideEquals;
             else if (context.MOD() != null)
-                return ActionExpressions.Assignment.ModEquals;
+                return Expressions.ActionExpressions.Assignment.ModEquals;
             else
-                return ActionExpressions.Assignment.Equals;
+                return Expressions.ActionExpressions.Assignment.Equals;
 
         }
 

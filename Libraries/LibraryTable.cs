@@ -3,14 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Pulse.Data;
-using Pulse.ActionExpressions;
-using Pulse.ScalarExpressions;
+using Pulse.Elements;
+using Pulse.Expressions.ActionExpressions;
+using Pulse.Expressions.ScalarExpressions;
+using Pulse.Tables;
+using Pulse.Expressions;
+
 
 namespace Pulse.Libraries
 {
     
-    public sealed class LibraryTable : IActionExpressionLookup, IScalarExpressionLookup
+    /// <summary>
+    /// A collection of methods and functions supporting tables
+    /// </summary>
+    public sealed class TableLibrary : Library
     {
 
         public const string A_RENAME = "RENAME";
@@ -28,45 +34,15 @@ namespace Pulse.Libraries
         public const string S_META_DATA = "META_DATA";
         public const string S_PAGE = "PAGE";
         public const string S_EXISTS = "EXISTS";
-
-        private Host _Host;
-
-        public LibraryTable(Host Host)
+        public const string S_INFO = "INFO";
+        
+        public TableLibrary(Host Host)
+            :base(Host, "TABLE")
         {
             this._Host = Host;
         }
 
-        ActionExpression IActionExpressionLookup.Lookup(string Name)
-        {
-
-            ActionExpression a = this.GetAction(Name);
-            if (a == null)
-                throw new Exception(string.Format("Function '{0}' is invalid", Name));
-            return a;
-
-        }
-
-        bool IActionExpressionLookup.Exists(string Name)
-        {
-            return this.GetAction(Name) == null;   
-        }
-
-        ScalarExpressionFunction IScalarExpressionLookup.Lookup(string Name)
-        {
-
-            ScalarExpressionFunction a = this.GetScalar(Name);
-            if (a == null)
-                throw new Exception(string.Format("Action '{0}' is invalid", Name));
-            return a;
-
-        }
-
-        bool IScalarExpressionLookup.Exists(string Name)
-        {
-            return this.GetScalar(Name) == null;
-        }
-
-        private ActionExpressionParameterized GetAction(string Name)
+        public override ActionExpressionParameterized ActionLookup(string Name)
         {
 
             switch (Name.ToUpper())
@@ -74,9 +50,9 @@ namespace Pulse.Libraries
 
                 case A_RENAME:
                     return new ActionExpressionRename(this._Host, null);
-                case A_EXPORT:
-                    return new ActionExpressionImport(this._Host, null);
                 case A_IMPORT:
+                    return new ActionExpressionImport(this._Host, null);
+                case A_EXPORT:
                     return new ActionExpressionExport(this._Host, null);
                 case A_DROP:
                     return new ActionExpressionDrop(this._Host, null);
@@ -87,7 +63,12 @@ namespace Pulse.Libraries
 
         }
 
-        private ScalarExpressionFunction GetScalar(string Name)
+        public override bool ActionExists(string Name)
+        {
+            return this.ActionLookup(Name) != null;
+        }
+
+        public override ScalarExpressionFunction FunctionLookup(string Name)
         {
 
             switch (Name.ToUpper())
@@ -115,11 +96,19 @@ namespace Pulse.Libraries
                     return new ScalarExpressionPage(this._Host);
                 case S_EXISTS:
                     return new ScalarExpressionExists(this._Host);
+                case S_INFO:
+                    return new ScalarExpressionInfo(this._Host);
+
 
             }
 
             return null;
 
+        }
+
+        public override bool FunctionExists(string Name)
+        {
+            return this.FunctionLookup(Name) != null;
         }
 
         // Actions //
@@ -169,7 +158,7 @@ namespace Pulse.Libraries
 
                 char[] del = (Delim.IsNull ? (Path.valueSTRING.Split('.').Last().ToUpper() == "CSV" ? new char[] {','} : new char[]{'\t'}) : Delim.valueSTRING.ToCharArray());
                 char esc = (Escape.IsNull ? char.MaxValue : Escape.valueSTRING.ToCharArray().First());
-                int sk = (Skip.IsNull ? 0 : (int)Skip.valueINT);
+                int sk = (Skip.IsNull ? 0 : (int)Skip.valueLONG);
 
                 using (System.IO.StreamReader sr = new System.IO.StreamReader(Path.valueSTRING))
                 {
@@ -178,6 +167,7 @@ namespace Pulse.Libraries
                     while (i < sk)
                     {
                         string v = sr.ReadLine();
+                        i++;
                     }
 
                     using (RecordWriter rw = t.OpenWriter())
@@ -204,7 +194,7 @@ namespace Pulse.Libraries
         {
 
             public ActionExpressionExport(Host Host, ActionExpression Parent)
-                : base(Host, Parent, A_EXPORT, "TABLE.R;PATH.R;DELIM.O;ESCAPE.O", "Exports a table to a text file")
+                : base(Host, Parent, A_EXPORT, "TABLE.T.R;PATH.S.R;DELIM.S.O;ESCAPE.S.O", "Exports a table to a text file")
             {
             }
 
@@ -215,8 +205,8 @@ namespace Pulse.Libraries
 
                 Table t = this._Parameters[0].Table.Select(Variant);
                 Cell Path = this._Parameters[1].Scalar.Evaluate(Variant);
-                Cell Delim = this._Parameters[2].Scalar.Evaluate(Variant);
-                Cell Escape = this._Parameters[3].Scalar.Evaluate(Variant);
+                Cell Delim = (this._Parameters[2].Scalar == null ? CellValues.NullSTRING : this._Parameters[2].Scalar.Evaluate(Variant));
+                Cell Escape = (this._Parameters[3].Scalar == null ? CellValues.NullSTRING : this._Parameters[3].Scalar.Evaluate(Variant));
                 
                 string del = (Delim.IsNull ? (Path.valueSTRING.Split('.').Last().ToUpper() == "CSV" ? "," : "\t" ) : Delim.valueSTRING);
                 string esc = (Escape.IsNull ? "" : Escape.valueSTRING);
@@ -273,7 +263,7 @@ namespace Pulse.Libraries
 
             public override CellAffinity ExpressionReturnAffinity()
             {
-                return CellAffinity.INT;
+                return CellAffinity.LONG;
             }
 
             public override ScalarExpression CloneOfMe()
@@ -303,7 +293,7 @@ namespace Pulse.Libraries
 
             public override CellAffinity ExpressionReturnAffinity()
             {
-                return CellAffinity.INT;
+                return CellAffinity.LONG;
             }
 
             public override ScalarExpression CloneOfMe()
@@ -333,7 +323,7 @@ namespace Pulse.Libraries
 
             public override CellAffinity ExpressionReturnAffinity()
             {
-                return CellAffinity.INT;
+                return CellAffinity.LONG;
             }
 
             public override ScalarExpression CloneOfMe()
@@ -363,7 +353,7 @@ namespace Pulse.Libraries
 
             public override CellAffinity ExpressionReturnAffinity()
             {
-                return CellAffinity.INT;
+                return CellAffinity.LONG;
             }
 
             public override ScalarExpression CloneOfMe()
@@ -393,7 +383,7 @@ namespace Pulse.Libraries
 
             public override CellAffinity ExpressionReturnAffinity()
             {
-                return CellAffinity.INT;
+                return CellAffinity.LONG;
             }
 
             public override ScalarExpression CloneOfMe()
@@ -524,7 +514,7 @@ namespace Pulse.Libraries
             public override Cell Evaluate(FieldResolver Variants)
             {
                 string value = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
-                int id = (int)this._ChildNodes[1].Evaluate(Variants).valueINT;
+                int id = (int)this._ChildNodes[1].Evaluate(Variants).valueLONG;
                 Table t = this._Host.OpenTable(value.Split('.')[0].Trim(), value.Split('.')[1].Trim());
                 byte[] b = new byte[t.PageSize];
                 Page.Write(b, 0, t.GetPage(id));
@@ -560,10 +550,40 @@ namespace Pulse.Libraries
                 string db = value.Split('.')[0].Trim();
                 string name = value.Split('.')[0].Trim();
                 if (!this._Host.Connections.Exists(db))
-                    return Cell.FALSE;
+                    return CellValues.False;
                 if (!this._Host.TableExists(db, name))
-                    return Cell.FALSE;
-                return Cell.TRUE;
+                    return CellValues.False;
+                return CellValues.True;
+            }
+
+        }
+
+        private sealed class ScalarExpressionInfo : ScalarExpressionFunction
+        {
+
+            private Host _Host;
+
+            public ScalarExpressionInfo(Host Host)
+                : base(null, S_INFO, 1)
+            {
+                this._Host = Host;
+            }
+
+            public override CellAffinity ExpressionReturnAffinity()
+            {
+                return CellAffinity.TEXT;
+            }
+
+            public override ScalarExpression CloneOfMe()
+            {
+                return new ScalarExpressionInfo(this._Host);
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                string value = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+                Table t = this._Host.OpenTable(value.Split('.')[0].Trim(), value.Split('.')[1].Trim());
+                return new Cell(t.Header.DebugPrint(), true);
             }
 
         }
