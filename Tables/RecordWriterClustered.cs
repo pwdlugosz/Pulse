@@ -43,7 +43,7 @@ namespace Pulse.Tables
 
             // Drop the table //
             Host h = this._t.Host;
-            h.Store.DropTable(this._t.Key);
+            h.TableStore.DropTable(this._t.Key);
 
         }
 

@@ -18,43 +18,12 @@ namespace Pulse.Libraries
     {
 
         protected Host _Host;
-        protected Heap<Cell> _Values;
-        protected Heap<CellMatrix> _Matrixes;
-        protected Heap<AssociativeRecord> _Records;
         protected string _Name;
 
         public Library(Host Host, string Name)
         {
             this._Host = Host;
-            this._Values = new Heap<Cell>();
-            this._Matrixes = new Heap<CellMatrix>();
-            this._Records = new Heap<AssociativeRecord>();
-
             this._Name = Name;
-        }
-
-        /// <summary>
-        /// Represents a collection of values
-        /// </summary>
-        public Heap<Cell> Values
-        {
-            get { return this._Values; }
-        }
-
-        /// <summary>
-        /// Represents a collection of matrixes
-        /// </summary>
-        public Heap<CellMatrix> Matrixes
-        {
-            get { return this._Matrixes; }
-        }
-
-        /// <summary>
-        /// Represents a collection of structures
-        /// </summary>
-        public Heap<AssociativeRecord> Records
-        {
-            get { return this._Records; }
         }
 
         /// <summary>

@@ -4,12 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Elements;
+using Pulse.Expressions;
 using Pulse.Expressions.ScalarExpressions;
+using Pulse.Expressions.MatrixExpressions;
+using Pulse.Expressions.RecordExpressions;
+using Pulse.Expressions.TableExpressions;
 
 namespace Pulse.Expressions.MatrixExpressions
 {
 
-    public abstract class MatrixExpression : IBindable
+    public abstract class MatrixExpression : IBindable, IExpression
     {
 
         private MatrixExpression _ParentNode;
@@ -104,6 +108,17 @@ namespace Pulse.Expressions.MatrixExpressions
         {
             this._Children.ForEach((x) => { x.Bind(PointerRef, Value); });
         }
+
+        public SuperExpressionAffinity SuperAffinity { get { return SuperExpressionAffinity.Matrix; } }
+
+        public ScalarExpression Scalar { get { return null; } }
+
+        public MatrixExpression Matrix { get { return this; } }
+
+        public RecordExpression Record { get { return null; } }
+
+        public TableExpression Table { get { return null; } }
+
 
         // Statics //
         public static MatrixExpression Empty

@@ -11,7 +11,7 @@ using Pulse.Tables;
 namespace Pulse.Expressions.ActionExpressions
 {
 
-    public sealed class ActionExpressionCTOR : ActionExpression
+    public sealed class ActionExpressionTableCTOR : ActionExpression
     {
 
         private ScalarExpression _DB;
@@ -19,7 +19,7 @@ namespace Pulse.Expressions.ActionExpressions
         private Schema _Columns;
         private Key _ClusterColumns;
 
-        public ActionExpressionCTOR(Host Host, ActionExpression Parent, ScalarExpression DB, ScalarExpression Name, Schema Columns, Key Cluster)
+        public ActionExpressionTableCTOR(Host Host, ActionExpression Parent, ScalarExpression DB, ScalarExpression Name, Schema Columns, Key Cluster)
             : base(Host, Parent)
         {
             this._DB = DB;
@@ -28,17 +28,17 @@ namespace Pulse.Expressions.ActionExpressions
             this._ClusterColumns = Cluster;
         }
 
-        public ActionExpressionCTOR(Host Host, ActionExpression Parent, string DB, string Name, Schema Columns, Key Cluster)
+        public ActionExpressionTableCTOR(Host Host, ActionExpression Parent, string DB, string Name, Schema Columns, Key Cluster)
             : this(Host, Parent, new ScalarExpressionConstant(null, DB), new ScalarExpressionConstant(null, Name), Columns, Cluster)
         {
         }
 
-        public ActionExpressionCTOR(Host Host, ActionExpression Parent, ScalarExpression DB, ScalarExpression Name, Schema Columns)
+        public ActionExpressionTableCTOR(Host Host, ActionExpression Parent, ScalarExpression DB, ScalarExpression Name, Schema Columns)
             : this(Host, Parent, DB, Name, Columns, null)
         {
         }
 
-        public ActionExpressionCTOR(Host Host, ActionExpression Parent, string DB, string Name, Schema Columns)
+        public ActionExpressionTableCTOR(Host Host, ActionExpression Parent, string DB, string Name, Schema Columns)
             : this(Host, Parent, DB, Name, Columns, null)
         {
         }
@@ -61,5 +61,6 @@ namespace Pulse.Expressions.ActionExpressions
         }
 
     }
+
 
 }

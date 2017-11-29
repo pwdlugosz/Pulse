@@ -36,20 +36,16 @@ namespace Pulse.Elements
         private const string DIR_TEST = "Test";
         private const string DIR_LOG = "Log";
 
-        //private PageManager _PageCache;
-        private TableStore _Cache;
         private Communicator _IO;
-        private Heap<string> _Connections;
         private RandomCell _RNG;
         private Stopwatch _Timer;
         private Heap<Library> _Libraries;
         private Library _Base;
+        private ObjectStore _Store;
+        private Heap<string> _Connections;
         public readonly long StartTicks = DateTime.Now.Ticks;
-
-        private Heap<Cell> _Scalars;
-        private Heap<CellMatrix> _Matrixes;
-        private Heap<AssociativeRecord> _Records;
-
+        private TableStore _Cache;
+        
         /// <summary>
         /// Creates a host
         /// </summary>
@@ -58,20 +54,20 @@ namespace Pulse.Elements
 
             Host.CheckDir();
 
-            this._Cache = new TableStore(this, TableStore.DEFAULT_MAX_MEMORY);
             this._IO = new CommandLineCommunicator();
-
-            this._Scalars = new Heap<Cell>();
-            this._Matrixes = new Heap<CellMatrix>();
-            this._Records = new Heap<AssociativeRecord>();
-
-            this._Connections = new Heap<string>();
-            this._Connections.Allocate(TEMP, TempDir);
 
             this._RNG = new RandomCell();
             this._Timer = Stopwatch.StartNew();
             this._Libraries = new Heap<Library>();
             this._Base = new Library.BaseLibrary(this);
+
+            // Tables //
+            this._Cache = new TableStore(this);
+
+            // Objects //
+            this._Store = new ObjectStore(this);
+            this._Connections = new Heap<string>();
+            this._Connections.Allocate(TEMP, TempDir);
 
             // Add the base library to the library collection //
             this._Libraries.Allocate(GLOBAL, this._Base);
@@ -89,8 +85,8 @@ namespace Pulse.Elements
         /// </summary>
         public void ShutDown()
         {
-            
-            this.Store.ShutDown();
+
+            this.TableStore.ShutDown();
 
             foreach (Library x in this._Libraries.Values)
             {
@@ -109,9 +105,9 @@ namespace Pulse.Elements
         /// <summary>
         /// Internal table store
         /// </summary>
-        public TableStore Store
+        public ObjectStore Store
         {
-            get { return this._Cache; }
+            get { return this._Store; }
         }
 
         /// <summary>
@@ -123,35 +119,32 @@ namespace Pulse.Elements
         }
 
         /// <summary>
-        /// In memory scalar collection
-        /// </summary>
-        public Heap<Cell> Scalars
-        {
-            get { return this._Scalars; }
-        }
-
-        /// <summary>
-        /// In memory matrix store
-        /// </summary>
-        public Heap<CellMatrix> Matrixes
-        {
-            get { return this._Matrixes; }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public Heap<AssociativeRecord> Records
-        {
-            get { return this._Records; }
-        }
-
-        /// <summary>
         /// Gets the elapsed time since the host was launched
         /// </summary>
         public long Elapsed
         {
             get { return this._Timer.ElapsedMilliseconds; }
+        }
+
+        /// <summary>
+        /// All the connections
+        /// </summary>
+        public Heap<string> Connections
+        {
+            get { return this._Connections; }
+        }
+
+        /// <summary>
+        /// Gets the connection to TempDB
+        /// </summary>
+        public string TempDB
+        {
+            get { return this._Connections[TEMP]; }
+        }
+
+        public TableStore TableStore
+        {
+            get { return this._Cache; }
         }
 
         // Random Number Generator //
@@ -170,33 +163,6 @@ namespace Pulse.Elements
         public void SetSeed(int Seed)
         {
             this._RNG = new RandomCell(Seed);
-        }
-
-        // Connection Support //
-        /// <summary>
-        /// Connection store
-        /// </summary>
-        public Heap<string> Connections
-        {
-            get { return this._Connections; }
-        }
-
-        /// <summary>
-        /// The alias of the TEMP database
-        /// </summary>
-        public string TempDB
-        {
-            get { return this._Connections[TEMP]; }
-        }
-
-        /// <summary>
-        /// Adds a database connection
-        /// </summary>
-        /// <param name="Alias"></param>
-        /// <param name="Connection"></param>
-        public void AddConnection(string Alias, string Connection)
-        {
-            this._Connections.Allocate(Alias, Connection);
         }
 
         // Library //
@@ -235,8 +201,8 @@ namespace Pulse.Elements
         /// <returns></returns>
         public Table OpenTable(string Alias, string Name)
         {
-            if (this.Connections.Exists(Alias))
-                return this.OpenTable(TableHeader.DeriveV1Path(this.Connections[Alias], Name));
+            if (this._Connections.Exists(Alias))
+                return this.OpenTable(TableHeader.DeriveV1Path(this._Connections[Alias], Name));
             throw new Exception(string.Format("Connection '{0}' does not exist", Alias));
         }
 
@@ -282,7 +248,7 @@ namespace Pulse.Elements
         /// <returns></returns>
         public ClusteredTable CreateTable(string Alias, string Name, Schema Columns, Key ClusterColumns, ClusterState State)
         {
-            this._Cache.DropTable(TableHeader.DeriveV1Path(this._Connections[Alias], Name)); 
+            this._Cache.DropTable(TableHeader.DeriveV1Path(this._Connections[Alias], Name));
             ClusteredTable t = new ClusteredTable(this, Name, this._Connections[Alias], Columns, ClusterColumns, State, Page.DEFAULT_SIZE);
             return t;
         }
@@ -297,7 +263,7 @@ namespace Pulse.Elements
         /// <returns></returns>
         public ClusteredTable CreateTable(string Alias, string Name, Schema Columns, Key ClusterColumns)
         {
-            this._Cache.DropTable(TableHeader.DeriveV1Path(this._Connections[Alias], Name)); 
+            this._Cache.DropTable(TableHeader.DeriveV1Path(this._Connections[Alias], Name));
             ClusteredTable t = new ClusteredTable(this, Name, this._Connections[Alias], Columns, ClusterColumns, ClusterState.Universal, Page.DEFAULT_SIZE);
             return t;
         }
@@ -325,7 +291,7 @@ namespace Pulse.Elements
         /// <returns></returns>
         public DictionaryTable CreateTable(string Alias, string Name, Schema KeyColumns, Schema ValueColumns)
         {
-            this._Cache.DropTable(TableHeader.DeriveV1Path(this._Connections[Alias], Name)); 
+            this._Cache.DropTable(TableHeader.DeriveV1Path(this._Connections[Alias], Name));
             return new DictionaryTable(this, Name, this._Connections[Alias], KeyColumns, ValueColumns, Page.DEFAULT_SIZE);
         }
 
@@ -352,19 +318,6 @@ namespace Pulse.Elements
             if (!this._Connections.Exists(Alias))
                 return false;
             return this._Cache.TableExists(TableHeader.DeriveV1Path(this._Connections[Alias], Name));
-        }
-
-        /// <summary>
-        /// Checks if a scalar exists
-        /// </summary>
-        /// <param name="Alias"></param>
-        /// <param name="Name"></param>
-        /// <returns></returns>
-        public bool ScalarExists(string Alias, string Name)
-        {
-            if (!this._Libraries.Exists(Alias))
-                return false;
-            return this._Libraries[Alias].Values.Exists(Name);
         }
 
         /// <summary>

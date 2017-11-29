@@ -17,128 +17,128 @@ using Pulse.Expressions;
 namespace Pulse.Scripting
 {
 
-    public class RecordExpressionVisitor : PulseParserBaseVisitor<RecordExpression>
-    {
+    //public class RecordExpressionVisitor : PulseParserBaseVisitor<ScalarExpressionSet>
+    //{
 
-        private Host _Host;
-        private ScalarExpressionVisitor _scalars;
+    //    private Host _Host;
+    //    private ScalarExpressionVisitor _scalars;
 
-        public RecordExpressionVisitor(ScalarExpressionVisitor Factory)
-            : base()
-        {
-            this._Host = Factory.Host;
-            this._scalars = Factory;
-        }
+    //    public RecordExpressionVisitor(ScalarExpressionVisitor Factory)
+    //        : base()
+    //    {
+    //        this._Host = Factory.Host;
+    //        this._scalars = Factory;
+    //    }
 
-        public Host Host
-        {
-            get { return this._Host; }
-        }
+    //    public Host Host
+    //    {
+    //        get { return this._Host; }
+    //    }
 
-        public ScalarExpressionVisitor BaseFactory
-        {
-            get { return this._scalars; }
-        }
+    //    public ScalarExpressionVisitor BaseFactory
+    //    {
+    //        get { return this._scalars; }
+    //    }
 
-        public override RecordExpression VisitRecordExpressionLiteral(PulseParser.RecordExpressionLiteralContext context)
-        {
+    //    public override ScalarExpressionSet VisitRecordExpressionLiteral(PulseParser.RecordExpressionLiteralContext context)
+    //    {
 
-            RecordExpression rex = new RecordExpression();
-            int cnt = 0;
+    //        ScalarExpressionSet rex = new ScalarExpressionSet();
+    //        int cnt = 0;
 
-            foreach (PulseParser.Scalar_expression_aliasContext ctx in context.naked_record().scalar_expression_alias())
-            {
+    //        foreach (PulseParser.Scalar_expression_aliasContext ctx in context.naked_record().scalar_expression_alias())
+    //        {
 
-                string name = (ctx.IDENTIFIER() == null ? "F" + cnt.ToString() : ctx.IDENTIFIER().GetText());
-                ScalarExpression sx = this._scalars.Visit(ctx.scalar_expression());
-                rex.Add(name, sx);
-                cnt++;
+    //            string name = (ctx.IDENTIFIER() == null ? "F" + cnt.ToString() : ctx.IDENTIFIER().GetText());
+    //            ScalarExpression sx = this._scalars.Visit(ctx.scalar_expression());
+    //            rex.Add(name, sx);
+    //            cnt++;
 
-            }
+    //        }
 
-            return rex;
-        }
+    //        return rex;
+    //    }
 
-        public override RecordExpression VisitRecordExpressionLookup(PulseParser.RecordExpressionLookupContext context)
-        {
+    //    public override ScalarExpressionSet VisitRecordExpressionLookup(PulseParser.RecordExpressionLookupContext context)
+    //    {
 
-            string lib = ScriptingHelper.GetLibName(context.record_name().var_name());
-            string name = ScriptingHelper.GetVarName(context.record_name().var_name());
-            if (!this._Host.Libraries.Exists(lib))
-                throw new Exception(string.Format("Library '{0}' does not exist"));
-            if (!this._Host.Libraries[lib].Records.Exists(name))
-                throw new Exception(string.Format("Record '{0}' does not exist in library '{1}'", name, lib));
-            return new RecordExpression(this._Host.Libraries[lib].Records[name]);
+    //        string lib = ScriptingHelper.GetLibName(context.record_name().var_name());
+    //        string name = ScriptingHelper.GetVarName(context.record_name().var_name());
+    //        if (!this._Host.Libraries.Exists(lib))
+    //            throw new Exception(string.Format("Library '{0}' does not exist"));
+    //        if (!this._Host.Libraries[lib].Records.Exists(name))
+    //            throw new Exception(string.Format("Record '{0}' does not exist in library '{1}'", name, lib));
+    //        return new ScalarExpressionSet(this._Host.Libraries[lib].Records[name]);
             
-        }
+    //    }
 
-        public override RecordExpression VisitRecordExpressionUnion(PulseParser.RecordExpressionUnionContext context)
-        {
-            RecordExpression A = this.Visit(context.record_expression()[0]);
-            RecordExpression B = this.Visit(context.record_expression()[1]);
-            return A + B;
-        }
+    //    public override ScalarExpressionSet VisitRecordExpressionUnion(PulseParser.RecordExpressionUnionContext context)
+    //    {
+    //        ScalarExpressionSet A = this.Visit(context.record_expression()[0]);
+    //        ScalarExpressionSet B = this.Visit(context.record_expression()[1]);
+    //        return A + B;
+    //    }
 
-        public override RecordExpression VisitRecordExpressionParens(PulseParser.RecordExpressionParensContext context)
-        {
-            return this.Visit(context.record_expression());
-        }
+    //    public override ScalarExpressionSet VisitRecordExpressionParens(PulseParser.RecordExpressionParensContext context)
+    //    {
+    //        return this.Visit(context.record_expression());
+    //    }
 
-        public RecordExpression Render(PulseParser.Record_expressionContext context)
-        {
-            return this.Visit(context);
-        }
+    //    public ScalarExpressionSet Render(PulseParser.Record_expressionContext context)
+    //    {
+    //        return this.Visit(context);
+    //    }
 
-        public List<RecordExpression> Render(PulseParser.Record_expressionContext[] context)
-        {
+    //    public List<ScalarExpressionSet> Render(PulseParser.Record_expressionContext[] context)
+    //    {
 
-            List<RecordExpression> rexs = new List<RecordExpression>();
-            foreach (PulseParser.Record_expressionContext ctx in context)
-            {
-                RecordExpression rex = this.Render(ctx);
-                rexs.Add(rex);
-            }
+    //        List<ScalarExpressionSet> rexs = new List<ScalarExpressionSet>();
+    //        foreach (PulseParser.Record_expressionContext ctx in context)
+    //        {
+    //            ScalarExpressionSet rex = this.Render(ctx);
+    //            rexs.Add(rex);
+    //        }
 
-            return rexs;
+    //        return rexs;
 
-        }
+    //    }
 
-        public static RecordExpression Render(ScalarExpressionVisitor ScalarFactory, PulseParser.Record_expressionContext context)
-        {
-            return (new RecordExpressionVisitor(ScalarFactory).Render(context));
-        }
+    //    public static ScalarExpressionSet Render(ScalarExpressionVisitor ScalarFactory, PulseParser.Record_expressionContext context)
+    //    {
+    //        return (new RecordExpressionVisitor(ScalarFactory).Render(context));
+    //    }
 
-        public static List<RecordExpression> Render(ScalarExpressionVisitor ScalarFactory, PulseParser.Record_expressionContext[] context)
-        {
-            return new RecordExpressionVisitor(ScalarFactory).Render(context);
-        }
+    //    public static List<ScalarExpressionSet> Render(ScalarExpressionVisitor ScalarFactory, PulseParser.Record_expressionContext[] context)
+    //    {
+    //        return new RecordExpressionVisitor(ScalarFactory).Render(context);
+    //    }
 
-        public static List<Record> Render(List<RecordExpression> Rex, FieldResolver Variants)
-        {
+    //    public static List<Record> Render(List<ScalarExpressionSet> Rex, FieldResolver Variants)
+    //    {
 
-            List<Record> x = new List<Record>();
-            foreach (RecordExpression r in Rex)
-            {
-                Record y = r.Evaluate(Variants);
-                x.Add(y);
-            }
-            return x;
+    //        List<Record> x = new List<Record>();
+    //        foreach (ScalarExpressionSet r in Rex)
+    //        {
+    //            Record y = r.Evaluate(Variants);
+    //            x.Add(y);
+    //        }
+    //        return x;
 
-        }
+    //    }
 
-        public static List<AssociativeRecord> RenderAssociative(List<RecordExpression> Rex, FieldResolver Variants)
-        {
+    //    public static List<AssociativeRecord> RenderAssociative(List<ScalarExpressionSet> Rex, FieldResolver Variants)
+    //    {
 
-            List<AssociativeRecord> x = new List<AssociativeRecord>();
-            foreach (RecordExpression r in Rex)
-            {
-                AssociativeRecord y = r.EvaluateAssociative(Variants);
-                x.Add(y);
-            }
-            return x;
+    //        List<AssociativeRecord> x = new List<AssociativeRecord>();
+    //        foreach (ScalarExpressionSet r in Rex)
+    //        {
+    //            AssociativeRecord y = r.EvaluateAssociative(Variants);
+    //            x.Add(y);
+    //        }
+    //        return x;
 
-        }
+    //    }
 
-    }
+    //}
 
 }

@@ -258,7 +258,7 @@ namespace Pulse.Tables
             ShellTable storage = new ShellTable(Parent.Host, Host.RandomName, Parent.Host.TempDB, columns, Page.DEFAULT_SIZE);
             Index idx = new Index(storage, Parent, Host.RandomName, IndexColumns);
             idx.Calibrate();
-            Parent.Host.Store.PlaceInRecycleBin(storage.Key);
+            Parent.Host.TableStore.PlaceInRecycleBin(storage.Key);
             return idx;
 
         }

@@ -29,7 +29,7 @@ namespace Pulse.Expressions.TableExpressions
 
         public override FieldResolver CreateResolver(FieldResolver Variants)
         {
-            return Variants.CloneOfMeFull();
+            return Variants;
         }
 
         public override void Evaluate(FieldResolver Variants, RecordWriter Writer)

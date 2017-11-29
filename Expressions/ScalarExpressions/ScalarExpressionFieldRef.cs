@@ -9,44 +9,35 @@ namespace Pulse.Expressions.ScalarExpressions
 {
 
     /// <summary>
-    /// Represents a field from a table
+    /// 
     /// </summary>
-    public sealed class ScalarExpressionFieldRef : ScalarExpression
+    public sealed class ScalarExpressionFieldRef2 : ScalarExpression
     {
 
-        private int _HeapRef;
-        private int _ColumnRef;
+        private string _StoreName = FieldResolver.LOCAL;
+        private string _RecordName = null;
+        private string _FieldName = null;
         private int _FieldSize;
         private CellAffinity _FieldAffinity;
 
-        public ScalarExpressionFieldRef(ScalarExpression Parent, int HeapRef, int ColumnRef, CellAffinity FieldAffinity, int FieldSize)
+        public ScalarExpressionFieldRef2(ScalarExpression Parent, string RecordName, string FieldName, CellAffinity FieldAffinity, int FieldSize)
             : base(Parent, ScalarExpressionAffinity.Field)
         {
-            this._HeapRef = HeapRef;
-            this._ColumnRef = ColumnRef;
+            this._RecordName = RecordName;
+            this._FieldName = FieldName;
             this._FieldAffinity = FieldAffinity;
             this._FieldSize = FieldSize;
-        }
-
-        public int HeapRef
-        {
-            get { return this._HeapRef; }
-        }
-
-        public int ColumnRef
-        {
-            get { return this._ColumnRef; }
         }
 
         // Overrides //
         public override string Unparse(FieldResolver Variants)
         {
-            return Variants.GetFieldName(this._HeapRef, this._ColumnRef);
+            return this._RecordName + "." + this._FieldName;
         }
 
         public override ScalarExpression CloneOfMe()
         {
-            return new ScalarExpressionFieldRef(this._ParentNode, this._HeapRef, this._ColumnRef, this._FieldAffinity, this._FieldSize);
+            return new ScalarExpressionFieldRef2(this._ParentNode, this._RecordName, this._FieldName, this._FieldAffinity, this._FieldSize);
         }
 
         public override int ExpressionSize()
@@ -61,9 +52,15 @@ namespace Pulse.Expressions.ScalarExpressions
 
         public override Cell Evaluate(FieldResolver Variants)
         {
-            return Variants.GetField(this._HeapRef, this._ColumnRef);
+            return Variants.GetRecord(this._StoreName, this._FieldName)[this._FieldName];
+        }
+
+        public override int GetHashCode()
+        {
+            return this._StoreName.GetHashCode() ^ this._RecordName.GetHashCode() ^ this._FieldName.GetHashCode() ^ (int)this._FieldAffinity ^ this._FieldSize;
         }
 
     }
+
 
 }

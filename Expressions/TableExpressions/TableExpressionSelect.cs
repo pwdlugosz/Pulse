@@ -19,22 +19,23 @@ namespace Pulse.Expressions.TableExpressions
     public sealed class TableExpressionSelect : TableExpression
     {
 
-        private RecordExpression _Fields;
+        private ScalarExpressionSet _Fields;
         private Filter _Where;
-        private int _RecordRef = -1;
+        private string _Alias;
         private long _Limit;
 
-        public TableExpressionSelect(Host Host, TableExpression Parent, RecordExpression Fields, Filter Where, long Limit)
+        public TableExpressionSelect(Host Host, TableExpression Parent, ScalarExpressionSet Fields, Filter Where, string Alias, long Limit)
             : base(Host, Parent)
         {
             this._Fields = Fields;
             this._Where = Where;
             this.Alias = "SELECT";
             this._Limit = Limit;
+            this._Alias = Alias;
         }
 
-        public TableExpressionSelect(Host Host, TableExpression Parent, RecordExpression Fields, Filter Where)
-            : this(Host, Parent, Fields, Where, -1)
+        public TableExpressionSelect(Host Host, TableExpression Parent, ScalarExpressionSet Fields, Filter Where, string Alias)
+            : this(Host, Parent, Fields, Where, Alias, -1)
         {
         }
 
@@ -61,17 +62,14 @@ namespace Pulse.Expressions.TableExpressions
         /// <returns></returns>
         public override FieldResolver CreateResolver(FieldResolver Variants)
         {
-
-            FieldResolver x = Variants.CloneOfMeFull();
-            x.AddSchema(this._Children[0].Alias, this._Children[0].Columns, out this._RecordRef);
+            FieldResolver x = Variants;
             return x;
-
         }
 
         /// <summary>
         /// Gets the seleced fields
         /// </summary>
-        public RecordExpression Fields
+        public ScalarExpressionSet Fields
         {
             get { return this._Fields; }
         }
@@ -94,8 +92,8 @@ namespace Pulse.Expressions.TableExpressions
             // Render the base table //
             Table t = this.Children[0].Select(Variants);
 
-            // Create the resolver //
-            FieldResolver pointer = this.CreateResolver(Variants);
+            // Initialize //
+            this.InitializeResolver(Variants);
 
             // Open the reader //
             RecordReader rs = t.OpenReader();
@@ -110,11 +108,11 @@ namespace Pulse.Expressions.TableExpressions
                 if (this._Limit >= ticks)
                     break;
 
-                pointer.SetValue(this._RecordRef, rs.ReadNext());
+                Variants.Local.SetRecord(this._Alias, new AssociativeRecord(t.Columns, rs.ReadNext()));
 
-                if (Where.Evaluate(pointer))
+                if (Where.Evaluate(Variants))
                 {
-                    Writer.Insert(Fields.Evaluate(pointer));
+                    Writer.Insert(Fields.Evaluate(Variants));
                 }
 
                 ticks++;
@@ -123,8 +121,33 @@ namespace Pulse.Expressions.TableExpressions
 
             // Clean up //
             if (this._Host.IsSystemTemp(t))
-                this._Host.Store.DropTable(t.Key);
+                this._Host.TableStore.DropTable(t.Key);
 
+            // Fix Resolver //
+            this.CleanUpResolver(Variants);
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Variants"></param>
+        public override void InitializeResolver(FieldResolver Variants)
+        {
+            // Fix the resolver //
+            if (!Variants.Local.ExistsRecord(this._Alias))
+                Variants.Local.DeclareRecord(this._Alias, new AssociativeRecord(this._Children[0].Columns));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Variants"></param>
+        public override void CleanUpResolver(FieldResolver Variants)
+        {
+            // Fix the resolver //
+            if (Variants.Local.ExistsRecord(this._Alias))
+                Variants.Local.RemoveRecord(this._Alias);
         }
 
         /// <summary>

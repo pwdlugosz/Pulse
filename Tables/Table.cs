@@ -46,7 +46,7 @@ namespace Pulse.Tables
             this._Host = Host;
             this._Header = Header;
             this._Indexes = new IndexCollection();
-            this._Host.Store.PushTable(this);
+            this._Host.TableStore.PushTable(this);
         }
 
         /// <summary>
@@ -172,7 +172,7 @@ namespace Pulse.Tables
         public virtual Index CreateTemporyIndex(Key IndexColumns)
         {
             Index idx = Index.CreateExternalIndex(this, IndexColumns);
-            this._Host.Store.PlaceInRecycleBin(idx.Storage.Key);
+            this._Host.TableStore.PlaceInRecycleBin(idx.Storage.Key);
             return idx;
         }
 
@@ -328,7 +328,7 @@ namespace Pulse.Tables
         /// <returns></returns>
         public virtual Page GetPage(int PageID)
         {
-            return this._Host.Store.RequestPage(new PageUID(this.Key, PageID));
+            return this._Host.TableStore.RequestPage(new PageUID(this.Key, PageID));
         }
 
         /// <summary>
@@ -337,7 +337,7 @@ namespace Pulse.Tables
         /// <param name="Key"></param>
         public virtual void SetPage(Page Element)
         {
-            this._Host.Store.PushPage(this.Key, Element);
+            this._Host.TableStore.PushPage(this.Key, Element);
         }
 
         /// <summary>
@@ -347,7 +347,7 @@ namespace Pulse.Tables
         /// <returns></returns>
         public virtual bool PageExists(int PageID)
         {
-            return this._Host.Store.PageIsInMemory(new PageUID(this.Key, PageID));
+            return this._Host.TableStore.PageIsInMemory(new PageUID(this.Key, PageID));
         }
 
         /// <summary>

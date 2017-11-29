@@ -8,6 +8,7 @@ using Pulse.Expressions.ScalarExpressions;
 using Pulse.Expressions.MatrixExpressions;
 using Pulse.Expressions.TableExpressions;
 using Pulse.Expressions.RecordExpressions;
+using Pulse.Tables;
 
 namespace Pulse.Expressions.ActionExpressions
 {
@@ -15,23 +16,21 @@ namespace Pulse.Expressions.ActionExpressions
     public class ActionExpressionDeclareScalar : ActionExpression
     {
 
-        private string _LibName;
-        private string _VarName;
-        private CellAffinity _Type;
+        private ObjectStore _Store;
+        private string _Name;
         private ScalarExpression _Value;
 
-        public ActionExpressionDeclareScalar(Host Host, ActionExpression Parent, string LibraryName, string VarName, CellAffinity Type, ScalarExpression Value)
+        public ActionExpressionDeclareScalar(Host Host, ActionExpression Parent, ObjectStore Store, string Name, ScalarExpression Value)
             : base(Host, Parent)
         {
-            this._LibName = LibraryName;
-            this._VarName = VarName;
-            this._Type = Type;
+            this._Store = Store;
+            this._Name = Name;
             this._Value = Value;
         }
 
         public override void Invoke(FieldResolver Variant)
         {
-            this._Host.Libraries[this._LibName].Values.Reallocate(this._VarName, this._Value.Evaluate(Variant));
+            this._Store.DeclareScalar(this._Name, this._Value.Evaluate(Variant));
         }
 
     }
@@ -39,23 +38,21 @@ namespace Pulse.Expressions.ActionExpressions
     public class ActionExpressionDeclareMatrix : ActionExpression
     {
 
-        private string _LibName;
-        private string _VarName;
-        private CellAffinity _Type;
+        private ObjectStore _Store;
+        private string _Name;
         private MatrixExpression _Value;
 
-        public ActionExpressionDeclareMatrix(Host Host, ActionExpression Parent, string LibraryName, string VarName, CellAffinity Type, MatrixExpression Value)
+        public ActionExpressionDeclareMatrix(Host Host, ActionExpression Parent, ObjectStore Store, string Name, MatrixExpression Value)
             : base(Host, Parent)
         {
-            this._LibName = LibraryName;
-            this._VarName = VarName;
-            this._Type = Type;
+            this._Store = Store;
+            this._Name = Name;
             this._Value = Value;
         }
 
         public override void Invoke(FieldResolver Variant)
         {
-            this._Host.Libraries[this._LibName].Matrixes.Reallocate(this._VarName, this._Value.Evaluate(Variant));
+            this._Store.DeclareMatrix(this._Name, this._Value.Evaluate(Variant));
         }
 
     }
@@ -63,21 +60,21 @@ namespace Pulse.Expressions.ActionExpressions
     public class ActionExpressionDeclareRecord : ActionExpression
     {
 
-        private string _LibName;
-        private string _VarName;
+        private ObjectStore _Store;
+        private string _Name;
         private RecordExpression _Value;
 
-        public ActionExpressionDeclareRecord(Host Host, ActionExpression Parent, string LibraryName, string VarName, RecordExpression Value)
+        public ActionExpressionDeclareRecord(Host Host, ActionExpression Parent, ObjectStore Store, string Name, RecordExpression Value)
             : base(Host, Parent)
         {
-            this._LibName = LibraryName;
-            this._VarName = VarName;
+            this._Store = Store;
+            this._Name = Name;
             this._Value = Value;
         }
 
         public override void Invoke(FieldResolver Variant)
         {
-            this._Host.Libraries[this._LibName].Records.Allocate(this._VarName, this._Value.EvaluateAssociative(Variant));
+            this._Store.DeclareRecord(this._Name, this._Value.EvaluateAssociative(Variant));
         }
 
     }
@@ -85,24 +82,24 @@ namespace Pulse.Expressions.ActionExpressions
     public class ActionExpressionDeclareTable : ActionExpression
     {
 
-        private string _LibName;
-        private string _VarName;
-        private CellAffinity _Type;
-        private MatrixExpression _Value;
+        private ObjectStore _Store;
+        private string _Name;
+        private TableExpression _Value;
 
-        public ActionExpressionDeclareTable(Host Host, ActionExpression Parent, string LibraryName, string VarName, CellAffinity Type, MatrixExpression Value)
+        public ActionExpressionDeclareTable(Host Host, ActionExpression Parent, ObjectStore Store, string Name, TableExpression Value)
             : base(Host, Parent)
         {
-            this._LibName = LibraryName;
-            this._VarName = VarName;
-            this._Type = Type;
+            this._Store = Store;
+            this._Name = Name;
             this._Value = Value;
         }
 
         public override void Invoke(FieldResolver Variant)
         {
-            this._Host.Libraries[this._LibName].Matrixes.Reallocate(this._VarName, this._Value.Evaluate(Variant));
+            Table t = this._Value.Select(Variant);
+            this._Store.DeclareTable(this._Name, t.Header.Path);
         }
+
 
     }
 

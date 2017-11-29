@@ -85,6 +85,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Alpha\UTF8.cs" />
+    <Compile Include="Elements\ObjectStore.cs" />
     <Compile Include="Expressions\ActionExpressions\ActionExpression.cs" />
     <Compile Include="Expressions\ActionExpressions\ActionExpressionCTOR.cs" />
     <Compile Include="Expressions\ActionExpressions\ActionExpressionDeclare.cs" />
@@ -129,11 +130,16 @@
     <Compile Include="Elements\CellParser.cs" />
     <Compile Include="Elements\CellSerializer.cs" />
     <Compile Include="Elements\CellValues.cs" />
-    <Compile Include="Expressions\HyperFunction\ExpressionParameter.cs" />
-    <Compile Include="Expressions\HyperFunction\SuperAffinity.cs" />
-    <Compile Include="Expressions\HyperFunction\SuperExpression.cs" />
+    <Compile Include="Expressions\ExpressionFunction.cs" />
+    <Compile Include="Expressions\ExpressionResolver.cs" />
+    <Compile Include="Expressions\IExpressioncs.cs" />
+    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionUni.cs" />
+    <Compile Include="Expressions\MatrixExpressions\ScalarExpressionStoreRef.cs" />
+    <Compile Include="Expressions\Operations.cs" />
     <Compile Include="Expressions\Parameter.cs" />
     <Compile Include="Expressions\ScalarExpressions\ScalarExpressionRecordRef.cs" />
+    <Compile Include="Expressions\ScalarExpressions\ScalarExpressionStoreRef.cs" />
+    <Compile Include="Scripting\Visitors\ExpressionVisitor.cs" />
     <Compile Include="Scripting\Visitors\RecordExpressionVisitor.cs" />
     <Compile Include="Tables\ClusterState.cs" />
     <Compile Include="Tables\DerivedIndex.cs" />
@@ -162,7 +168,6 @@
     <Compile Include="Expressions\MatrixExpressions\MatrixExpressionCheckDivideScalar.cs" />
     <Compile Include="Expressions\MatrixExpressions\MatrixExpressionDivide.cs" />
     <Compile Include="Expressions\MatrixExpressions\MatrixExpressionDivideScalar.cs" />
-    <Compile Include="Expressions\MatrixExpressions\MatrixExpressionHeap.cs" />
     <Compile Include="Expressions\MatrixExpressions\MatrixExpressionIdentity.cs" />
     <Compile Include="Expressions\MatrixExpressions\MatrixExpressionInverse.cs" />
     <Compile Include="Expressions\MatrixExpressions\MatrixExpressionLiteral.cs" />
@@ -227,7 +232,6 @@
     <Compile Include="Expressions\ScalarExpressions\ScalarExpressionMatrixRef.cs" />
     <Compile Include="Expressions\ScalarExpressions\ScalarExpressionOptimizer.cs" />
     <Compile Include="Expressions\ScalarExpressions\ScalarExpressionPointer.cs" />
-    <Compile Include="Expressions\ScalarExpressions\ScalarExpressionScalarRef.cs" />
     <Compile Include="Expressions\FieldResolver.cs" />
     <Compile Include="Libraries\IScalarExpressionLookup.cs" />
     <Compile Include="Program.cs" />

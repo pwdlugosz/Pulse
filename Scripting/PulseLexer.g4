@@ -22,16 +22,7 @@ SET_REDUCTIONS
 	;
 
 // Keywods //
-K_AS : A S | COLON;									// AS or @; A S | ':'
-K_JOIN : J O I N | '**';							// JOIN or **; J O I N | '**'
-K_ALEFT_JOIN : A L E F T '_' J O I N | '*!';		// ALEFT_JOIN or *!; ALEFT_JOIN | '*!'
-K_LEFT_JOIN : L E F T '_' J O I N | '*|';			// LEFT_JOIN or *|; LEFT_JOIN | '*|'
-K_ON : O N | AT;									// ON or @;	O N | AT
-K_ORDER : O R D E R | PIPE;							// ORDER or |; O R D E R | '^'
-K_WHERE : W H E R E | AMPER;						// WHERE or @; W H E R E | ':';
-K_DISTINCT : D I S T I N C T | HASH;				// DISTINCT or #; D I S T I N C T | DOLLAR;
-
-K_APPEND : A P P E N D;
+K_AS : A S;									
 K_ASC : A S C;
 K_BY : B Y;
 K_CLUSTER : C L U S T E R;
@@ -50,6 +41,9 @@ K_IDENTITY : I D E N T I T Y | I D E N T;
 K_IF : I F;
 K_IN : I N;
 K_MATRIX : M A T R I X;
+K_ON : O N;
+K_OPEN : O P E N;
+K_ORDER : O R D E R;
 K_PRINT : P R I N T;
 K_RECORD : R E C O R D;
 K_SELECT : S E L E C T;
@@ -57,6 +51,7 @@ K_TABLE : T A B L E;
 K_THEN : T H E N;
 K_TO : T O;
 K_UNION : U N I O N;
+K_WHERE : W H E R E ;
 K_WHILE : W H I L E;
 
 // Opperators //
@@ -80,7 +75,7 @@ GT : '>';
 GTE : '>=';
 RSHIFT : '>>';
 NULL_OP : '??';
-IF_OP : '?';
+QUESTION : '?';
 LPAREN : '(';
 RPAREN : ')';
 LBRAC : '[';

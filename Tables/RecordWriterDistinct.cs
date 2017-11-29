@@ -37,7 +37,7 @@ namespace Pulse.Tables
 
         public override void Close()
         {
-            this._Parent.Host.Store.DropTable(this._t.Key);
+            this._Parent.Host.TableStore.DropTable(this._t.Key);
         }
 
     }

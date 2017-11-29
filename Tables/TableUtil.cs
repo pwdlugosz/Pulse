@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Pulse.Elements;
-using Pulse.Elements;
 
 
 namespace Pulse.Tables
@@ -229,7 +228,7 @@ namespace Pulse.Tables
         // Drop Table //
         public static void Drop(Host Host, string Key)
         {
-            Host.Store.DropTable(Key);
+            Host.TableStore.DropTable(Key);
         }
 
         public static void Drop(Host Host, string DB, string Name)
@@ -241,19 +240,19 @@ namespace Pulse.Tables
         // Rename Table //
         public static void Rename(Table Element, string NewDirectory, string NewName)
         {
-            Element.Host.Store.RenameTable(Element, NewDirectory, NewName);
+            Element.Host.TableStore.RenameTable(Element, NewDirectory, NewName);
         }
 
         // Copy Table //
         public static void Copy(Table Element, string NewDirectory, string NewName)
         {
-            Element.Host.Store.CopyTable(Element, NewDirectory, NewName);
+            Element.Host.TableStore.CopyTable(Element, NewDirectory, NewName);
         }
 
         // Clones //
         public static Table Clone(Table Element, string NewDirectory, string NewName)
         {
-            Element.Host.Store.DropTable(TableHeader.DeriveV1Path(NewDirectory, NewName));
+            Element.Host.TableStore.DropTable(TableHeader.DeriveV1Path(NewDirectory, NewName));
             return new HeapTable(Element.Host, NewName, NewDirectory, Element.Columns, Element.PageSize);
         }
 

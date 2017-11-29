@@ -16,10 +16,10 @@ namespace Pulse.Expressions.ScalarExpressions
     public sealed class ScalarExpressionRecordRef : ScalarExpression
     {
 
-        private RecordExpression _rex;
+        private ScalarExpressionSet _rex;
         private string _Ref;
 
-        public ScalarExpressionRecordRef(ScalarExpression Parent, RecordExpression Value, string ColRef)
+        public ScalarExpressionRecordRef(ScalarExpression Parent, ScalarExpressionSet Value, string ColRef)
             : base(Parent, ScalarExpressionAffinity.Heap)
         {
             this._rex = Value;
@@ -50,6 +50,47 @@ namespace Pulse.Expressions.ScalarExpressions
         public override Cell Evaluate(FieldResolver Variants)
         {
             return this._rex[this._Ref].Evaluate(Variants);
+        }
+
+    }
+
+    public sealed class ScalarExpressionRecordRef2 : ScalarExpression
+    {
+
+        private RecordExpression _Record;
+        private string _Name;
+
+        public ScalarExpressionRecordRef2(ScalarExpression Parent, RecordExpression Value, string Name)
+            : base(Parent, ScalarExpressionAffinity.Heap)
+        {
+            this._Record = Value;
+            this._Name = Name;
+        }
+
+        // Overrides //
+        public override string Unparse(FieldResolver Variants)
+        {
+            return null;
+        }
+
+        public override ScalarExpression CloneOfMe()
+        {
+            return new ScalarExpressionRecordRef2(this._ParentNode, this._Record, this._Name);
+        }
+
+        public override int ExpressionSize()
+        {
+            return this._Record.Columns.ColumnSize(this._Name);
+        }
+
+        public override CellAffinity ExpressionReturnAffinity()
+        {
+            return this._Record.Columns.ColumnAffinity(this._Name);
+        }
+
+        public override Cell Evaluate(FieldResolver Variants)
+        {
+            return this._Record.EvaluateAssociative(Variants)[this._Name];
         }
 
     }

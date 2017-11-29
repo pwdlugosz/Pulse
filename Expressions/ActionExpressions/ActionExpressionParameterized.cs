@@ -104,7 +104,7 @@ namespace Pulse.Expressions.ActionExpressions
                 }
                 else if (Affinity == ParameterType.Record)
                 {
-                    this.Record = new RecordExpression();
+                    this.Record = new ScalarExpressionSet();
                 }
                 else if (Affinity == ParameterType.Matrix)
                 {
@@ -128,7 +128,7 @@ namespace Pulse.Expressions.ActionExpressions
                 this.IsNull = false;
             }
 
-            public Parameter(RecordExpression Value)
+            public Parameter(ScalarExpressionSet Value)
             {
                 this.Record = Value;
                 this.Affinity = ParameterType.Record;
@@ -172,7 +172,7 @@ namespace Pulse.Expressions.ActionExpressions
                 private set;
             }
 
-            public RecordExpression Record
+            public ScalarExpressionSet Record
             {
                 get;
                 private set;
@@ -268,12 +268,12 @@ namespace Pulse.Expressions.ActionExpressions
             this._Parameters.Allocate(p.Name, x);
         }
 
-        public void AddParameter(string Name, RecordExpression Value)
+        public void AddParameter(string Name, ScalarExpressionSet Value)
         {
             this._Parameters.Allocate(Name, new Parameter(Value));
         }
 
-        public void AddParameter(RecordExpression Value)
+        public void AddParameter(ScalarExpressionSet Value)
         {
             ParameterPointer p = this._Map[this._Parameters.Count];
             if (p.Affinity != ParameterType.Record)

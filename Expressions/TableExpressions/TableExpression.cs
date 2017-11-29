@@ -6,10 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using Pulse.Elements;
+using Pulse.Expressions;
 using Pulse.Expressions.ScalarExpressions;
+using Pulse.Expressions.MatrixExpressions;
+using Pulse.Expressions.RecordExpressions;
+using Pulse.Expressions.TableExpressions;
 using Pulse.Expressions.Aggregates;
 using Pulse.Tables;
-using Pulse.Expressions;
 
 
 namespace Pulse.Expressions.TableExpressions
@@ -18,7 +21,7 @@ namespace Pulse.Expressions.TableExpressions
     /// <summary>
     /// Represents the base class for all table expressions
     /// </summary>
-    public abstract class TableExpression : IBindable, IDisposable, IColumns, IRecyclable
+    public abstract class TableExpression : IBindable, IDisposable, IColumns, IRecyclable, IExpression
     {
 
         protected List<TableExpression> _Children;
@@ -27,6 +30,9 @@ namespace Pulse.Expressions.TableExpressions
         protected List<Table> _RecycleBin;
         protected Key _OrderBy;
         protected Stopwatch _Timer;
+
+        protected string _DB;
+        protected string _Name;
         
         public TableExpression(Host Host, TableExpression Parent)
         {
@@ -37,6 +43,8 @@ namespace Pulse.Expressions.TableExpressions
             this._OrderBy = new Key();
             this.IsClustered = false;
             this.IsDistinct = false;
+            this._DB = this._Host.TempDB;
+            this._Name = Host.RandomName;
         }
 
         // Tree support //
@@ -115,6 +123,24 @@ namespace Pulse.Expressions.TableExpressions
         {
             get { return this._OrderBy; }
             set { this._OrderBy = value; }
+        }
+
+        /// <summary>
+        /// Gets the database this table will be saved to
+        /// </summary>
+        public string Database
+        {
+            get { return this._DB; }
+            set { this._DB = value; }
+        }
+
+        /// <summary>
+        /// Gets the name of the table on disk
+        /// </summary>
+        public string Name
+        {
+            get { return this._Name; }
+            set { this._Name = value; }
         }
 
         // Output methods //
@@ -336,6 +362,16 @@ namespace Pulse.Expressions.TableExpressions
 
         }
 
+        public virtual void InitializeResolver(FieldResolver Variants)
+        {
+            // Do nothing //
+        }
+
+        public virtual void CleanUpResolver(FieldResolver Variants)
+        {
+            // Do nothing //
+        }
+
         // Creates //
         public virtual Table CreateDistinct(FieldResolver Variants, string DB, string Name)
         {
@@ -385,9 +421,9 @@ namespace Pulse.Expressions.TableExpressions
 
         public virtual Table Select(FieldResolver Variants)
         {
-            Table t = this.Create(Variants, Host.TEMP, Host.RandomName);
+            Table t = this.Create(Variants, this.Database, this.Name);
             this._RecycleBin.Add(t);
-            return this.Create(Variants, Host.TEMP, Host.RandomName);
+            return t;
         }
 
         // Recycling //
@@ -400,7 +436,7 @@ namespace Pulse.Expressions.TableExpressions
             // Recycle this node //
             foreach (Table t in this._RecycleBin)
             {
-                this._Host.Store.DropTable(t.Key);
+                this._Host.TableStore.DropTable(t.Key);
             }
             this._RecycleBin = new List<Table>();
 
@@ -447,7 +483,7 @@ namespace Pulse.Expressions.TableExpressions
         /// <returns></returns>
         public virtual bool IsIndexedBy(Key IndexColumns)
         {
-            return Key.LeftStrong(IndexColumns, this.OrderBy);
+            return Key.LeftSubsetStrong(IndexColumns, this.OrderBy);
         }
 
         /// <summary>
@@ -463,6 +499,16 @@ namespace Pulse.Expressions.TableExpressions
         {
             this.RecycleAll();
         }
+
+        public SuperExpressionAffinity SuperAffinity { get { return SuperExpressionAffinity.Table; } }
+
+        public ScalarExpression Scalar { get { return null; } }
+
+        public MatrixExpression Matrix { get { return null; } }
+
+        public RecordExpression Record { get { return null; } }
+
+        public TableExpression Table { get { return this; } }
 
         // Internal Classes //
         /// <summary>

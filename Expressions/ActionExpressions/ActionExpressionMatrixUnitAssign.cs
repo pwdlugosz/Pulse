@@ -13,19 +13,19 @@ namespace Pulse.Expressions.ActionExpressions
     public sealed class ActionExpressionMatrixUnitAssign : ActionExpression
     {
 
-        private int _HeapRef = 0;
+        private string _Name;
         private Assignment _Logic;
-        private Heap<CellMatrix> _Store;
+        private ObjectStore _Store;
         private ScalarExpression _Value;
         private ScalarExpression _Row;
         private ScalarExpression _Col;
 
-        public ActionExpressionMatrixUnitAssign(Host Host, ActionExpression Parent, Heap<CellMatrix> Store, int HeapRef, ScalarExpression Row, 
+        public ActionExpressionMatrixUnitAssign(Host Host, ActionExpression Parent, ObjectStore Store, string Name, ScalarExpression Row, 
             ScalarExpression Col, ScalarExpression Value, Assignment Logic)
             : base(Host, Parent)
         {
             this._Store = Store;
-            this._HeapRef = HeapRef;
+            this._Name = Name;
             this._Logic = Logic;
             this._Value = Value;
             this._Row = Row ?? ScalarExpression.ZeroINT;
@@ -42,25 +42,25 @@ namespace Pulse.Expressions.ActionExpressions
             {
 
                 case Assignment.Equals:
-                    this._Store[this._HeapRef][Row, Col] = this._Value.Evaluate(Variant);
+                    this._Store.Matrixes[this._Name][Row, Col] = this._Value.Evaluate(Variant);
                     break;
                 case Assignment.PlusEquals:
-                    this._Store[this._HeapRef][Row, Col] = this._Store[this._HeapRef][Row, Col] + this._Value.Evaluate(Variant);
+                    this._Store.Matrixes[this._Name][Row, Col] = this._Store.Matrixes[this._Name][Row, Col] + this._Value.Evaluate(Variant);
                     break;
                 case Assignment.MinusEquals:
-                    this._Store[this._HeapRef][Row, Col] = this._Store[this._HeapRef][Row, Col] - this._Value.Evaluate(Variant);
+                    this._Store.Matrixes[this._Name][Row, Col] = this._Store.Matrixes[this._Name][Row, Col] - this._Value.Evaluate(Variant);
                     break;
                 case Assignment.ProductEquals:
-                    this._Store[this._HeapRef][Row, Col] = this._Store[this._HeapRef][Row, Col] * this._Value.Evaluate(Variant);
+                    this._Store.Matrixes[this._Name][Row, Col] = this._Store.Matrixes[this._Name][Row, Col] * this._Value.Evaluate(Variant);
                     break;
                 case Assignment.DivideEquals:
-                    this._Store[this._HeapRef][Row, Col] = this._Store[this._HeapRef][Row, Col] / this._Value.Evaluate(Variant);
+                    this._Store.Matrixes[this._Name][Row, Col] = this._Store.Matrixes[this._Name][Row, Col] / this._Value.Evaluate(Variant);
                     break;
                 case Assignment.CheckDivideEquals:
-                    this._Store[this._HeapRef][Row, Col] = Cell.CheckDivide(this._Store[this._HeapRef][Row, Col], this._Value.Evaluate(Variant));
+                    this._Store.Matrixes[this._Name][Row, Col] = Cell.CheckDivide(this._Store.Matrixes[this._Name][Row, Col], this._Value.Evaluate(Variant));
                     break;
                 case Assignment.ModEquals:
-                    this._Store[this._HeapRef][Row, Col] = this._Store[this._HeapRef][Row, Col] % this._Value.Evaluate(Variant);
+                    this._Store.Matrixes[this._Name][Row, Col] = this._Store.Matrixes[this._Name][Row, Col] % this._Value.Evaluate(Variant);
                     break;
 
             }

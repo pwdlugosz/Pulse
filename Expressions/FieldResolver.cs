@@ -9,481 +9,427 @@ using Pulse.Tables;
 
 namespace Pulse.Expressions
 {
-    
+
     /// <summary>
-    /// Represents a collection of fields, scalars, and matrixes
+    /// 
     /// </summary>
     public sealed class FieldResolver
     {
 
-        /// <summary>
-        /// The type of variable stored
-        /// </summary>
-        public enum VariantType
-        {
-            Schema,
-            Library
-        }
+        public const string GLOBAL = Host.GLOBAL;
+        public const string LOCAL = "LOCAL";
 
-        /// <summary>
-        /// Base host
-        /// </summary>
         private Host _Host;
+        private Heap<ObjectStore> _Stores;
 
-        /// <summary>
-        /// Master list of all aliases
-        /// </summary>
-        private Heap<VariantType> _Aliases;
-        
-        /// <summary>
-        /// Schema collection
-        /// </summary>
-        private Heap<Schema> _Columns;
-        
-        /// <summary>
-        /// Record collection
-        /// </summary>
-        private Heap<Record> _TableRecords;
-
-        /// <summary>
-        /// Scalars collection
-        /// </summary>
-        private Heap<Library> _Libraries;
-        
-        /// <summary>
-        /// Creates a field resolver
-        /// </summary>
-        /// <param name="Host"></param>
         public FieldResolver(Host Host)
         {
-
             this._Host = Host;
-            this._Aliases = new Heap<VariantType>();
-            this._Columns = new Heap<Schema>();
-            this._TableRecords = new Heap<Record>();
-            this._Libraries = new Heap<Library>();
-            this.XID = Host.GetXID();
-
-            if (this._Host != null)
-            {
-                this.AddLibrary(Host.GLOBAL, Host.BaseLibrary);
-                foreach (Library l in this._Host.Libraries.Values)
-                {
-                    if (!this._Libraries.Exists(l.Name))
-                        this.AddLibrary(l.Name, l);
-                }
-            }
-
+            this._Stores = new Heap<ObjectStore>();
+            this._Stores.Allocate(Host.GLOBAL, Host.Store);
+            this._Stores.Allocate(LOCAL, new ObjectStore(this._Host));
         }
 
-        /// <summary>
-        /// Checks if an alias exists in the resolver already
-        /// </summary>
-        /// <param name="Alias"></param>
-        /// <returns></returns>
-        public bool AliasExists(string Alias)
+        // Stores //
+        public Heap<ObjectStore> Stores
         {
-            return this._Aliases.Exists(Alias);
+            get { return this._Stores; }
         }
 
-        /// <summary>
-        /// Gets the XID in the field resolver
-        /// </summary>
-        public long XID
+        public ObjectStore this[int Index]
         {
-            get;
-            protected set;
+            get { return this._Stores[Index]; }
         }
 
-        // Adds //
-        /// <summary>
-        /// Adds a schema to the resolver
-        /// </summary>
-        /// <param name="Alias"></param>
-        /// <param name="Columns"></param>
-        /// <param name="RecordRef">The element that holds the index of the ref added</param>
-        public void AddSchema(string Alias, Schema Columns, out int RecordRef)
+        public ObjectStore this[string Name]
         {
-            if (this.AliasExists(Alias))
-                throw new Exception(string.Format("Alias '{0}' already exists"));
-            this._Aliases.Allocate(Alias, VariantType.Library);
-            this._Columns.Allocate(Alias, Columns);
-            this._TableRecords.Allocate(Alias, Columns.NullRecord);
-            RecordRef = this._Columns.Count - 1;
+            get { return this._Stores[Name]; }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="Alias"></param>
-        /// <param name="Columns"></param>
-        public void AddSchema(string Alias, Schema Columns)
+        public bool StoreExists(string Name)
         {
-            int x = 0;
-            this.AddSchema(Alias, Columns, out x);
+            return this._Stores.Exists(Name);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="Alias"></param>
-        /// <param name="Library"></param>
-        public void AddLibrary(string Alias, Library Library, out int RecordRef)
+        public ObjectStore Global
         {
-            if (this.AliasExists(Alias))
-                throw new Exception(string.Format("Alias '{0}' already exists"));
-            this._Aliases.Allocate(Alias, VariantType.Library);
-            this._Libraries.Allocate(Alias, Library);
-            RecordRef = this._Libraries.Count - 1;
+            get { return this._Stores[GLOBAL]; }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="Alias"></param>
-        /// <param name="Library"></param>
-        public void AddLibrary(string Alias, Library Library)
+        public ObjectStore Local
         {
-            int x = 0;
-            this.AddLibrary(Alias, Library, out x);
+            get { return this._Stores[LOCAL]; }
         }
 
-        /// <summary>
-        /// Imports the structure of one resolver to another
-        /// </summary>
-        /// <param name="Variants"></param>
-        public void Import(FieldResolver Variants)
+        // Scalars //
+        public Cell GetScalar(string Major, string Minor)
         {
-            
-            for (int i = 0; i < Variants._Columns.Count; i++)
-            {
-                this.AddSchema(Variants._Columns.Name(i), Variants._Columns[i]);
-            }
-
-            for (int i = 0; i < Variants._Libraries.Count; i++)
-            {
-                if (Variants._Libraries.Name(i) != Host.GLOBAL)
-                    this.AddLibrary(Variants._Libraries.Name(i), Variants._Libraries[i]);
-            }
-
+            return this._Stores[Major].GetScalar(Minor);
         }
-
-        // Get fields //
-        /// <summary>
-        /// Gets a field from the resolver
-        /// </summary>
-        /// <param name="TablePointer"></param>
-        /// <param name="ColumnPointer"></param>
-        /// <returns></returns>
-        public Cell GetField(int TablePointer, int ColumnPointer)
+        
+        public void DeclareScalar(string Major, string Minor, Cell Value)
         {
-            return this._TableRecords[TablePointer][ColumnPointer];
+            this._Stores[Major].Scalars.Allocate(Minor, Value);
         }
 
-        /// <summary>
-        /// Gets a field
-        /// </summary>
-        /// <param name="Alias"></param>
-        /// <param name="FieldName"></param>
-        /// <returns></returns>
-        public Cell GetField(string Alias, string FieldName)
+        public void SetScalar(string Major, string Minor, Cell Value)
         {
-            int tidx = this._Columns.GetPointer(Alias);
-            int fidx = this._Columns[tidx].ColumnIndex(Alias);
-            return this._TableRecords[tidx][fidx];
+            this._Stores[Major].Scalars[Minor] = Value;
         }
 
-        /// <summary>
-        /// Gets a field name
-        /// </summary>
-        /// <param name="TablePointer"></param>
-        /// <param name="ColumnPointer"></param>
-        /// <returns></returns>
-        public string GetFieldName(int TablePointer, int ColumnPointer)
+        public Cell GetScalar(int Major, int Minor)
         {
-            return this._Columns[TablePointer].ColumnName(ColumnPointer);
+            return this._Stores[Major].Scalars[Minor];
         }
-
-        /// <summary>
-        /// Gets the cell affinity
-        /// </summary>
-        /// <param name="TablePointer"></param>
-        /// <param name="ColumnPointer"></param>
-        /// <returns></returns>
-        public CellAffinity GetFieldAffinity(int TablePointer, int ColumnPointer)
+        
+        public void SetScalar(int Major, int Minor, Cell Value)
         {
-            return this._Columns[TablePointer].ColumnAffinity(ColumnPointer); ;
+            this._Stores[Major].Scalars[Minor] = Value;
         }
 
-        /// <summary>
-        /// Gets the field size
-        /// </summary>
-        /// <param name="TablePointer"></param>
-        /// <param name="ColumnPointer"></param>
-        /// <returns></returns>
-        public int GetFieldSize(int TablePointer, int ColumnPointer)
+        // Matrixes //
+        public CellMatrix GetMatrix(string Major, string Minor)
         {
-            return this._Columns[TablePointer].ColumnSize(ColumnPointer); ;
+            return this._Stores[Major].Matrixes[Minor];
         }
-
-        /// <summary>
-        /// Sets a record value
-        /// </summary>
-        /// <param name="TablePointer"></param>
-        /// <param name="Value"></param>
-        public void SetValue(int TablePointer, Record Value)
+        
+        public void DeclareMatrix(string Major, string Minor, CellMatrix Value)
         {
-            this._TableRecords[TablePointer] = Value;
+            this._Stores[Major].Matrixes.Allocate(Minor, Value);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="TablePointer"></param>
-        /// <returns></returns>
-        public Record GetRecord(int TablePointer)
+        public void SetMatrix(string Major, string Minor, CellMatrix Value)
         {
-            return this._TableRecords[TablePointer];
+            this._Stores[Major].Matrixes[Minor] = Value;
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="Alias"></param>
-        /// <returns></returns>
-        public Record GetRecord(string Alias)
+        
+        public CellMatrix GetMatrix(int Major, int Minor)
         {
-            return this._TableRecords[Alias];
+            return this._Stores[Major].Matrixes[Minor];
         }
-
-        /// <summary>
-        /// Sets all the record values in one resolver to another
-        /// </summary>
-        /// <param name="Variants"></param>
-        public void SetValues(FieldResolver Variants)
+        
+        public void SetMatrix(int Major, int Minor, CellMatrix Value)
         {
-
-            for (int i = 0; i < Variants._TableRecords.Count; i++)
-            {
-                this._TableRecords[i] = Variants._TableRecords[i];
-            }
-
+            this._Stores[Major].Matrixes[Minor] = Value;
         }
 
-        /// <summary>
-        /// Removes a schema 
-        /// </summary>
-        /// <param name="Alias"></param>
-        public void RemoveSchema(string Alias)
+        // Records //
+        public AssociativeRecord GetRecord(string Major, string Minor)
         {
-            this._Aliases.Deallocate(Alias);
-            this._Columns.Deallocate(Alias);
-            this._TableRecords.Deallocate(Alias);
+            return this._Stores[Major].Records[Minor];
         }
 
-        // Get library //
-        /// <summary>
-        /// Gets a library value
-        /// </summary>
-        /// <param name="HeapPointer"></param>
-        /// <param name="ScalarPointer"></param>
-        /// <returns></returns>
-        public Library GetLibrary(int HeapPointer)
+        public AssociativeRecord GetRecord(int Major, int Minor)
         {
-            return this._Libraries[HeapPointer];
+            return this._Stores[Major].Records[Minor];
         }
-
-        /// <summary>
-        /// Gets a library value
-        /// </summary>
-        /// <param name="Alias"></param>
-        /// <param name="ScalarName"></param>
-        /// <returns></returns>
-        public Library GetLibrary(string Alias)
+        
+        public Schema GetSchema(string Major, string Minor)
         {
-            int tidx = this._Libraries.GetPointer(Alias);
-            return this._Libraries[tidx];
+            return this._Stores[Major].Records[Minor].Columns;
         }
 
-        /// <summary>
-        /// Gets a library's name
-        /// </summary>
-        /// <param name="HeapPointer"></param>
-        /// <param name="ScalarPointer"></param>
-        /// <returns></returns>
-        public string GetLibraryName(int HeapPointer)
+        public Schema GetSchema(int Major, int Minor)
         {
-            return this._Libraries[HeapPointer].Name;
+            return this._Stores[Major].Records[Minor].Columns;
         }
-
-        // Get scalars //
-        /// <summary>
-        /// Gets a scalar value
-        /// </summary>
-        /// <param name="HeapPointer"></param>
-        /// <param name="ScalarPointer"></param>
-        /// <returns></returns>
-        public Cell GetScalar(int HeapPointer, int ScalarPointer)
+        
+        public void DeclareRecord(string Major, string Minor, AssociativeRecord Value)
         {
-            return this._Libraries[HeapPointer].Values[ScalarPointer];
+            this._Stores[Major].Records.Allocate(Minor, Value);
         }
 
-        /// <summary>
-        /// Gets a scalar value
-        /// </summary>
-        /// <param name="Alias"></param>
-        /// <param name="ScalarName"></param>
-        /// <returns></returns>
-        public Cell GetScalar(string Alias, string ScalarName)
+        public void DeclareRecord(string Major, string Minor, Schema Value)
         {
-            int tidx = this._Libraries.GetPointer(Alias);
-            int fidx = this._Libraries[tidx].Values.GetPointer(ScalarName);
-            return this._Libraries[tidx].Values[fidx];
+            this._Stores[Major].Records.Allocate(Minor, new AssociativeRecord(Value, Value.NullRecord));
         }
 
-        /// <summary>
-        /// Gets a scalar's name
-        /// </summary>
-        /// <param name="HeapPointer"></param>
-        /// <param name="ScalarPointer"></param>
-        /// <returns></returns>
-        public string GetScalarName(int HeapPointer, int ScalarPointer)
+        public void SetRecord(string Major, string Minor, AssociativeRecord Value)
         {
-            return this._Libraries[HeapPointer].Values.Name(ScalarPointer);
+            this._Stores[Major].Records[Minor] = Value;
         }
-
-        // Get matrixes //
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="HeapPointer"></param>
-        /// <param name="MatrixPointer"></param>
-        /// <returns></returns>
-        public CellMatrix GetMatrix(int HeapPointer, int MatrixPointer)
+        
+        public void SetRecord(int Major, int Minor, AssociativeRecord Value)
         {
-            return this._Libraries[HeapPointer].Matrixes[MatrixPointer];
+            this._Stores[Major].Records[Minor] = Value;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="Alias"></param>
-        /// <param name="MatrixName"></param>
-        /// <returns></returns>
-        public CellMatrix GetMatrix(string Alias, string MatrixName)
+        public void RemoveRecord(string Major, string Minor)
         {
-            int tidx = this._Libraries.GetPointer(Alias);
-            int fidx = this._Libraries[tidx].Matrixes.GetPointer(MatrixName);
-            return this._Libraries[tidx].Matrixes[fidx];
+            this._Stores[Major].RemoveRecord(Minor);
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="HeapPointer"></param>
-        /// <param name="ScalarPointer"></param>
-        /// <returns></returns>
-        public string GetMatrixName(int HeapPointer, int ScalarPointer)
-        {
-            return this._Libraries[HeapPointer].Matrixes.Name(ScalarPointer);
-        }
-
-        // Signitures //
-        /// <summary>
-        /// Checks if both resolvers have the same count of schema and each schema has the same column count; DOES NOT check for field size or data type similarities
-        /// </summary>
-        /// <param name="Variants"></param>
-        /// <returns></returns>
-        public bool CheckColumnSignitures(FieldResolver Variants)
-        {
-
-            if (Variants._Columns.Count != this._Columns.Count)
-                return false;
-            for (int i = 0; i < this._Columns.Count; i++)
-            {
-                if (this._Columns[i].Count != Variants._Columns[i].Count)
-                    return false;
-            }
-            return true;
-
-        }
-
-        // Other //
-        public FieldResolver CloneOfMe()
-        {
-
-            FieldResolver f = new FieldResolver(this._Host);
-
-            foreach (KeyValuePair<string, Schema> x in this._Columns.Entries)
-            {
-                f.AddSchema(x.Key, x.Value);
-            }
-
-            foreach (KeyValuePair<string, Library> x in this._Libraries.Entries)
-            {
-                if (!f._Libraries.Exists(x.Key)) f.AddLibrary(x.Key, x.Value); // In case we collide with 'GLOBAL'
-            }
-
-            return f;
-
-        }
-
-        public FieldResolver CloneOfMeFull()
-        {
-
-            FieldResolver f = this.CloneOfMe();
-
-            for (int i = 0; i < this._TableRecords.Count; i++)
-            {
-                f._TableRecords[i] = this._TableRecords[i];
-            }
-
-            return f;
-
-        }
-
-        // Statics //
-        public static FieldResolver Build(Host Host, params Table[] Tables)
-        {
-            FieldResolver fr = new FieldResolver(Host);
-            foreach (Table t in Tables)
-            {
-                fr.AddSchema(t.Name, t.Columns);
-            }
-            return fr;
-
-        }
-
-        public static FieldResolver Union(FieldResolver A, FieldResolver B)
-        {
-
-            FieldResolver f = new FieldResolver(A._Host);
-
-            foreach (KeyValuePair<string, Schema> x in A._Columns.Entries)
-            {
-                f.AddSchema(x.Key, x.Value);
-            }
-
-            foreach (KeyValuePair<string, Schema> x in B._Columns.Entries)
-            {
-                if (!f._Columns.Exists(x.Key)) f.AddSchema(x.Key, x.Value);
-            }
-
-            foreach (KeyValuePair<string, Library> x in A._Libraries.Entries)
-            {
-                if (!f._Libraries.Exists(x.Key)) f.AddLibrary(x.Key, x.Value); // In case we collide with 'GLOBAL'
-            }
-
-            foreach (KeyValuePair<string, Library> x in B._Libraries.Entries)
-            {
-                if (!f._Libraries.Exists(x.Key)) f.AddLibrary(x.Key, x.Value);
-            }
-
-            return f;
-
-        }
-
 
     }
+    
+    /// <summary>
+    /// Represents a collection of fields, scalars, and matrixes
+    /// </summary>
+    //public sealed class FieldResolver2
+    //{
+
+    //    /// <summary>
+    //    /// Base host
+    //    /// </summary>
+    //    private Host _Host;
+
+    //    /// <summary>
+    //    /// Schema collection
+    //    /// </summary>
+    //    private Heap<Schema> _Columns;
+        
+    //    /// <summary>
+    //    /// Record collection
+    //    /// </summary>
+    //    private Heap<Record> _TableRecords;
+
+    //    /// <summary>
+    //    /// Creates a field resolver
+    //    /// </summary>
+    //    /// <param name="Host"></param>
+    //    public FieldResolver2(Host Host)
+    //    {
+
+    //        this._Host = Host;
+    //        this._Columns = new Heap<Schema>();
+    //        this._TableRecords = new Heap<Record>();
+    //        this.XID = Host.GetXID();
+
+    //    }
+
+    //    /// <summary>
+    //    /// Gets the XID in the field resolver
+    //    /// </summary>
+    //    public long XID
+    //    {
+    //        get;
+    //        protected set;
+    //    }
+
+    //    // Adds //
+    //    /// <summary>
+    //    /// Adds a schema to the resolver
+    //    /// </summary>
+    //    /// <param name="Alias"></param>
+    //    /// <param name="Columns"></param>
+    //    /// <param name="RecordRef">The element that holds the index of the ref added</param>
+    //    public void AddSchema(string Alias, Schema Columns, out int RecordRef)
+    //    {
+    //        if (this._Columns.Exists(Alias))
+    //            throw new Exception(string.Format("Alias '{0}' already exists"));
+            
+    //        this._Columns.Allocate(Alias, Columns);
+    //        this._TableRecords.Allocate(Alias, Columns.NullRecord);
+    //        RecordRef = this._Columns.Count - 1;
+    //    }
+
+    //    /// <summary>
+    //    /// 
+    //    /// </summary>
+    //    /// <param name="Alias"></param>
+    //    /// <param name="Columns"></param>
+    //    public void AddSchema(string Alias, Schema Columns)
+    //    {
+    //        int x = 0;
+    //        this.AddSchema(Alias, Columns, out x);
+    //    }
+
+    //    /// <summary>
+    //    /// Imports the structure of one resolver to another
+    //    /// </summary>
+    //    /// <param name="Variants"></param>
+    //    public void Import(FieldResolver Variants)
+    //    {
+            
+    //        for (int i = 0; i < Variants._Columns.Count; i++)
+    //        {
+    //            this.AddSchema(Variants._Columns.Name(i), Variants._Columns[i]);
+    //        }
+
+    //    }
+
+    //    // Get fields //
+    //    /// <summary>
+    //    /// Gets a field from the resolver
+    //    /// </summary>
+    //    /// <param name="TablePointer"></param>
+    //    /// <param name="ColumnPointer"></param>
+    //    /// <returns></returns>
+    //    public Cell GetField(int TablePointer, int ColumnPointer)
+    //    {
+    //        return this._TableRecords[TablePointer][ColumnPointer];
+    //    }
+
+    //    /// <summary>
+    //    /// Gets a field
+    //    /// </summary>
+    //    /// <param name="Alias"></param>
+    //    /// <param name="FieldName"></param>
+    //    /// <returns></returns>
+    //    public Cell GetField(string Alias, string FieldName)
+    //    {
+    //        int tidx = this._Columns.GetPointer(Alias);
+    //        int fidx = this._Columns[tidx].ColumnIndex(Alias);
+    //        return this._TableRecords[tidx][fidx];
+    //    }
+
+    //    public Record GetRecord(int TablePointer)
+    //    {
+    //        return this._TableRecords[TablePointer];
+    //    }
+
+    //    public Record GetRecord(string Alias)
+    //    {
+    //        return this._TableRecords[Alias];
+    //    }
+
+    //    /// <summary>
+    //    /// Gets a field name
+    //    /// </summary>
+    //    /// <param name="TablePointer"></param>
+    //    /// <param name="ColumnPointer"></param>
+    //    /// <returns></returns>
+    //    public string GetFieldName(int TablePointer, int ColumnPointer)
+    //    {
+    //        return this._Columns[TablePointer].ColumnName(ColumnPointer);
+    //    }
+
+    //    /// <summary>
+    //    /// Gets the cell affinity
+    //    /// </summary>
+    //    /// <param name="TablePointer"></param>
+    //    /// <param name="ColumnPointer"></param>
+    //    /// <returns></returns>
+    //    public CellAffinity GetFieldAffinity(int TablePointer, int ColumnPointer)
+    //    {
+    //        return this._Columns[TablePointer].ColumnAffinity(ColumnPointer); ;
+    //    }
+
+    //    /// <summary>
+    //    /// Gets the field size
+    //    /// </summary>
+    //    /// <param name="TablePointer"></param>
+    //    /// <param name="ColumnPointer"></param>
+    //    /// <returns></returns>
+    //    public int GetFieldSize(int TablePointer, int ColumnPointer)
+    //    {
+    //        return this._Columns[TablePointer].ColumnSize(ColumnPointer); ;
+    //    }
+
+    //    /// <summary>
+    //    /// Sets a record value
+    //    /// </summary>
+    //    /// <param name="TablePointer"></param>
+    //    /// <param name="Value"></param>
+    //    public void SetValue(int TablePointer, Record Value)
+    //    {
+    //        this._TableRecords[TablePointer] = Value;
+    //    }
+
+    //    /// <summary>
+    //    /// Sets all the record values in one resolver to another
+    //    /// </summary>
+    //    /// <param name="Variants"></param>
+    //    public void SetValues(FieldResolver Variants)
+    //    {
+
+    //        for (int i = 0; i < Variants._TableRecords.Count; i++)
+    //        {
+    //            this._TableRecords[i] = Variants._TableRecords[i];
+    //        }
+
+    //    }
+
+    //    /// <summary>
+    //    /// Removes a schema 
+    //    /// </summary>
+    //    /// <param name="Alias"></param>
+    //    public void RemoveSchema(string Alias)
+    //    {
+    //        this._Columns.Deallocate(Alias);
+    //        this._TableRecords.Deallocate(Alias);
+    //    }
+
+    //    // Signitures //
+    //    /// <summary>
+    //    /// Checks if both resolvers have the same count of schema and each schema has the same column count; DOES NOT check for field size or data type similarities
+    //    /// </summary>
+    //    /// <param name="Variants"></param>
+    //    /// <returns></returns>
+    //    public bool CheckColumnSignitures(FieldResolver Variants)
+    //    {
+
+    //        if (Variants._Columns.Count != this._Columns.Count)
+    //            return false;
+    //        for (int i = 0; i < this._Columns.Count; i++)
+    //        {
+    //            if (this._Columns[i].Count != Variants._Columns[i].Count)
+    //                return false;
+    //        }
+    //        return true;
+
+    //    }
+
+    //    // Other //
+    //    public FieldResolver2 CloneOfMe()
+    //    {
+
+    //        FieldResolver2 f = new FieldResolver2(this._Host);
+
+    //        foreach (KeyValuePair<string, Schema> x in this._Columns.Entries)
+    //        {
+    //            f.AddSchema(x.Key, x.Value);
+    //        }
+
+    //        return f;
+
+    //    }
+
+    //    public FieldResolver2 CloneOfMeFull()
+    //    {
+
+    //        FieldResolver2 f = this.CloneOfMe();
+
+    //        for (int i = 0; i < this._TableRecords.Count; i++)
+    //        {
+    //            f._TableRecords[i] = this._TableRecords[i];
+    //        }
+
+    //        return f;
+
+    //    }
+
+    //    // Statics //
+    //    public static FieldResolver2 Build(Host Host, params Table[] Tables)
+    //    {
+    //        FieldResolver2 fr = new FieldResolver2(Host);
+    //        foreach (Table t in Tables)
+    //        {
+    //            fr.AddSchema(t.Name, t.Columns);
+    //        }
+    //        return fr;
+
+    //    }
+
+    //    public static FieldResolver2 Union(FieldResolver2 A, FieldResolver2 B)
+    //    {
+
+    //        FieldResolver2 f = new FieldResolver2(A._Host);
+
+    //        foreach (KeyValuePair<string, Schema> x in A._Columns.Entries)
+    //        {
+    //            f.AddSchema(x.Key, x.Value);
+    //        }
+
+    //        foreach (KeyValuePair<string, Schema> x in B._Columns.Entries)
+    //        {
+    //            if (!f._Columns.Exists(x.Key)) f.AddSchema(x.Key, x.Value);
+    //        }
+
+    //        return f;
+
+    //    }
+
+
+    //}
 
 }

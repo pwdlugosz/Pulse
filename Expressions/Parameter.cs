@@ -34,7 +34,7 @@ namespace Pulse.Expressions
             private set;
         }
 
-        public RecordExpression Record
+        public ScalarExpressionSet Record
         {
             get;
             private set;

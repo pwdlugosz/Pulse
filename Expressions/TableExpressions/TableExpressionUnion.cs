@@ -29,7 +29,7 @@ namespace Pulse.Expressions.TableExpressions
 
         public override FieldResolver CreateResolver(FieldResolver Variants)
         {
-            return Variants.CloneOfMeFull();
+            return Variants;
         }
 
         public override void AddChild(TableExpression Child)
@@ -65,7 +65,7 @@ namespace Pulse.Expressions.TableExpressions
 
                 // Clean up //
                 if (this._Host.IsSystemTemp(t))
-                    this._Host.Store.DropTable(t.Key);
+                    this._Host.TableStore.DropTable(t.Key);
 
 
             }

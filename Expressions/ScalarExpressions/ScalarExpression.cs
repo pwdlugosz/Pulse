@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 using Pulse.Elements;
 using Pulse.Tables;
 using Pulse.Expressions;
+using Pulse.Expressions.ScalarExpressions;
+using Pulse.Expressions.MatrixExpressions;
+using Pulse.Expressions.RecordExpressions;
+using Pulse.Expressions.TableExpressions;
 
 namespace Pulse.Expressions.ScalarExpressions
 {
@@ -13,7 +17,7 @@ namespace Pulse.Expressions.ScalarExpressions
     /// <summary>
     /// Represents the base class for all expressions
     /// </summary>
-    public abstract class ScalarExpression : IBindable
+    public abstract class ScalarExpression : IBindable, IExpression
     {
 
         protected ScalarExpressionAffinity _Affinity;
@@ -233,6 +237,17 @@ namespace Pulse.Expressions.ScalarExpressions
             get { return false; }
         }
 
+        // Inderfaces //
+        public SuperExpressionAffinity SuperAffinity { get { return SuperExpressionAffinity.Scalar; } }
+
+        public ScalarExpression Scalar { get { return this; } }
+
+        public MatrixExpression Matrix { get { return null; } }
+
+        public RecordExpression Record { get { return null; } }
+
+        public TableExpression Table { get { return null; } }
+
         // Opperators //
         public static ScalarExpression operator +(ScalarExpression A, ScalarExpression B)
         {
@@ -379,28 +394,28 @@ namespace Pulse.Expressions.ScalarExpressions
             return new ScalarExpressionConstant(null, new Cell(Affinity));
         }
 
-        public static ScalarExpression Field(IColumns Schema, string Name, int ResolverOffset)
-        {
-            int FieldOffset = Schema.Columns.ColumnIndex(Name);
-            CellAffinity Affinity = Schema.Columns.ColumnAffinity(FieldOffset);
-            int Size = Schema.Columns.ColumnSize(FieldOffset);
-            return new ScalarExpressionFieldRef(null, ResolverOffset, FieldOffset, Affinity, Size);
-        }
+        //public static ScalarExpression Field(IColumns Schema, string Store, string Name)
+        //{
+        //    int FieldOffset = Schema.Columns.ColumnIndex(Name);
+        //    CellAffinity Affinity = Schema.Columns.ColumnAffinity(FieldOffset);
+        //    int Size = Schema.Columns.ColumnSize(FieldOffset);
+        //    return new ScalarExpressionFieldRef2(null, ResolverOffset, FieldOffset, Affinity, Size);
+        //}
 
-        public static ScalarExpression HeapRef(Host Host, string LibName, string ValName)
-        {
+        //public static ScalarExpression HeapRef(Host Host, string LibName, string ValName)
+        //{
             
-            if (!Host.Libraries.Exists(LibName))
-                throw new Exception(string.Format("Library does not exist '{0}'", LibName));
-            if (!Host.Libraries[LibName].Values.Exists(ValName))
-                throw new Exception(string.Format("Variable '{0}' does not exist in '{1}'", ValName, LibName));
+        //    if (!Host.Libraries.Exists(LibName))
+        //        throw new Exception(string.Format("Library does not exist '{0}'", LibName));
+        //    if (!Host.Libraries[LibName].Values.Exists(ValName))
+        //        throw new Exception(string.Format("Variable '{0}' does not exist in '{1}'", ValName, LibName));
 
-            int HeapRef = Host.Libraries.GetPointer(LibName);
-            int ValRef = Host.Libraries[LibName].Values.GetPointer(ValName);
+        //    int HeapRef = Host.Libraries.GetPointer(LibName);
+        //    int ValRef = Host.Libraries[LibName].Values.GetPointer(ValName);
 
-            return new ScalarExpressionScalarRef(null, HeapRef, ValRef, Host.Libraries[HeapRef].Values[ValRef].Affinity, CellSerializer.Length(Host.Libraries[HeapRef].Values[ValRef]));
+        //    return new ScalarExpressionStoreRef(null, HeapRef, ValRef, Host.Libraries[HeapRef].Values[ValRef].Affinity, CellSerializer.Length(Host.Libraries[HeapRef].Values[ValRef]));
 
-        }
+        //}
 
         // Constants //
         public static ScalarExpression True

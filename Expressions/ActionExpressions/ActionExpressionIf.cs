@@ -14,10 +14,10 @@ namespace Pulse.Expressions.ActionExpressions
     public sealed class ActionExpressionIf : ActionExpression
     {
 
-        private RecordExpression _Scalars;
+        private ScalarExpressionSet _Scalars;
         private bool _HasElse = false;
 
-        public ActionExpressionIf(Host Host, ActionExpression Parent, RecordExpression Scalars)
+        public ActionExpressionIf(Host Host, ActionExpression Parent, ScalarExpressionSet Scalars)
             : base(Host, Parent)
         {
             this._Scalars = Scalars;

@@ -1,40 +1,19 @@
 ﻿
-STRING S1 = 'HELLO WORLD!';
-RECORD R1<> = <'JAMES' : FIRST_NAME, 'BOND' : LAST_NAME , '007' : ID, 100 : XID, '1939-07-01'T : DOB >;
-MATRIX M1[] = [ <0.5, 0D, 0D> , <0D, 0.5, 0D> , <0D, 0D, 0.5> ];
-TABLE TEMP.T1{} = { INT KEY, DOUBLE VALUE };
+//STRING U = 'HELLO WORLD' + '!!!';
+//MATRIX V = { 0, 1, 2} | { 3, 4, 5 };
+//RECORD X = { 100 : KEY, 100.10 : VALUE1, 'HEY' : VALUE2, 0xA0B2 : VALUE3 };
+TABLE Y = { INT KEY, DOUBLE VALUE } : TEMP.TEST1;
 
-PRINT R1<>(FIRST_NAME);
-PRINT R1<>;
-PRINT M1[];
-
-/*
-TABLE TEMP.T<> = { INT KEY, INT J_KEY, DOUBLE VALUE };
-TABLE TEMP.U<> = { INT J_KEY, TEXT.2 GROUP_VALUE };
+//PRINT U;
+//PRINT V;
+//PRINT X;
+//PRINT X.KEY;
 
 
-FOR (INT I = 0; I < 10000; I++)
+FOR(INT I = 0; I < 10; I++)
 {
-	TEMP.T<> += { I : KEY, I % 100 : J_KEY, RAND_NUM() : VALUE };
+	Y += { I, ((DOUBLE)I) / 10D };
 };
 
-
-
-FOR (INT J = 0; J < 100; J++)
-{
-	TEMP.U<> += { J, RAND_STRING(2, 'ABCDEFG') };
-};
-
-TABLE TEMP.V<> = (TEMP.T<> : T) ** (TEMP.U<> : U) @ (T.J_KEY == U.J_KEY) { T.KEY, U.GROUP_VALUE, T.VALUE };
-
-TABLE TEMP.W<> = TEMP.V<> / { GROUP_VALUE } % { MIN(VALUE) AS MIN_VAL, MAX(VALUE) AS MAX_VAL, SUM(VALUE) AS SUM_VAL, SUM(1) AS COUNT_VAL, AVG(VALUE) AS AVG_VAL } : Q { Q.* };
-
-PRINT TEMP.W;
-*/
-
-
-
-
-
-
+PRINT Y;
 

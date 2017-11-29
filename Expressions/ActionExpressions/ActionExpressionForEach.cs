@@ -16,14 +16,12 @@ namespace Pulse.Expressions.ActionExpressions
 
         private TableExpression _t;
         private string _a;
-        private int _hidx = 0;
 
-        public ActionExpressionForEach(Host Host, ActionExpression Parent, TableExpression Data, string Alias, int HeapIndex)
+        public ActionExpressionForEach(Host Host, ActionExpression Parent, TableExpression Data, string Alias)
             : base(Host, Parent)
         {
             this._t = Data;
             this._a = Alias;
-            this._hidx = HeapIndex;
         }
 
         public override void BeginInvoke(FieldResolver Variant)
@@ -42,21 +40,24 @@ namespace Pulse.Expressions.ActionExpressions
             Table t = this._t.Select(Variant);
             RecordReader rr = t.OpenReader();
 
+            // Set up the resolver //
+            if (!Variant.Local.ExistsRecord(this._a))
+                Variant.Local.DeclareRecord(this._a, new AssociativeRecord(t.Columns));
+
             while (rr.CanAdvance)
             {
-                Variant.SetValue(this._hidx, rr.ReadNext());
+                Variant.SetRecord(FieldResolver.LOCAL, this._a, new AssociativeRecord(t.Columns, rr.ReadNext())); 
                 this._Children.ForEach((x) => { x.Invoke(Variant); });
             }
 
             if (this._Host.IsSystemTemp(t))
-                this._Host.Store.DropTable(t.Key);
+                this._Host.TableStore.DropTable(t.Key);
 
         }
 
         public override FieldResolver CreateResolver()
         {
             FieldResolver f = base.CreateResolver();
-            f.AddSchema(this._a, this._t.Columns);
             return f;
         }
 

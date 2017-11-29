@@ -86,7 +86,7 @@ namespace Pulse.Expressions.Aggregates
 
         }
 
-        public Aggregate Lookup(string Name, RecordExpression Parameters, Filter Where)
+        public Aggregate Lookup(string Name, ScalarExpressionSet Parameters, Filter Where)
         {
 
             // Check the parameters //

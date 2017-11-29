@@ -136,7 +136,7 @@ namespace Pulse.Elements
         {
 
             // Need to first flush the table to disk, otherwise parts of the table may not be in memory
-            T.Host.Store.FlushTable(T.Header.Key);
+            T.Host.TableStore.FlushTable(T.Header.Key);
 
             // Build the MD5 hash
             MD5CryptoServiceProvider x = new MD5CryptoServiceProvider();

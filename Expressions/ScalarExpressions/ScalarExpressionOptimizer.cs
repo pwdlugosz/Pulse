@@ -422,10 +422,10 @@ namespace Pulse.Expressions.ScalarExpressions
             return lnc.Compact(Node);
         }
 
-        public static RecordExpression CompactTree(Host Host, RecordExpression Tree)
+        public static ScalarExpressionSet CompactTree(Host Host, ScalarExpressionSet Tree)
         {
 
-            RecordExpression t = new RecordExpression();
+            ScalarExpressionSet t = new ScalarExpressionSet();
             ScalarExpressionOptimizer lnc = new ScalarExpressionOptimizer(Host);
 
             for (int i = 0; i < Tree.Count; i++)
@@ -452,7 +452,7 @@ namespace Pulse.Expressions.ScalarExpressions
                 return false;
 
             if (T1.Affinity == ScalarExpressionAffinity.Field)
-                return (T1 as ScalarExpressionFieldRef).ColumnRef == (T2 as ScalarExpressionFieldRef).ColumnRef;
+                return (T1 as ScalarExpressionFieldRef2).GetHashCode() == (T2 as ScalarExpressionFieldRef2).GetHashCode();
 
             if (T1.Affinity == ScalarExpressionAffinity.Pointer)
                 return (T1 as ScalarExpressionPointer).PointerName == (T2 as ScalarExpressionPointer).PointerName;
@@ -471,7 +471,7 @@ namespace Pulse.Expressions.ScalarExpressions
         {
 
             if (T.Affinity == ScalarExpressionAffinity.Field)
-                return (T as ScalarExpressionFieldRef).ColumnRef;
+                return (T as ScalarExpressionFieldRef2).GetHashCode();
 
             if (T.Affinity == ScalarExpressionAffinity.Pointer)
                 return (T as ScalarExpressionPointer).PointerName.GetHashCode();

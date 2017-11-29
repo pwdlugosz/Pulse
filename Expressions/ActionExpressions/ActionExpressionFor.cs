@@ -12,14 +12,14 @@ namespace Pulse.Expressions.ActionExpressions
     public sealed class ActionExpressionFor : ActionExpression
     {
 
-        private Heap<Cell> _Store;
-        private int _StoreRef;
+        private ObjectStore _Store;
+        private string _StoreRef;
         private ScalarExpression _Start;
         private ScalarExpression _Control;
         private ActionExpression _Increment;
         private bool _Escape = false;
 
-        public ActionExpressionFor(Host Host, ActionExpression Parent, Heap<Cell> Store, int StoreRef,
+        public ActionExpressionFor(Host Host, ActionExpression Parent, ObjectStore Store, string StoreRef,
             ScalarExpression Start, ScalarExpression Control, ActionExpression Increment)
             : base(Host, Parent)
         {
@@ -52,7 +52,7 @@ namespace Pulse.Expressions.ActionExpressions
 
             this._Escape = false;
 
-            this._Store[this._StoreRef] = this._Start.Evaluate(Variant);
+            this._Store.SetScalar(this._StoreRef, this._Start.Evaluate(Variant));
 
             while (this._Control.Evaluate(Variant).valueBOOL)
             {

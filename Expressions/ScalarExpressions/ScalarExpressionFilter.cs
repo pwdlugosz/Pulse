@@ -55,21 +55,21 @@ namespace Pulse.Expressions.ScalarExpressions
             }
         }
 
-        public static Filter Create(RecordMatcher Matcher, Record Key)
-        {
+        //public static Filter Create(RecordMatcher Matcher, Record Key)
+        //{
 
-            ScalarExpression x = null;
-            for (int i = 0; i < Matcher.LeftKey.Count; i++)
-            {
-                ScalarExpression y = ScalarExpression.EQ(new ScalarExpressionConstant(null, Key[0]), new ScalarExpressionFieldRef(null, 0, Matcher.LeftKey[i], Key[i].Affinity, CellSerializer.Length(Key[i])));
-                if (x == null)
-                    y = x;
-                else
-                    x = ScalarExpression.AND(x, y);
-            }
-            return new Filter(x);
+        //    ScalarExpression x = null;
+        //    for (int i = 0; i < Matcher.LeftKey.Count; i++)
+        //    {
+        //        ScalarExpression y = ScalarExpression.EQ(new ScalarExpressionConstant(null, Key[0]), new ScalarExpressionFieldRef2(null, 0, Matcher.LeftKey[i], Key[i].Affinity, CellSerializer.Length(Key[i])));
+        //        if (x == null)
+        //            y = x;
+        //        else
+        //            x = ScalarExpression.AND(x, y);
+        //    }
+        //    return new Filter(x);
 
-        }
+        //}
 
     }
 

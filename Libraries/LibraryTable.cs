@@ -243,7 +243,7 @@ namespace Pulse.Libraries
                 string dir = this._Host.Connections[lib];
                 string path = TableHeader.DeriveV1Path(dir, name);
 
-                this._Host.Store.DropTable(path);
+                this._Host.TableStore.DropTable(path);
 
             }
 

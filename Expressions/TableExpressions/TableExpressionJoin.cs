@@ -38,14 +38,14 @@ namespace Pulse.Expressions.TableExpressions
             ANTI_LEFT
         }
 
-        protected RecordExpression _Fields;
+        protected ScalarExpressionSet _Fields;
         protected RecordMatcher _Predicate;
         protected Filter _Where;
         protected JoinType _Type;
-        protected int _LRecordRef = -1;
-        protected int _RRecordRef = -1;
+        protected string _LeftAlias = "L";
+        protected string _RightAlias = "R";
 
-        public TableExpressionJoin(Host Host, TableExpression Parent, RecordExpression Fields, RecordMatcher Predicate, Filter Where, 
+        public TableExpressionJoin(Host Host, TableExpression Parent, ScalarExpressionSet Fields, RecordMatcher Predicate, Filter Where, 
             JoinType Type)
             : base(Host, Parent)
         {
@@ -59,19 +59,19 @@ namespace Pulse.Expressions.TableExpressions
         /// <summary>
         /// Gets or sets the left table record pointer
         /// </summary>
-        public int LeftRecordRef
+        public string LeftAlias
         {
-            get { return this._LRecordRef; }
-            set { this._LRecordRef = value; }
+            get { return this._LeftAlias; }
+            set { this._LeftAlias = value; }
         }
 
         /// <summary>
         /// Gets or sets the right table record pointer
         /// </summary>
-        public int RightRecordRef
+        public string RightAlias
         {
-            get { return this._RRecordRef; }
-            set { this._RRecordRef = value; }
+            get { return this._RightAlias; }
+            set { this._RightAlias = value; }
         }
 
         /// <summary>
@@ -93,14 +93,14 @@ namespace Pulse.Expressions.TableExpressions
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Variants"></param>
+        /// <returns></returns>
         public override FieldResolver CreateResolver(FieldResolver Variants)
         {
-
-            FieldResolver x = Variants.CloneOfMeFull();
-            x.AddSchema(this._Children[0].Alias, this._Children[0].Columns, out this._LRecordRef);
-            x.AddSchema(this._Children[1].Alias, this._Children[1].Columns, out this._RRecordRef);
-            return x;
-
+            return Variants;
         }
 
         /// <summary>
@@ -109,11 +109,7 @@ namespace Pulse.Expressions.TableExpressions
         protected void CheckRender()
         {
 
-            if (this._LRecordRef == -1)
-                throw new Exception("The left record pointer is invalid");
-            if (this._RRecordRef == -1)
-                throw new Exception("The right record pointer is invalid");
-            if (this._LRecordRef == this._RRecordRef)
+            if (this._LeftAlias == this._RightAlias)
                 throw new Exception("The left and right record pointers cannot be identical");
             if (this._Children.Count == 0)
                 throw new Exception("Missing the left table expression");
@@ -122,6 +118,30 @@ namespace Pulse.Expressions.TableExpressions
             if (this._Children.Count != 2)
                 throw new Exception("Cannot process more than two table expressions");
 
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Variants"></param>
+        public override void InitializeResolver(FieldResolver Variants)
+        {
+            if (!Variants.Local.ExistsRecord(this.LeftAlias))
+                Variants.Local.SetRecord(this.LeftAlias, new AssociativeRecord(this._Children[0].Columns));
+            if (!Variants.Local.ExistsRecord(this.RightAlias))
+                Variants.Local.SetRecord(this.RightAlias, new AssociativeRecord(this._Children[1].Columns));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Variants"></param>
+        public override void CleanUpResolver(FieldResolver Variants)
+        {
+            if (Variants.Local.ExistsRecord(this.LeftAlias))
+                Variants.Local.RemoveRecord(this.LeftAlias);
+            if (Variants.Local.ExistsRecord(this.RightAlias))
+                Variants.Local.RemoveRecord(this.RightAlias);
         }
 
         // Optimizer //
@@ -147,14 +167,13 @@ namespace Pulse.Expressions.TableExpressions
 
         }
 
-
         /// <summary>
         /// Creates a table expression implenting the sort merge algorithm
         /// </summary>
         public sealed class TableExpressionJoinSortMerge : TableExpressionJoin
         {
 
-            public TableExpressionJoinSortMerge(Host Host, TableExpression Parent, RecordExpression Fields, RecordMatcher Predicate, Filter Where,
+            public TableExpressionJoinSortMerge(Host Host, TableExpression Parent, ScalarExpressionSet Fields, RecordMatcher Predicate, Filter Where,
                 JoinType Type)
                 : base(Host, Parent, Fields, Predicate, Where, Type)
             {
@@ -171,8 +190,8 @@ namespace Pulse.Expressions.TableExpressions
                 Table Left = this._Children[0].Select(Variants);
                 Table Right = this._Children[1].Select(Variants);
 
-                // Create a resolver //
-                FieldResolver pointer = this.CreateResolver(Variants);
+                // Fix the resolver //
+                this.InitializeResolver(Variants);
 
                 // Get the left and right join index //
                 Index lidx = Left.GetIndex(this._Predicate.LeftKey);
@@ -207,11 +226,11 @@ namespace Pulse.Expressions.TableExpressions
 
                         if (Antisection)
                         {
-                            pointer.SetValue(this._LRecordRef, lstream.Read());
-                            pointer.SetValue(this._RRecordRef, rstream.Columns.NullRecord);
-                            if (this._Where.Evaluate(pointer))
+                            Variants.Local.SetRecord(this.LeftAlias, new AssociativeRecord(lstream.Columns, lstream.Read()));
+                            Variants.Local.SetRecord(this.RightAlias, new AssociativeRecord(rstream.Columns));
+                            if (this._Where.Evaluate(Variants))
                             {
-                                Writer.Insert(this._Fields.Evaluate(pointer));
+                                Writer.Insert(this._Fields.Evaluate(Variants));
                             }
                         }
                         rstream.Advance();
@@ -228,12 +247,12 @@ namespace Pulse.Expressions.TableExpressions
                         {
 
                             // Render the record and potentially output //
-                            pointer.SetValue(this._LRecordRef, lstream.Read());
-                            pointer.SetValue(this._RRecordRef, rstream.Read());
-
-                            if (this._Where.Evaluate(pointer))
+                            Variants.Local.SetRecord(this.LeftAlias, new AssociativeRecord(lstream.Columns, lstream.Read()));
+                            Variants.Local.SetRecord(this.RightAlias, new AssociativeRecord(rstream.Columns, rstream.Read()));
+                            
+                            if (this._Where.Evaluate(Variants))
                             {
-                                Writer.Insert(this._Fields.Evaluate(pointer));
+                                Writer.Insert(this._Fields.Evaluate(Variants));
                             }
 
                             // Advance the right table //
@@ -268,16 +287,16 @@ namespace Pulse.Expressions.TableExpressions
                 {
 
                     // Assign the right table to null //
-                    pointer.SetValue(this._RRecordRef, rstream.Columns.NullRecord);
+                    Variants.Local.SetRecord(this.RightAlias, new AssociativeRecord(rstream.Columns));
 
                     // Walk the rest of the left table //
                     while (lstream.CanAdvance)
                     {
 
-                        pointer.SetValue(this._LRecordRef, lstream.ReadNext());
-                        if (this._Where.Evaluate(pointer))
+                        Variants.Local.SetRecord(this.LeftAlias, new AssociativeRecord(lstream.Columns, lstream.Read()));
+                        if (this._Where.Evaluate(Variants))
                         {
-                            Writer.Insert(this._Fields.Evaluate(pointer));
+                            Writer.Insert(this._Fields.Evaluate(Variants));
                         }
 
                     }
@@ -286,9 +305,9 @@ namespace Pulse.Expressions.TableExpressions
 
                 // Clean up //
                 if (this._Host.IsSystemTemp(Left))
-                    this._Host.Store.DropTable(Left.Key);
+                    this._Host.TableStore.DropTable(Left.Key);
                 if (this._Host.IsSystemTemp(Right))
-                    this._Host.Store.DropTable(Right.Key);
+                    this._Host.TableStore.DropTable(Right.Key);
 
             }
 
@@ -300,7 +319,7 @@ namespace Pulse.Expressions.TableExpressions
         public sealed class TableExpressionJoinQuasiNestedLoop : TableExpressionJoin
         {
 
-            public TableExpressionJoinQuasiNestedLoop(Host Host, TableExpression Parent, RecordExpression Fields, RecordMatcher Predicate, Filter Where,
+            public TableExpressionJoinQuasiNestedLoop(Host Host, TableExpression Parent, ScalarExpressionSet Fields, RecordMatcher Predicate, Filter Where,
                 JoinType Type)
                 : base(Host, Parent, Fields, Predicate, Where, Type)
             {
@@ -318,7 +337,7 @@ namespace Pulse.Expressions.TableExpressions
                 Table Right = this._Children[1].Select(Variants);
 
                 // Create a resolver //
-                FieldResolver pointer = this.CreateResolver(Variants);
+                this.InitializeResolver(Variants);
 
                 // Get the right join index //
                 Index ridx = Right.GetIndex(this._Predicate.RightKey);
@@ -337,7 +356,7 @@ namespace Pulse.Expressions.TableExpressions
 
                     // Open the right stream //
                     Record lrec = lstream.ReadNext();
-                    RecordReader rstream = ridx.OpenStrictReader(Record.Split(lrec, this._Predicate.RightKey));
+                    RecordReader rstream = ridx.OpenStrictReader(Elements.Record.Split(lrec, this._Predicate.RightKey));
 
                     // Only Loop through if there's actually a match //
                     if (rstream != null)
@@ -355,13 +374,13 @@ namespace Pulse.Expressions.TableExpressions
                             {
 
                                 // Load the variant //
-                                pointer.SetValue(this._LRecordRef, lrec);
-                                pointer.SetValue(this._RRecordRef, rrec);
-
+                                Variants.Local.SetRecord(this.LeftAlias, new AssociativeRecord(lstream.Columns, lstream.Read()));
+                                Variants.Local.SetRecord(this.RightAlias, new AssociativeRecord(rstream.Columns, rstream.Read()));
+                            
                                 // Evaluate the where //
-                                if (this._Where.Evaluate(pointer))
+                                if (this._Where.Evaluate(Variants))
                                 {
-                                    Record x = this._Fields.Evaluate(pointer);
+                                    Record x = this._Fields.Evaluate(Variants);
                                     Writer.Insert(x);
                                 }
 
@@ -375,13 +394,13 @@ namespace Pulse.Expressions.TableExpressions
                     {
 
                         // Load the variant //
-                        pointer.SetValue(this._LRecordRef, lrec);
-                        pointer.SetValue(this._RRecordRef, Right.Columns.NullRecord);
-
+                        Variants.Local.SetRecord(this.LeftAlias, new AssociativeRecord(lstream.Columns, lstream.Read()));
+                        Variants.Local.SetRecord(this.RightAlias, new AssociativeRecord(rstream.Columns));
+                            
                         // Evaluate the where //
-                        if (this._Where.Evaluate(pointer))
+                        if (this._Where.Evaluate(Variants))
                         {
-                            Record x = this._Fields.Evaluate(pointer);
+                            Record x = this._Fields.Evaluate(Variants);
                             Writer.Insert(x);
                         }
 
@@ -391,9 +410,11 @@ namespace Pulse.Expressions.TableExpressions
 
                 // Clean up //
                 if (this._Host.IsSystemTemp(Left))
-                    this._Host.Store.DropTable(Left.Key);
+                    this._Host.TableStore.DropTable(Left.Key);
                 if (this._Host.IsSystemTemp(Right))
-                    this._Host.Store.DropTable(Right.Key);
+                    this._Host.TableStore.DropTable(Right.Key);
+
+                this.CleanUpResolver(Variants);
 
             }
 
@@ -405,7 +426,7 @@ namespace Pulse.Expressions.TableExpressions
         public sealed class TableExpressionJoinNestedLoop : TableExpressionJoin
         {
 
-            public TableExpressionJoinNestedLoop(Host Host, TableExpression Parent, RecordExpression Fields, RecordMatcher Predicate, Filter Where,
+            public TableExpressionJoinNestedLoop(Host Host, TableExpression Parent, ScalarExpressionSet Fields, RecordMatcher Predicate, Filter Where,
                 JoinType Type)
                 : base(Host, Parent, Fields, Predicate, Where, Type)
             {
@@ -423,7 +444,7 @@ namespace Pulse.Expressions.TableExpressions
                 Table Right = this._Children[1].Select(Variants);
 
                 // Create a resolver //
-                FieldResolver pointer = this.CreateResolver(Variants);
+                this.InitializeResolver(Variants);
 
                 // Get the join tags //
                 bool Intersection = (this._Type == JoinType.INNER || this._Type == JoinType.LEFT), Antisection = (this._Type == JoinType.LEFT || this._Type == JoinType.ANTI_LEFT);
@@ -454,16 +475,16 @@ namespace Pulse.Expressions.TableExpressions
                         {
 
                             // Load the variant //
-                            pointer.SetValue(this._LRecordRef, lrec);
-                            pointer.SetValue(this._RRecordRef, rrec);
-
+                            Variants.Local.SetRecord(this.LeftAlias, new AssociativeRecord(lstream.Columns, lstream.Read()));
+                            Variants.Local.SetRecord(this.RightAlias, new AssociativeRecord(rstream.Columns, rstream.Read()));
+                            
                             // Tag taht we found a match //
                             MatchFound = true;
 
                             // Evaluate the where //
-                            if (this._Where.Evaluate(pointer))
+                            if (this._Where.Evaluate(Variants))
                             {
-                                Record x = this._Fields.Evaluate(pointer);
+                                Record x = this._Fields.Evaluate(Variants);
                                 Writer.Insert(x);
                             }
 
@@ -476,16 +497,16 @@ namespace Pulse.Expressions.TableExpressions
                     {
 
                         // Load the variant //
-                        pointer.SetValue(this._LRecordRef, lrec);
-                        pointer.SetValue(this._RRecordRef, Right.Columns.NullRecord);
-
+                        Variants.Local.SetRecord(this.LeftAlias, new AssociativeRecord(lstream.Columns, lstream.Read()));
+                        Variants.Local.SetRecord(this.RightAlias, new AssociativeRecord(rstream.Columns));
+                            
                         // Tag taht we found a match //
                         MatchFound = true;
 
                         // Evaluate the where //
-                        if (this._Where.Evaluate(pointer))
+                        if (this._Where.Evaluate(Variants))
                         {
-                            Record x = this._Fields.Evaluate(pointer);
+                            Record x = this._Fields.Evaluate(Variants);
                             Writer.Insert(x);
                         }
 
@@ -493,14 +514,13 @@ namespace Pulse.Expressions.TableExpressions
 
                     // Clean up //
                     if (this._Host.IsSystemTemp(Left))
-                        this._Host.Store.DropTable(Left.Key);
+                        this._Host.TableStore.DropTable(Left.Key);
                     if (this._Host.IsSystemTemp(Right))
-                        this._Host.Store.DropTable(Right.Key);
+                        this._Host.TableStore.DropTable(Right.Key);
 
                 }
 
             }
-
 
         }
 
