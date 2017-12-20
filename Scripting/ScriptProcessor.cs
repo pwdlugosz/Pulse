@@ -27,7 +27,31 @@ namespace Pulse.Scripting
             this._Host = Host;
         }
 
-        private IExpression ToExpression(string Script)
+        //private IExpression ToExpression(string Script)
+        //{
+
+        //    // Create a token stream and do lexal analysis //
+        //    AntlrInputStream TextStream = new AntlrInputStream(Script);
+        //    PulseLexer Lex = new PulseLexer(TextStream);
+
+        //    // Parse the script //
+        //    CommonTokenStream TokenStream = new CommonTokenStream(Lex);
+        //    PulseParser HeartBeat = new PulseParser(TokenStream);
+
+        //    // Create an executer object //
+        //    ExpressionVisitor processor = new ExpressionVisitor(this._Host);
+
+        //    PulseParser.ExprContext context = HeartBeat.compileUnit().expr();
+
+        //    // Handle no expressions //
+        //    if (context == null)
+        //        return null;
+
+        //    return processor.Render(context);
+
+        //}
+
+        public ScalarExpression ToScalar(string Script)
         {
 
             // Create a token stream and do lexal analysis //
@@ -39,9 +63,9 @@ namespace Pulse.Scripting
             PulseParser HeartBeat = new PulseParser(TokenStream);
 
             // Create an executer object //
-            ExpressionVisitor processor = new ExpressionVisitor(this._Host);
+            ScalarExpressionVisitor processor = new ScalarExpressionVisitor(this._Host);
 
-            PulseParser.ExprContext context = HeartBeat.compileUnit().expr();
+            PulseParser.Scalar_expressionContext context = HeartBeat.compileUnit().scalar_expression();
 
             // Handle no expressions //
             if (context == null)
@@ -51,43 +75,75 @@ namespace Pulse.Scripting
 
         }
 
-        public ScalarExpression ToScalar(string Script)
-        {
-
-            IExpression val = this.ToExpression(Script);
-            if (val.SuperAffinity == SuperExpressionAffinity.Scalar)
-                return (val == null ? ScalarExpression.NullInt : val.Scalar);
-            throw new Exception("Expecting scalar");
-
-        }
-
         public MatrixExpression ToMatrixExpression(string Script)
         {
 
-            IExpression val = this.ToExpression(Script);
-            if (val.SuperAffinity == SuperExpressionAffinity.Matrix)
-                return val.Matrix;
-            throw new Exception("Expecting matrix");
+            // Create a token stream and do lexal analysis //
+            AntlrInputStream TextStream = new AntlrInputStream(Script);
+            PulseLexer Lex = new PulseLexer(TextStream);
+
+            // Parse the script //
+            CommonTokenStream TokenStream = new CommonTokenStream(Lex);
+            PulseParser HeartBeat = new PulseParser(TokenStream);
+
+            // Create an executer object //
+            MatrixExpressionVisitor processor = new MatrixExpressionVisitor(this._Host);
+
+            PulseParser.Matrix_expressionContext context = HeartBeat.compileUnit().matrix_expression();
+
+            // Handle no expressions //
+            if (context == null)
+                return null;
+
+            return processor.Render(context);
 
         }
 
         public RecordExpression ToRecordExpression(string Script)
         {
 
-            IExpression val = this.ToExpression(Script);
-            if (val.SuperAffinity == SuperExpressionAffinity.Record)
-                return val.Record;
-            throw new Exception("Expecting record");
+            // Create a token stream and do lexal analysis //
+            AntlrInputStream TextStream = new AntlrInputStream(Script);
+            PulseLexer Lex = new PulseLexer(TextStream);
+
+            // Parse the script //
+            CommonTokenStream TokenStream = new CommonTokenStream(Lex);
+            PulseParser HeartBeat = new PulseParser(TokenStream);
+
+            // Create an executer object //
+            RecordExpressionVisitor processor = new RecordExpressionVisitor(this._Host);
+
+            PulseParser.Record_expressionContext context = HeartBeat.compileUnit().record_expression();
+
+            // Handle no expressions //
+            if (context == null)
+                return null;
+
+            return processor.Render(context);
 
         }
 
         public TableExpression ToTableExpression(string Script)
         {
 
-            IExpression val = this.ToExpression(Script);
-            if (val.SuperAffinity == SuperExpressionAffinity.Table)
-                return val.Table;
-            throw new Exception("Expecting table");
+            // Create a token stream and do lexal analysis //
+            AntlrInputStream TextStream = new AntlrInputStream(Script);
+            PulseLexer Lex = new PulseLexer(TextStream);
+
+            // Parse the script //
+            CommonTokenStream TokenStream = new CommonTokenStream(Lex);
+            PulseParser HeartBeat = new PulseParser(TokenStream);
+
+            // Create an executer object //
+            TableExpressionVisitor processor = new TableExpressionVisitor(this._Host);
+
+            PulseParser.Table_expressionContext context = HeartBeat.compileUnit().table_expression();
+
+            // Handle no expressions //
+            if (context == null)
+                return null;
+
+            return processor.Render(context);
 
         }
 

@@ -123,8 +123,8 @@ namespace Pulse.Expressions.ScalarExpressions
 
         // -(-A) -> A
         // !(!A) -> A
-        // -c -> -c where c is a constant
-        // !c -> !c where c is a constant
+        // -b -> -b where b is a constant
+        // !b -> !b where b is a constant
         private ScalarExpression CompactUni(ScalarExpression Node)
         {
 

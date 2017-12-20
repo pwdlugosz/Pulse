@@ -48,6 +48,7 @@ namespace Pulse.Expressions.ActionExpressions
             this._Store = Store;
             this._Name = Name;
             this._Value = Value;
+            if (Value == null) throw new Exception();
         }
 
         public override void Invoke(FieldResolver Variant)

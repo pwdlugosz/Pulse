@@ -61,7 +61,6 @@ namespace Pulse.Expressions.MatrixExpressions
                 this._ReturnSize = Math.Max(ses.MaxSize, this._ReturnSize);
                 this._MaxCol = Math.Max(ses.Columns.Count, this._MaxCol);
             }
-
         }
 
         public override CellMatrix Evaluate(FieldResolver Variant)

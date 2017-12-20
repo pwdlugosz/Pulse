@@ -212,7 +212,7 @@ namespace Pulse.Elements
             if (this.ExistsNotRecord(Name))
                 throw new ObjectAlreadyExistsException(Name);
             this._Records.Reallocate(Name, Value);
-            this._Names.Allocate(Name, ObjectAffinity.Record);
+            this._Names.Reallocate(Name, ObjectAffinity.Record);
             this._States.Reallocate(Name, ObjectState.ReadWrite);
         }
 

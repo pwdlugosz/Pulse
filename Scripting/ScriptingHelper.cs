@@ -61,13 +61,46 @@ namespace Pulse.Scripting
 
         }
 
-        public static string GetLibName(PulseParser.Var_nameContext context)
+        public static string GetLibName(PulseParser.Scalar_nameContext context)
         {
             if (context.lib_name() == null) return Host.GLOBAL;
             return context.lib_name().GetText();
         }
 
-        public static string GetVarName(PulseParser.Var_nameContext context)
+        public static string GetLibName(PulseParser.Matrix_nameContext context)
+        {
+            if (context.lib_name() == null) return Host.GLOBAL;
+            return context.lib_name().GetText();
+        }
+
+        public static string GetLibName(PulseParser.Record_nameContext context)
+        {
+            if (context.lib_name() == null) return Host.GLOBAL;
+            return context.lib_name().GetText();
+        }
+
+        public static string GetLibName(PulseParser.Table_nameContext context)
+        {
+            if (context.lib_name() == null) return Host.GLOBAL;
+            return context.lib_name().GetText();
+        }
+
+        public static string GetVarName(PulseParser.Scalar_nameContext context)
+        {
+            return context.IDENTIFIER().GetText();
+        }
+
+        public static string GetVarName(PulseParser.Matrix_nameContext context)
+        {
+            return context.IDENTIFIER().GetText();
+        }
+
+        public static string GetVarName(PulseParser.Record_nameContext context)
+        {
+            return context.IDENTIFIER().GetText();
+        }
+
+        public static string GetVarName(PulseParser.Table_nameContext context)
         {
             return context.IDENTIFIER().GetText();
         }

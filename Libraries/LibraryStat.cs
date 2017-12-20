@@ -71,7 +71,7 @@ namespace Pulse.Libraries
                 double[] b = { 0.2316419, 0.319381530, -0.356563782, 1.781477937, -1.821255978, 1.330274429 };
                 double t = 1 / (1 + b[0] * Value);
 
-                // Set c //
+                // Set b //
                 double z = 1 - NormalPDF(Value) * (b[1] * t + b[2] * t * t + b[3] * t * t * t + b[4] * t * t * t * t + b[5] * t * t * t * t * t);
                 return (Inv ? 1 - z : z);
 

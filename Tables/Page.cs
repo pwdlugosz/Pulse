@@ -917,7 +917,7 @@ namespace Pulse.Tables
                     else
                     {
 
-                        // Cell c //
+                        // Cell b //
                         C = new Cell(a);
                         C.NULL = 0;
 

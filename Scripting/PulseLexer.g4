@@ -57,7 +57,7 @@ K_WHILE : W H I L E;
 // Opperators //
 OR : O R | PIPE PIPE;
 AND : A N D | AMPER AMPER;
-XOR : X O R | HASH HASH;
+XOR : X O R | POW POW;
 NOT : N O T | '!';
 PLUS : '+';
 MINUS : '-';
@@ -92,9 +92,10 @@ TILDA : '~';
 PIPE : '|';
 AMPER : '&';
 COLON : ':';
-MONEY : '$';
-AT : '@';
-HASH : '#';
+
+MATRIX_TOK : '$';
+RECORD_TOK : '@';
+TABLE_TOK : '#';
 
 // Core types //
 T_BOOL : B O O L;

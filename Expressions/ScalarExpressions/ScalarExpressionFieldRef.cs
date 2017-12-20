@@ -29,6 +29,17 @@ namespace Pulse.Expressions.ScalarExpressions
             this._FieldSize = FieldSize;
         }
 
+        // Field Name //
+        public string StoreName
+        {
+            get { return this._StoreName; }
+        }
+
+        public string RecordName
+        {
+            get { return this._StoreName; }
+        }
+
         // Overrides //
         public override string Unparse(FieldResolver Variants)
         {
@@ -52,7 +63,7 @@ namespace Pulse.Expressions.ScalarExpressions
 
         public override Cell Evaluate(FieldResolver Variants)
         {
-            return Variants.GetRecord(this._StoreName, this._FieldName)[this._FieldName];
+            return Variants.GetRecord(this._StoreName, this._RecordName)[this._FieldName];
         }
 
         public override int GetHashCode()

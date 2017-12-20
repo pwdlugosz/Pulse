@@ -305,13 +305,13 @@ namespace Pulse.Elements
         //{
 
         //    int len = Elements.Length;
-        //    Cell[] c = new Cell[len];
+        //    Cell[] b = new Cell[len];
 
         //    for (int i = 0; i < len; i++)
         //    {
-        //        c[i] = Cell.UnBox(Elements[i]);
+        //        b[i] = Cell.UnBox(Elements[i]);
         //    }
-        //    return new Record(c);
+        //    return new Record(b);
 
         //}
 
@@ -324,13 +324,13 @@ namespace Pulse.Elements
         //{
 
         //    int len = Elements.Length;
-        //    Cell[] c = new Cell[len];
+        //    Cell[] b = new Cell[len];
 
         //    for (int i = 0; i < len; i++)
         //    {
-        //        c[i] = Cell.TryUnBox(Elements[i]);
+        //        b[i] = Cell.TryUnBox(Elements[i]);
         //    }
-        //    return new Record(c);
+        //    return new Record(b);
 
         //}
 
@@ -346,13 +346,13 @@ namespace Pulse.Elements
         //    int len = Elements.Length;
         //    if (len != Columns.Count)
         //        throw new Exception("Column count does not match data length");
-        //    Cell[] c = new Cell[len];
+        //    Cell[] b = new Cell[len];
 
         //    for (int i = 0; i < len; i++)
         //    {
-        //        c[i] = Cell.UnBoxInto(Elements[i], Columns.ColumnAffinity(i));
+        //        b[i] = Cell.UnBoxInto(Elements[i], Columns.ColumnAffinity(i));
         //    }
-        //    return new Record(c);
+        //    return new Record(b);
 
         //}
 
@@ -367,13 +367,13 @@ namespace Pulse.Elements
 
         //    int len = Elements.Length;
         //    if (len != Columns.Count) throw new Exception("Column count does not match data length");
-        //    Cell[] c = new Cell[len];
+        //    Cell[] b = new Cell[len];
 
         //    for (int i = 0; i < len; i++)
         //    {
-        //        c[i] = Cell.TryUnBoxInto(Elements[i], Columns.ColumnAffinity(i));
+        //        b[i] = Cell.TryUnBoxInto(Elements[i], Columns.ColumnAffinity(i));
         //    }
-        //    return new Record(c);
+        //    return new Record(b);
 
         //}
 

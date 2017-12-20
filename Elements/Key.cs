@@ -357,7 +357,7 @@ namespace Pulse.Elements
         /// <summary>
         /// Parses a key from a string
         /// </summary>
-        /// <param name="Text">Text to parse</param>
+        /// <param name="BString">BString to parse</param>
         /// <returns>Key parsed from the string</returns>
         public static Key Parse(string Text)
         {
@@ -416,7 +416,7 @@ namespace Pulse.Elements
         /// <summary>
         /// Parses a key affinity
         /// </summary>
-        /// <param name="Text">Text to parse</param>
+        /// <param name="BString">BString to parse</param>
         /// <returns>Key affinity</returns>
         internal static KeyAffinity ParseAffinity(string Text)
         {

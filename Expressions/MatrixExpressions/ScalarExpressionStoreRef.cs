@@ -12,34 +12,39 @@ namespace Pulse.Expressions.MatrixExpressions
     public sealed class MatrixExpressionStoreRef : MatrixExpression
     {
 
-        private string _Name;
-        private ObjectStore _Store;
 
-        public MatrixExpressionStoreRef(MatrixExpression Parent, string Name, ObjectStore Store)
+        private string _StoreName;
+        private string _MatrixName;
+        private CellAffinity _Affinity;
+        private int _Size;
+
+        public MatrixExpressionStoreRef(MatrixExpression Parent, string StoreName, string MatrixName, CellAffinity Affinity, int Size)
             : base(Parent)
         {
-            this._Name = Name;
-            this._Store = Store;
+            this._StoreName = StoreName;
+            this._MatrixName = MatrixName;
+            this._Affinity = Affinity;
+            this._Size = Size;
         }
 
         public override CellMatrix Evaluate(FieldResolver Variant)
         {
-            return this._Store.Matrixes[this._Name];
+            return Variant.Stores[this._StoreName].GetMatrix(this._MatrixName);
         }
 
         public override CellAffinity ReturnAffinity()
         {
-            return this._Store.Matrixes[this._Name].Affinity;
+            return this._Affinity;
         }
 
         public override int ReturnSize()
         {
-            return this._Store.Matrixes[this._Name].Size;
+            return this._Size;
         }
         
         public override MatrixExpression CloneOfMe()
         {
-            return new MatrixExpressionStoreRef(this.ParentNode, this._Name, this._Store);
+            return new MatrixExpressionStoreRef(this.ParentNode, this._StoreName, this._MatrixName, this._Affinity, this._Size);
         }
 
     }

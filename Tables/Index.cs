@@ -217,13 +217,13 @@ namespace Pulse.Tables
         public static Record GetIndexElement(Record Element, RecordKey Pointer, Key IndexColumns)
         {
 
-            //Cell[] c = new Cell[IndexColumns.Count + 1];
+            //Cell[] b = new Cell[IndexColumns.Count + 1];
             //for (int i = 0; i < IndexColumns.Count; i++)
             //{
-            //    c[i] = Element[IndexColumns[i]];
+            //    b[i] = Element[IndexColumns[i]];
             //}
-            //c[c.Length - 1] = Pointer.Element;
-            //return new Record(c);
+            //b[b.Length - 1] = Pointer.Element;
+            //return new Record(b);
 
             Record t = (Element * IndexColumns) + Pointer.Element;
             return t;

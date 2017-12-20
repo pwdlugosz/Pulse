@@ -29,6 +29,7 @@ namespace Pulse.Expressions.ActionExpressions
             this._r = null;
             this._m = null;
             this._s = null;
+            if (Expression == null) throw new Exception();
         }
 
         public ActionExpressionPrintConsole(Host Host, ActionExpression Parent, RecordExpression Expression)
@@ -38,6 +39,7 @@ namespace Pulse.Expressions.ActionExpressions
             this._s = null;
             this._m = null;
             this._r = Expression;
+            if (Expression == null) throw new Exception();
         }
 
         public ActionExpressionPrintConsole(Host Host, ActionExpression Parent, MatrixExpression Expression)
@@ -47,6 +49,7 @@ namespace Pulse.Expressions.ActionExpressions
             this._r = null;
             this._m = Expression;
             this._s = null;
+            if (Expression == null) throw new Exception();
         }
 
         public ActionExpressionPrintConsole(Host Host, ActionExpression Parent, ScalarExpression Expression)
@@ -55,6 +58,8 @@ namespace Pulse.Expressions.ActionExpressions
             this._t = null;
             this._s = Expression;
             this._m = null;
+            this._r = null;
+            if (Expression == null) throw new Exception();
         }
 
         public override void Invoke(FieldResolver Variant)

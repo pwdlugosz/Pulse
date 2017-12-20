@@ -127,7 +127,7 @@ namespace Pulse.Util
 
             // Check the length //
             if (t.Length != Columns.Count)
-                throw new ArgumentException(string.Format("Text has {0} fields, but schema has {1} fields", t.Length, Columns.Count));
+                throw new ArgumentException(string.Format("BString has {0} fields, but schema has {1} fields", t.Length, Columns.Count));
 
             // Build the record //
             RecordBuilder rb = new RecordBuilder();

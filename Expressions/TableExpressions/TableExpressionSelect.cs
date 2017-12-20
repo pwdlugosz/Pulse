@@ -92,15 +92,15 @@ namespace Pulse.Expressions.TableExpressions
             // Render the base table //
             Table t = this.Children[0].Select(Variants);
 
-            // Initialize //
-            this.InitializeResolver(Variants);
-
             // Open the reader //
             RecordReader rs = t.OpenReader();
 
             // Ticks //
             long ticks = 0;
-            
+
+            // Initialize //
+            this.InitializeResolver(Variants);
+
             // Main read loop //
             while (rs.CanAdvance)
             {
@@ -109,7 +109,7 @@ namespace Pulse.Expressions.TableExpressions
                     break;
 
                 Variants.Local.SetRecord(this._Alias, new AssociativeRecord(t.Columns, rs.ReadNext()));
-
+                
                 if (Where.Evaluate(Variants))
                 {
                     Writer.Insert(Fields.Evaluate(Variants));
@@ -134,9 +134,13 @@ namespace Pulse.Expressions.TableExpressions
         /// <param name="Variants"></param>
         public override void InitializeResolver(FieldResolver Variants)
         {
+
+            //Console.WriteLine("AAAAAAAAAAAA : {0}", Variants.Local.ExistsRecord(this._Alias));
+
             // Fix the resolver //
             if (!Variants.Local.ExistsRecord(this._Alias))
                 Variants.Local.DeclareRecord(this._Alias, new AssociativeRecord(this._Children[0].Columns));
+            
         }
 
         /// <summary>
@@ -146,8 +150,8 @@ namespace Pulse.Expressions.TableExpressions
         public override void CleanUpResolver(FieldResolver Variants)
         {
             // Fix the resolver //
-            if (Variants.Local.ExistsRecord(this._Alias))
-                Variants.Local.RemoveRecord(this._Alias);
+            //if (Variants.Local.ExistsRecord(this._Alias))
+            //    Variants.Local.RemoveRecord(this._Alias);
         }
 
         /// <summary>

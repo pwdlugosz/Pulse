@@ -91,7 +91,7 @@ namespace Pulse.Elements
         /// <summary>
         /// Not intended to called by the user; dumpes a cluster page to disk
         /// </summary>
-        /// <param name="c"></param>
+        /// <param name="b"></param>
         /// <param name="ParentPage"></param>
         /// <param name="s"></param>
         private static void DumpClusterPage(ClusterPage c, Cluster z, StreamWriter s)

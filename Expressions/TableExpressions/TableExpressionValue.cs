@@ -69,19 +69,17 @@ namespace Pulse.Expressions.TableExpressions
     public sealed class TableExpressionStoreRef : TableExpression
     {
 
-        private string _Name;
-        private ObjectStore _Store;
+        private string _TableName;
 
-        public TableExpressionStoreRef(Host Host, TableExpression Parent, string Name, ObjectStore Store)
+        public TableExpressionStoreRef(Host Host, TableExpression Parent, string TableName)
             : base(Host, Parent)
         {
-            this._Name = Name;
-            this._Store = Store;
+            this._TableName = TableName;
         }
 
         public override Schema Columns
         {
-            get { return this._Host.OpenTable(this._Store.GetTable(this._Name)).Columns; }
+            get { return this._Host.OpenTable(this._Host.Store.GetTable(this._TableName)).Columns; }
         }
 
         public override FieldResolver CreateResolver(FieldResolver Variants)
@@ -92,14 +90,13 @@ namespace Pulse.Expressions.TableExpressions
         // Evaluates //
         public override void Evaluate(FieldResolver Variants, RecordWriter Writer)
         {
-            Table t = this._Host.OpenTable(this._Store.GetTable(this._Name));
+            Table t = this._Host.OpenTable(this._Host.Store.GetTable(this._TableName));
             Writer.Consume(t.OpenReader());
         }
 
         public override Table Select(FieldResolver Variants)
         {
-            string key = this._Store.GetTable(this._Name);
-            return this._Host.OpenTable(key);
+            return this._Host.OpenTable(this._Host.Store.GetTable(this._TableName));
         }
 
         public override void Recycle()
@@ -111,14 +108,14 @@ namespace Pulse.Expressions.TableExpressions
         {
             get
             {
-                Table t = this._Host.OpenTable(this._Store.GetTable(this._Name));
+                Table t = this._Host.OpenTable(this._Host.Store.GetTable(this._TableName));
                 return t.RecordCount;
             }
         }
 
         public override bool IsIndexedBy(Key IndexColumns)
         {
-            Table t = this._Host.OpenTable(this._Store.GetTable(this._Name));
+            Table t = this._Host.OpenTable(this._Host.Store.GetTable(this._TableName));
             return t.IsIndexedBy(IndexColumns);
         }
 

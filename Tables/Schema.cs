@@ -72,7 +72,7 @@ namespace Pulse.Tables
         /// <summary>
         /// Initializes a schema based on text passed
         /// </summary>
-        /// <param name="Text">A string representing the schema</param>
+        /// <param name="BString">A string representing the schema</param>
         public Schema(string Text)
             : this()
         {
@@ -534,7 +534,7 @@ namespace Pulse.Tables
         /// <summary>
         /// Parses a string into a key
         /// </summary>
-        /// <param name="Text">The text list of columns</param>
+        /// <param name="BString">The text list of columns</param>
         /// <returns>A key</returns>
         public Key KeyParse(string Text)
         {

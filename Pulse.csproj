@@ -84,7 +84,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Alpha\UTF8.cs" />
+    <Compile Include="Alpha\BString.cs" />
     <Compile Include="Elements\ObjectStore.cs" />
     <Compile Include="Expressions\ActionExpressions\ActionExpression.cs" />
     <Compile Include="Expressions\ActionExpressions\ActionExpressionCTOR.cs" />
@@ -237,7 +237,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scripting\Visitors\ActionExpressionVisitor.cs" />
-    <Compile Include="Scripting\Visitors\MatrixExpressionParser.cs" />
+    <Compile Include="Scripting\Visitors\MatrixExpressionVisitor.cs" />
     <Compile Include="Scripting\PulseLexer.g4.cs">
       <DependentUpon>PulseLexer.g4</DependentUpon>
     </Compile>

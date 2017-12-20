@@ -9,51 +9,6 @@ using Pulse.Elements;
 namespace Pulse.Expressions.ScalarExpressions
 {
 
-
-    /// <summary>
-    /// Represents a record in a heap
-    /// </summary>
-    public sealed class ScalarExpressionRecordRef : ScalarExpression
-    {
-
-        private ScalarExpressionSet _rex;
-        private string _Ref;
-
-        public ScalarExpressionRecordRef(ScalarExpression Parent, ScalarExpressionSet Value, string ColRef)
-            : base(Parent, ScalarExpressionAffinity.Heap)
-        {
-            this._rex = Value;
-            this._Ref = ColRef;
-        }
-
-        // Overrides //
-        public override string Unparse(FieldResolver Variants)
-        {
-            return null;
-        }
-
-        public override ScalarExpression CloneOfMe()
-        {
-            return new ScalarExpressionRecordRef(this._ParentNode, this._rex, this._Ref);
-        }
-
-        public override int ExpressionSize()
-        {
-            return this._rex.Columns.ColumnSize(this._Ref);
-        }
-
-        public override CellAffinity ExpressionReturnAffinity()
-        {
-            return this._rex.Columns.ColumnAffinity(this._Ref);
-        }
-
-        public override Cell Evaluate(FieldResolver Variants)
-        {
-            return this._rex[this._Ref].Evaluate(Variants);
-        }
-
-    }
-
     public sealed class ScalarExpressionRecordRef2 : ScalarExpression
     {
 
@@ -95,5 +50,66 @@ namespace Pulse.Expressions.ScalarExpressions
 
     }
 
+    public sealed class ScalarExpressionRecordRef : ScalarExpression
+    {
+
+        private string _StoreName;
+        private string _RecordName;
+        private string _FieldName;
+        private CellAffinity _CellAffinity;
+        private int _Size;
+
+        public ScalarExpressionRecordRef(ScalarExpression Parent, string StoreName, string RecordName, string FieldName, CellAffinity Affinity, int Size)
+            : base(Parent, ScalarExpressionAffinity.Heap)
+        {
+            this._StoreName = StoreName;
+            this._RecordName = RecordName;
+            this._FieldName = FieldName;
+            this._CellAffinity = Affinity;
+            this._Size = Size;
+        }
+
+        public string StoreName
+        {
+            get { return this._StoreName; }
+        }
+
+        public string RecordName
+        {
+            get { return this._RecordName; }
+        }
+
+        public string FieldName
+        {
+            get { return this._FieldName; }
+        }
+
+        // Overrides //
+        public override string Unparse(FieldResolver Variants)
+        {
+            return null;
+        }
+
+        public override ScalarExpression CloneOfMe()
+        {
+            return new ScalarExpressionRecordRef(this._ParentNode, this._StoreName, this._RecordName, this._FieldName, this._CellAffinity, this._Size);
+        }
+
+        public override int ExpressionSize()
+        {
+            return this._Size;
+        }
+
+        public override CellAffinity ExpressionReturnAffinity()
+        {
+            return this._CellAffinity;
+        }
+
+        public override Cell Evaluate(FieldResolver Variants)
+        {
+            return Variants.Stores[this._StoreName].GetRecord(this._RecordName)[this._FieldName];
+        }
+
+    }
 
 }

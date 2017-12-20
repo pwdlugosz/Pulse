@@ -20,7 +20,7 @@ namespace Pulse.Elements
         /// <summary>
         /// Convets text to a cell affinity
         /// </summary>
-        /// <param name="Text">String to be parsed</param>
+        /// <param name="BString">String to be parsed</param>
         /// <returns>Cell affinity</returns>
         public static CellAffinity Parse(string Text)
         {
@@ -65,7 +65,7 @@ namespace Pulse.Elements
                     return CellAffinity.TEXT;
 
                 default:
-                    throw new Exception("Text is not a valid affinity: " + Text);
+                    throw new Exception("BString is not a valid affinity: " + Text);
 
             }
 

@@ -18,6 +18,13 @@ using Pulse.Expressions;
 namespace Pulse.Scripting
 {
 
+    public sealed class ObjectFactory
+    {
+
+
+
+    }
+
     public class ActionExpressionVisitor : PulseParserBaseVisitor<ActionExpression>
     {
 
@@ -25,178 +32,94 @@ namespace Pulse.Scripting
         private Heap<RecordWriter> _OpenRecordStreams;
         private Heap<System.IO.StreamWriter> _OpenTextStreams;
 
-        private ExpressionVisitor _Expr;
-        private ActionExpression _Master;
+        private ScalarExpressionVisitor _sFactory;
+        private MatrixExpressionVisitor _mFactory;
+        private RecordExpressionVisitor _rFactory;
+        private TableExpressionVisitor _tFactory;
+        private ActionExpression _Master; 
 
         public ActionExpressionVisitor(Host Host)
             : base()
         {
             this._Host = Host;
-            this._Expr = new ExpressionVisitor(this._Host);
             this._OpenRecordStreams = new Heap<RecordWriter>();
             this._OpenTextStreams = new Heap<System.IO.StreamWriter>();
+            this._sFactory = new ScalarExpressionVisitor(this._Host);
+            this._mFactory = new MatrixExpressionVisitor(this._Host, this._sFactory);
+            this._rFactory = new RecordExpressionVisitor(this._Host, this._sFactory);
+            this._tFactory = new TableExpressionVisitor(this._Host, this._sFactory);
         }
 
         // Properties //
-        /// <summary>
-        /// Gets or sets the base scalar visitor
-        /// </summary>
-        //public ScalarExpressionVisitor BaseScalarExpressionVisitor
-        //{
-        //    get { return this._ScalarBuilder; }
-        //    set { this._ScalarBuilder = value; }
-        //}
+        public Host Host
+        {
+            get { return this._Host; }
+        }
 
-        /// <summary>
-        /// Gets or sets the base matrix visitor
-        /// </summary>
-        //public MatrixExpressionVisitor BaseMatrixExpressionVisitor
-        //{
-        //    get { return this._MatrixBuilder; }
-        //    set { this._MatrixBuilder = value; }
-        //}
+        public Heap<RecordWriter> OpenRecordStreams
+        {
+            get { return this._OpenRecordStreams; }
+        }
 
-        /// <summary>
-        /// Base table visitor
-        /// </summary>
-        //public TableExpressionVisitor BaseTableExpressionVisitor
-        //{
-        //    get { return this._TableBuilder; }
-        //    set { this._TableBuilder = value; }
-        //}
+        public Heap<System.IO.StreamWriter> OpenTextWriters
+        {
+            get { return this._OpenTextStreams; }
+        }
 
-        // Visitor //
-
-        // Declares //
-        
         public override ActionExpression VisitDeclareScalar(PulseParser.DeclareScalarContext context)
         {
-
-            string Lib = ScriptingHelper.GetLibName(context.var_name());
-            string Name = ScriptingHelper.GetVarName(context.var_name());
-            CellAffinity t = ScriptingHelper.GetTypeAffinity(context.type());
-            int Size = ScriptingHelper.GetTypeSize(context.type());
-
-            IExpression ie = (context.expr() == null ? ScalarExpression.Value(t) : this._Expr.Render(context.expr()));
-            if (ie.SuperAffinity != SuperExpressionAffinity.Scalar)
-                throw new Exception("Expecting a scalar");
-
-            return new ActionExpressionDeclareScalar(this._Host, this._Master, this._Host.Store, Name, ie.Scalar);
-
+            string Lib = ScriptingHelper.GetLibName(context.scalar_name());
+            string Name = ScriptingHelper.GetVarName(context.scalar_name());
+            ScalarExpression s = this._sFactory.Render(context.scalar_expression());
+            return new ActionExpressionDeclareScalar(this._Host, this._Master, this._sFactory.Map[Lib], Name, s);
         }
 
         public override ActionExpression VisitDeclareMatrix(PulseParser.DeclareMatrixContext context)
         {
-
-            string Lib = ScriptingHelper.GetLibName(context.var_name());
-            string Name = ScriptingHelper.GetVarName(context.var_name());
-            IExpression ie = this._Expr.Render(context.expr());
-            if (ie.SuperAffinity != SuperExpressionAffinity.Matrix)
-                throw new Exception("Expecting a matrix");
-
-            return new ActionExpressionDeclareMatrix(this._Host, this._Master, this._Host.Store, Name, ie.Matrix);
+            string Lib = ScriptingHelper.GetLibName(context.matrix_name());
+            string Name = ScriptingHelper.GetVarName(context.matrix_name());
+            MatrixExpression m = this._mFactory.Render(context.matrix_expression());
+            return new ActionExpressionDeclareMatrix(this._Host, this._Master, this._sFactory.Map[Lib], Name, m);
         }
 
         public override ActionExpression VisitDeclareRecord(PulseParser.DeclareRecordContext context)
         {
-
-            string Lib = ScriptingHelper.GetLibName(context.var_name());
-            string Name = ScriptingHelper.GetVarName(context.var_name());
-            IExpression ie = this._Expr.Render(context.expr());
-            if (ie.SuperAffinity != SuperExpressionAffinity.Record)
-                throw new Exception("Expecting a record");
-
-            return new ActionExpressionDeclareRecord(this._Host, this._Master, this._Host.Store, Name, ie.Record);
-
+            string Lib = ScriptingHelper.GetLibName(context.record_name());
+            string Name = ScriptingHelper.GetVarName(context.record_name());
+            RecordExpression x = this._rFactory.Render(context.record_expression());
+            return new ActionExpressionDeclareRecord(this._Host, this._Master, this._sFactory.Map[Lib], Name, x);
         }
 
         public override ActionExpression VisitDeclareTable(PulseParser.DeclareTableContext context)
         {
-
-            string Lib = ScriptingHelper.GetLibName(context.var_name());
-            string Name = ScriptingHelper.GetVarName(context.var_name());
-
-            IExpression ie = this._Expr.Render(context.expr());
-            if (ie.SuperAffinity != SuperExpressionAffinity.Table)
-                throw new Exception("Expecting a table");
-
-            return new ActionExpressionDeclareTable(this._Host, this._Master, this._Host.Store, Name, ie.Table);
-
+            string Lib = ScriptingHelper.GetLibName(context.table_name());
+            if (Lib != FieldResolver.GLOBAL)
+                throw new Exception("Can only declare tables in the global context");
+            string Name = ScriptingHelper.GetVarName(context.table_name());
+            TableExpression x = this._tFactory.Render(context.table_expression());
+            return new ActionExpressionDeclareTable(this._Host, this._Master, this._Host.Store, Name, x);
         }
 
-        //public override ActionExpression VisitCTORTable(PulseParser.CTORTableContext context)
-        //{
-
-        //    string db = ScriptingHelper.GetLibName(context.table_name().var_name());
-        //    string name = ScriptingHelper.GetVarName(context.table_name().var_name());
-
-        //    Schema columns = new Schema();
-        //    for (int i = 0; i < context.type().Length; i++)
-        //    {
-        //        CellAffinity type = ScriptingHelper.GetTypeAffinity(context.type()[i]);
-        //        string field = context.IDENTIFIER()[i].GetText();
-        //        int len = ScriptingHelper.GetTypeSize(context.type()[i]);
-        //        columns.Add(field, type, len);
-        //    }
-
-        //    return new ActionExpressionTableCTOR(this._Host, this._Master, db, name, columns);
-
-        //}
-
-        // Assign //
         public override ActionExpression VisitActionScalarAssign(PulseParser.ActionScalarAssignContext context)
         {
 
             // Figure out what we're assigning //
-            string Lib = ScriptingHelper.GetLibName(context.var_name());
-            string Name = ScriptingHelper.GetVarName(context.var_name());
-            ObjectStore store = this._Host.Store;
+            string Lib = ScriptingHelper.GetLibName(context.scalar_name());
+            string Name = ScriptingHelper.GetVarName(context.scalar_name());
+            ObjectStore store = this._sFactory.Map[Lib];
             Assignment x = ScriptingHelper.GetAssignment(context.assignment());
 
             // Get the expression //
-            IExpression ie = this._Expr.Render(context.expr());
-
-            // Table += Table or Table += Record //
-            if (store.Exists(Name, ObjectStore.ObjectAffinity.Table))
-            {
-
-                string key = store.GetTable(Name);
-                RecordWriter rw = null;
-                if (this._OpenRecordStreams.Exists(key))
-                {
-                    rw = this._OpenRecordStreams[key];
-                }
-                else
-                {
-                    rw = this._Host.OpenTable(store.GetTable(Name)).OpenWriter();
-                    this._OpenRecordStreams.Allocate(key, rw);
-                }
-
-                // Check the expression //
-                if (ie.SuperAffinity == SuperExpressionAffinity.Table)
-                {
-                    return new ActionExpressionInsertSelect(this._Host, null, rw, ie.Table); 
-                }
-                else if (ie.SuperAffinity == SuperExpressionAffinity.Record)
-                {
-                    return new ActionExpressionInsert(this._Host, null, rw, ie.Record);
-                }
-
-                throw new Exception("Expecting either record or table expression");
-
-            }
-
-            if (ie.SuperAffinity != SuperExpressionAffinity.Scalar)
-                throw new Exception("Expecting scalar");
-            return new ActionExpressionScalarAssign(this._Host, this._Master, store, Name, ie.Scalar, x);
+            ScalarExpression s = this._sFactory.Render(context.scalar_expression());
+            return new ActionExpressionScalarAssign(this._Host, this._Master, store, Name, s, x);
 
         }
 
         public override ActionExpression VisitActionScalarIncrement(PulseParser.ActionScalarIncrementContext context)
         {
 
-            string Lib = ScriptingHelper.GetLibName(context.var_name());
-            string Name = ScriptingHelper.GetVarName(context.var_name());
+            string Lib = ScriptingHelper.GetLibName(context.scalar_name());
+            string Name = ScriptingHelper.GetVarName(context.scalar_name());
             ObjectStore store = this._Host.Store;
             Cell one = CellValues.One(store.Scalars[Name].Affinity);
             Assignment x = Assignment.PlusEquals;
@@ -209,11 +132,11 @@ namespace Pulse.Scripting
         public override ActionExpression VisitActionMatrixUnit1DAssign(PulseParser.ActionMatrixUnit1DAssignContext context)
         {
 
-            string Lib = ScriptingHelper.GetLibName(context.var_name());
-            string Name = ScriptingHelper.GetVarName(context.var_name());
-            ScalarExpression row = this._Expr.Render(context.expr()[0]).Scalar;
+            string Lib = ScriptingHelper.GetLibName(context.matrix_name());
+            string Name = ScriptingHelper.GetVarName(context.matrix_name());
+            ScalarExpression row = this._sFactory.Render(context.scalar_expression()[0]);
             ScalarExpression col = ScalarExpression.ZeroINT;
-            ScalarExpression val = this._Expr.Render(context.expr()[1]).Scalar;
+            ScalarExpression val = this._sFactory.Render(context.scalar_expression()[1]);
             
             Assignment asg = ScriptingHelper.GetAssignment(context.assignment());
 
@@ -224,9 +147,9 @@ namespace Pulse.Scripting
         public override ActionExpression VisitActionMatrixUnit1DIncrement(PulseParser.ActionMatrixUnit1DIncrementContext context)
         {
 
-            string Lib = ScriptingHelper.GetLibName(context.var_name());
-            string Name = ScriptingHelper.GetVarName(context.var_name());
-            ScalarExpression row = this._Expr.Render(context.expr()).Scalar;
+            string Lib = ScriptingHelper.GetLibName(context.matrix_name());
+            string Name = ScriptingHelper.GetVarName(context.matrix_name());
+            ScalarExpression row = this._sFactory.Render(context.scalar_expression());
             ScalarExpression col = ScalarExpression.ZeroINT;
             ScalarExpression val = new ScalarExpressionConstant(null, CellValues.One(this._Host.Store.GetMatrix(Name).Affinity));
 
@@ -239,11 +162,11 @@ namespace Pulse.Scripting
         public override ActionExpression VisitActionMatrixUnit2DAssign(PulseParser.ActionMatrixUnit2DAssignContext context)
         {
 
-            string Lib = ScriptingHelper.GetLibName(context.var_name());
-            string Name = ScriptingHelper.GetVarName(context.var_name());
-            ScalarExpression row = this._Expr.Render(context.expr()[0]).Scalar;
-            ScalarExpression col = this._Expr.Render(context.expr()[1]).Scalar;
-            ScalarExpression val = this._Expr.Render(context.expr()[2]).Scalar;
+            string Lib = ScriptingHelper.GetLibName(context.matrix_name());
+            string Name = ScriptingHelper.GetVarName(context.matrix_name());
+            ScalarExpression row = this._sFactory.Render(context.scalar_expression()[0]);
+            ScalarExpression col = this._sFactory.Render(context.scalar_expression()[1]);
+            ScalarExpression val = this._sFactory.Render(context.scalar_expression()[2]);
 
             Assignment asg = ScriptingHelper.GetAssignment(context.assignment());
 
@@ -255,10 +178,10 @@ namespace Pulse.Scripting
         public override ActionExpression VisitActionMatrixUnit2DIncrement(PulseParser.ActionMatrixUnit2DIncrementContext context)
         {
 
-            string Lib = ScriptingHelper.GetLibName(context.var_name());
-            string Name = ScriptingHelper.GetVarName(context.var_name());
-            ScalarExpression row = this._Expr.Render(context.expr()[0]).Scalar;
-            ScalarExpression col = this._Expr.Render(context.expr()[1]).Scalar;
+            string Lib = ScriptingHelper.GetLibName(context.matrix_name());
+            string Name = ScriptingHelper.GetVarName(context.matrix_name());
+            ScalarExpression row = this._sFactory.Render(context.scalar_expression()[0]);
+            ScalarExpression col = this._sFactory.Render(context.scalar_expression()[1]);
             ScalarExpression val = new ScalarExpressionConstant(null, CellValues.One(this._Host.Store.GetMatrix(Name).Affinity));
 
             Assignment asg = (context.increment().PLUS() == null ? Assignment.MinusEquals : Assignment.PlusEquals);
@@ -268,200 +191,50 @@ namespace Pulse.Scripting
 
         }
 
-        //public override ActionExpression VisitActionMatrixUnitAllAssign(PulseParser.ActionMatrixUnitAllAssignContext context)
-        //{
-
-        //    string Lib = ScriptingHelper.GetLibName(context.matrix_name().var_name());
-        //    string Name = ScriptingHelper.GetVarName(context.matrix_name().var_name());
-        //    ScalarExpression val = this._ScalarBuilder.Render(context.scalar_expression());
-        //    Heap<CellMatrix> mat = this._Host.Libraries[Lib].Matrixes;
-        //    int ptr = mat.GetPointer(Name);
-        //    Assignment asg = ScriptingHelper.GetAssignment(context.assignment());
-
-        //    return new ActionExpressionMatrixUnitAssignAll(this._Host, this._Master, mat, ptr, val, asg);
-
-        //}
-
-        //public override ActionExpression VisitActionMatrixUnitAllIncrement(PulseParser.ActionMatrixUnitAllIncrementContext context)
-        //{
-
-        //    string Lib = ScriptingHelper.GetLibName(context.matrix_name().var_name());
-        //    string Name = ScriptingHelper.GetVarName(context.matrix_name().var_name());
-        //    Heap<CellMatrix> mat = this._Host.Libraries[Lib].Matrixes;
-        //    int ptr = mat.GetPointer(Name);
-        //    ScalarExpression val = ScalarExpression.Value(CellValues.One(mat[ptr].Affinity));
-
-        //    if (context.increment().PLUS() != null)
-        //    {
-        //        return new ActionExpressionMatrixUnitAssignAll(this._Host, this._Master, mat, ptr, val, Assignment.PlusEquals);
-        //    }
-        //    else
-        //    {
-        //        return new ActionExpressionMatrixUnitAssignAll(this._Host, this._Master, mat, ptr, val, Assignment.MinusEquals);
-        //    }
-
-        //}
-
-        //public override ActionExpression VisitActionMatrixAssign(PulseParser.ActionMatrixAssignContext context)
-        //{
-        //    string Lib = ScriptingHelper.GetLibName(context.matrix_name().var_name());
-        //    string Name = ScriptingHelper.GetVarName(context.matrix_name().var_name());
-        //    MatrixExpression val = this._MatrixBuilder.Visit(context.matrix_expression());
-        //    Heap<CellMatrix> mat = this._Host.Libraries[Lib].Matrixes;
-        //    int ptr = mat.GetPointer(Name);
-        //    Assignment asg = ScriptingHelper.GetAssignment(context.assignment());
-
-        //    return new ActionExpressionMatrixAssign(this._Host, this._Master, mat, ptr, val, asg);
-        //}
-
-        //public override ActionExpression VisitActionTableAssign(PulseParser.ActionTableAssignContext context)
-        //{
-            
-        //    string Lib = ScriptingHelper.GetLibName(context.table_name().var_name());
-        //    if (Lib == Host.GLOBAL) Lib = Host.TEMP;
-        //    string Name = ScriptingHelper.GetVarName(context.table_name().var_name());
-        //    TableExpression t = this._TableBuilder.Visit(context.table_expression());
-        //    return new ActionExpressionTableAssign(this._Host, this._Master, Lib, Name, t);
-
-        //}
-
-        //public override ActionExpression VisitActionTableIncrement1(PulseParser.ActionTableIncrement1Context context)
-        //{
-
-        //    string Lib = ScriptingHelper.GetLibName(context.table_name().var_name());
-        //    if (Lib == Host.GLOBAL) Lib = Host.TEMP;
-        //    string Name = ScriptingHelper.GetVarName(context.table_name().var_name());
-        //    TableExpression t = this._TableBuilder.Visit(context.table_expression());
-
-        //    // Check for a writer //
-        //    string key = TableHeader.DeriveV1Path(this._Host.Connections[Lib], Name);
-        //    RecordWriter w = null;
-        //    if (this._OpenRecordStreams.Exists(key))
-        //    {
-        //        w = this._OpenRecordStreams[key];
-        //    }
-        //    else
-        //    {
-        //        w = this._Host.OpenTable(Lib, Name).OpenWriter();
-        //    }
-            
-
-        //    return new ActionExpressionInsertSelect(this._Host, this._Master, w, t);
-
-        //}
-
-        //public override ActionExpression VisitActionTableIncrement2(PulseParser.ActionTableIncrement2Context context)
-        //{
-
-        //    string Lib = ScriptingHelper.GetLibName(context.table_name().var_name());
-        //    if (Lib == Host.GLOBAL) Lib = Host.TEMP;
-        //    string Name = ScriptingHelper.GetVarName(context.table_name().var_name());
-        //    ScalarExpressionSet select = RecordExpressionVisitor.Render(this._ScalarBuilder, context.record_expression());
-
-        //    // Check for a writer //
-        //    string key = TableHeader.DeriveV1Path(this._Host.Connections[Lib], Name);
-        //    RecordWriter w = null;
-        //    if (this._OpenRecordStreams.Exists(key))
-        //    {
-        //        w = this._OpenRecordStreams[key];
-        //    }
-        //    else
-        //    {
-        //        w = this._Host.OpenTable(Lib, Name).OpenWriter();
-        //    }
-
-
-        //    return new ActionExpressionInsert(this._Host, this._Master, w, select);
-
-        //}
-
-        // Prints //
-        public override ActionExpression VisitActionPrint(PulseParser.ActionPrintContext context)
+        public override ActionExpression VisitActionPrintScalar(PulseParser.ActionPrintScalarContext context)
         {
-
-            IExpression element = this._Expr.Render(context.expr()[0]);
-            IExpression path = null;
-            if (context.expr().Length == 2)
-            {
-                path = this._Expr.Render(context.expr()[1]);
-                if (path.SuperAffinity != SuperExpressionAffinity.Scalar)
-                    throw new Exception("Expecting a scalar");
-            }
+            ScalarExpression element = this._sFactory.Render(context.scalar_expression()[0]);
+            ScalarExpression path = (context.scalar_expression().Length == 2) ? this._sFactory.Render(context.scalar_expression()[1]) : null;
             
-            if (element.SuperAffinity == SuperExpressionAffinity.Scalar)
-            {
-                if (path == null)
-                    return new ActionExpressionPrintConsole(this._Host, this._Master, element.Scalar);
-                else
-                    return new ActionExpressionPrintFile(this._Host, this._Master, element.Scalar, this._OpenTextStreams, path.Scalar);
-            }
-            else if (element.SuperAffinity == SuperExpressionAffinity.Matrix)
-            {
-                if (path == null)
-                    return new ActionExpressionPrintConsole(this._Host, this._Master, element.Matrix);
-                else
-                    return new ActionExpressionPrintFile(this._Host, this._Master, element.Matrix, this._OpenTextStreams, path.Scalar);
-            }
-            else if (element.SuperAffinity == SuperExpressionAffinity.Record)
-            {
-                if (path == null)
-                    return new ActionExpressionPrintConsole(this._Host, this._Master, element.Record);
-                else
-                    return new ActionExpressionPrintFile(this._Host, this._Master, element.Record, this._OpenTextStreams, path.Scalar);
-            }
-            else if (element.SuperAffinity == SuperExpressionAffinity.Table)
-            {
-                if (path == null)
-                    return new ActionExpressionPrintConsole(this._Host, this._Master, element.Table);
-                else
-                    return new ActionExpressionPrintFile(this._Host, this._Master, element.Table, this._OpenTextStreams, path.Scalar);
-            }
-
-            throw new Exception();
-
+            if (path == null)
+                return new ActionExpressionPrintConsole(this._Host, this._Master, element.Scalar);
+            else
+                return new ActionExpressionPrintFile(this._Host, this._Master, element.Scalar, this._OpenTextStreams, path.Scalar);
         }
 
-        //public override ActionExpression VisitActionPrintMatrix(PulseParser.ActionPrintMatrixContext context)
-        //{
+        public override ActionExpression VisitActionPrintMatrix(PulseParser.ActionPrintMatrixContext context)
+        {
+            MatrixExpression element = this._mFactory.Render(context.matrix_expression());
+            ScalarExpression path = (context.scalar_expression() != null) ? this._sFactory.Render(context.scalar_expression()) : null;
 
-        //    MatrixExpression t = this._MatrixBuilder.Visit(context.matrix_expression());
-        //    if (context.K_TO() != null)
-        //    {
-        //        ScalarExpression path = this._ScalarBuilder.Render(context.scalar_expression());
-        //        return new ActionExpressionPrintFile(this._Host, this._Master, t, this._OpenTextStreams, path);
-        //    }
-        //    return new ActionExpressionPrintConsole(this._Host, this._Master, t);
+            if (path == null)
+                return new ActionExpressionPrintConsole(this._Host, this._Master, element);
+            else
+                return new ActionExpressionPrintFile(this._Host, this._Master, element, this._OpenTextStreams, path.Scalar);
+        }
 
-        //}
+        public override ActionExpression VisitActionPrintRecord(PulseParser.ActionPrintRecordContext context)
+        {
+            RecordExpression element = this._rFactory.Render(context.record_expression());
+            ScalarExpression path = (context.scalar_expression() != null) ? this._sFactory.Render(context.scalar_expression()) : null;
 
-        //public override ActionExpression VisitActionPrintRecord(PulseParser.ActionPrintRecordContext context)
-        //{
+            if (path == null)
+                return new ActionExpressionPrintConsole(this._Host, this._Master, element);
+            else
+                return new ActionExpressionPrintFile(this._Host, this._Master, element, this._OpenTextStreams, path.Scalar);
+        }
 
-        //    ScalarExpressionSet t = RecordExpressionVisitor.Render(this._ScalarBuilder, context.record_expression());
-        //    if (context.K_TO() != null)
-        //    {
-        //        ScalarExpression path = this._ScalarBuilder.Render(context.scalar_expression());
-        //        return new ActionExpressionPrintFile(this._Host, this._Master, t, this._OpenTextStreams, path);
-        //    }
-        //    return new ActionExpressionPrintConsole(this._Host, this._Master, t);
+        public override ActionExpression VisitActionPrintTable(PulseParser.ActionPrintTableContext context)
+        {
+            TableExpression element = this._tFactory.Render(context.table_expression());
+            ScalarExpression path = (context.scalar_expression() != null) ? this._sFactory.Render(context.scalar_expression()) : null;
 
-        //}
+            if (path == null)
+                return new ActionExpressionPrintConsole(this._Host, this._Master, element);
+            else
+                return new ActionExpressionPrintFile(this._Host, this._Master, element, this._OpenTextStreams, path.Scalar);
+        }
 
-        //public override ActionExpression VisitActionPrintTable(PulseParser.ActionPrintTableContext context)
-        //{
-
-        //    TableExpression t = this._TableBuilder.Visit(context.table_expression());
-        //    if (context.K_TO() != null)
-        //    {
-        //        ScalarExpression path = this._ScalarBuilder.Render(context.scalar_expression());
-        //        return new ActionExpressionPrintFile(this._Host, this._Master, t, this._OpenTextStreams, path);
-        //    }
-        //    return new ActionExpressionPrintConsole(this._Host, this._Master, t);
-
-        //}
-
-
-        // Chained -- do, for, while, if //
         public override ActionExpression VisitActionSet(PulseParser.ActionSetContext context)
         {
             ActionExpressionDo a = new ActionExpressionDo(this._Host, this._Master);
@@ -496,30 +269,30 @@ namespace Pulse.Scripting
         {
             
             // Get the control var name //
-            string Lib = ScriptingHelper.GetLibName(context.var_name());
-            string Name = ScriptingHelper.GetVarName(context.var_name());
+            string Lib = ScriptingHelper.GetLibName(context.scalar_name());
+            string Name = ScriptingHelper.GetVarName(context.scalar_name());
 
             // If the library doesnt exist, then error out
-            if (!this._Expr.Map.StoreExists(Lib))
+            if (!this._sFactory.Map.StoreExists(Lib))
                 throw new Exception(string.Format("Library '{0}' does not exist", Lib));
 
-            // If the library exists, but the varible doesn't, add the variable //
-            if (!this._Expr.Map[Lib].Exists(Name, ObjectStore.ObjectAffinity.Scalar))
+            // If the store exists, but the varible doesn't, add the variable //
+            if (!this._sFactory.Map[Lib].Exists(Name, ObjectStore.ObjectAffinity.Scalar))
             {
                 CellAffinity q = ScriptingHelper.GetTypeAffinity(context.type());
-                this._Expr.Map[Lib].DeclareScalar(Name, CellValues.Zero(q));
+                this._sFactory.Map[Lib].DeclareScalar(Name, CellValues.Zero(q));
             }
 
             // Parse out the control expressions //
-            ScalarExpression start = this._Expr.Render(context.expr()[0]).Scalar;
+            ScalarExpression start = this._sFactory.Render(context.scalar_expression()[0]).Scalar;
             if (start == null) 
                 throw new Exception("Starting expression must be a scalar");
-            ScalarExpression control = this._Expr.Render(context.expr()[1]).Scalar;
+            ScalarExpression control = this._sFactory.Render(context.scalar_expression()[1]).Scalar;
             if (control == null) 
                 throw new Exception("Control expression must be a scalar");
             ActionExpression increment = this.Visit(context.action_expression()[0]);
 
-            ActionExpressionFor a = new ActionExpressionFor(this._Host, this._Master, this._Expr.Map[Lib], Name, start, control, increment);
+            ActionExpressionFor a = new ActionExpressionFor(this._Host, this._Master, this._sFactory.Map[Lib], Name, start, control, increment);
 
             if (context.action_expression().Length == 1)
                 throw new Exception("For loops must contain at least one statement");
@@ -539,7 +312,7 @@ namespace Pulse.Scripting
         public override ActionExpression VisitActionWhile(PulseParser.ActionWhileContext context)
         {
 
-            ScalarExpression predicate = this._Expr.Render(context.expr()).Scalar;
+            ScalarExpression predicate = this._sFactory.Render(context.scalar_expression());
             ActionExpressionWhile act = new ActionExpressionWhile(this._Host, this._Master, predicate);
 
             // Load the children //
@@ -559,9 +332,9 @@ namespace Pulse.Scripting
         {
 
             ScalarExpressionSet sec = new ScalarExpressionSet();
-            foreach (PulseParser.ExprContext ctx in context.expr())
+            foreach (PulseParser.Scalar_expressionContext ctx in context.scalar_expression())
             {
-                ScalarExpression se = this._Expr.Render(ctx).Scalar;
+                ScalarExpression se = this._sFactory.Render(ctx);
                 if (se == null) throw new Exception("Expecting a scalar expression");
                 sec.Add("X" + sec.Count.ToString(), se);
             }
@@ -586,12 +359,11 @@ namespace Pulse.Scripting
 
 
             // Get the source table //
-            TableExpression t = this._Expr.Render(context.expr()).Table;
-            if (t == null) throw new Exception("Expecting a table");
-            string alias = context.IDENTIFIER().GetText();
+            TableExpression t = this._tFactory.Render(context.table_expression());
+            string alias = context.record_name().IDENTIFIER().GetText();
 
             // Add the table to the map //
-            this._Expr.Map.Local.DeclareRecord(alias, new AssociativeRecord(t.Columns));
+            this._sFactory.Map.Local.DeclareRecord(alias, new AssociativeRecord(t.Columns));
 
             // Now we can actually render the query! //
             ActionExpressionForEach aeq = new ActionExpressionForEach(this._Host, this._Master, t, alias);
@@ -604,7 +376,7 @@ namespace Pulse.Scripting
             this._Master = aeq;
 
             // Step out of the context //
-            this._Expr.Map.Local.RemoveRecord(alias);
+            this._sFactory.Map.Local.RemoveRecord(alias);
 
             return aeq;
 
@@ -815,9 +587,9 @@ namespace Pulse.Scripting
 
         //    Names = context.Select((x) => { return x.lib_name().GetText(); }).ToArray();
 
-        //    PulseParser.ParameterContext[] c = context.Select((x) => { return x.parameter(); }).ToArray();
+        //    PulseParser.ParameterContext[] b = context.Select((x) => { return x.parameter(); }).ToArray();
 
-        //    Parameters = this.Render(c);
+        //    Parameters = this.Render(b);
 
         //}
 

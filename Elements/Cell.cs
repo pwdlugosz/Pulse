@@ -793,7 +793,7 @@ namespace Pulse.Elements
                         return this.BOOL ? TRUE_STRING : FALSE_STRING;
 
                     case CellAffinity.DATE:
-                        return CellFormater.ToLongDate(this.DATE);
+                        return CellFormater.ToShortDate(this.DATE);
 
                     case CellAffinity.TEXT:
                     case CellAffinity.STRING:

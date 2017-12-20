@@ -10,6 +10,7 @@ using HtmlAgilityPack;
 using ScrapySharp;
 using SimpleBrowser;
 using Pulse.Tables;
+using Pulse.Alpha;
 
 namespace Pulse
 {
@@ -34,16 +35,25 @@ namespace Pulse
             sp.RenderAction(script);
             Enviro.ShutDown();
 
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < 255; i++)
-            {
-                sb.AppendLine(string.Format("{0} : {1}", i, (char)(i)));
-            }
-            System.IO.File.WriteAllText(@"C:\Users\pwdlu_000\Desktop\ILSpy\bytes.txt", sb.ToString());
-
+            
             Console.WriteLine("::::::::::::::::::::::::::::::::: Complete :::::::::::::::::::::::::::::::::");
             Console.WriteLine("Run Time: {0}", sw.Elapsed);
             string t = Console.ReadLine();
+
+
+        }
+
+        public static void TestUTF8()
+        {
+
+            BString a = "Hello World! Hello again?? Hello one last time...";
+            a = a.Replace("Hello", "Hey").ToUpper();
+            Console.WriteLine(a);
+
+            BString b = "    Hello World!!!    ";
+            Console.WriteLine(b.Length);
+            Console.WriteLine(b.Trim().Length);
+            Console.WriteLine(b.Remove("!"));
 
 
         }

@@ -24,7 +24,7 @@ namespace Pulse.Expressions.TableExpressions
         protected ScalarExpressionSet _Select;
         protected Filter _Where;
         protected int _RecordRef;
-        public const string SECOND_ALIAS_PREFIX = "$";
+        public const string SECOND_ALIAS_PREFIX = "&";
 
         /// <summary>
         /// 
@@ -161,8 +161,8 @@ namespace Pulse.Expressions.TableExpressions
         public override void CleanUpResolver(FieldResolver Variants)
         {
             // Fix the resolver //
-            if (Variants.Local.ExistsRecord(this.Alias)) Variants.Local.RemoveRecord(this.Alias);
-            if (Variants.Local.ExistsRecord(this.SecondaryAlias)) Variants.Local.RemoveRecord(this.SecondaryAlias);
+            //if (Variants.Local.ExistsRecord(this.Alias)) Variants.Local.RemoveRecord(this.Alias);
+            //if (Variants.Local.ExistsRecord(this.SecondaryAlias)) Variants.Local.RemoveRecord(this.SecondaryAlias);
         }
 
         /// <summary>

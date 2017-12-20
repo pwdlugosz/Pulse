@@ -15,40 +15,44 @@ namespace Pulse.Expressions.ScalarExpressions
     public sealed class ScalarExpressionStoreRef : ScalarExpression
     {
 
-        private string _VarName;
-        private ObjectStore _Store;
+        private string _StoreName;
+        private string _FieldName;
+        private CellAffinity _Affinity;
+        private int _Size;
 
-        public ScalarExpressionStoreRef(ScalarExpression Parent, string VarName, ObjectStore Store)
+        public ScalarExpressionStoreRef(ScalarExpression Parent, string StoreName, string FieldName, CellAffinity Affinity, int Size)
             : base(Parent, ScalarExpressionAffinity.Heap)
         {
-            this._VarName = VarName;
-            this._Store = Store;
+            this._StoreName = StoreName;
+            this._FieldName = FieldName;
+            this._Affinity = Affinity;
+            this._Size = Size;
         }
 
         // Overrides //
         public override string Unparse(FieldResolver Variants)
         {
-            return this._VarName;
+            return this._FieldName;
         }
 
         public override ScalarExpression CloneOfMe()
         {
-            return new ScalarExpressionStoreRef(this.ParentNode, this._name, this._Store);
+            return new ScalarExpressionStoreRef(this.ParentNode, this._StoreName, this._FieldName, this._Affinity, this._Size);
         }
 
         public override int ExpressionSize()
         {
-            return this._Store.Scalars[this._VarName].Length;
+            return this._Size;
         }
 
         public override CellAffinity ExpressionReturnAffinity()
         {
-            return this._Store.Scalars[this._VarName].Affinity;
+            return this._Affinity;
         }
 
         public override Cell Evaluate(FieldResolver Variants)
         {
-            return this._Store.Scalars[this._VarName];
+            return Variants[this._StoreName].GetScalar(this._FieldName);
         }
 
     }

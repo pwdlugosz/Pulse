@@ -21,10 +21,12 @@ namespace Pulse.Expressions.RecordExpressions
     {
 
         private Heap<ScalarExpression> _Expressions;
+        private Schema _Columns;
 
         public ScalarExpressionSet()
         {
             this._Expressions = new Heap<ScalarExpression>();
+            this._Columns = new Schema();
         }
 
         public ScalarExpressionSet(Schema Columns, string Alias)
@@ -99,17 +101,7 @@ namespace Pulse.Expressions.RecordExpressions
 
         public Schema Columns
         {
-            get
-            {
-
-                Schema s = new Schema();
-                for (int i = 0; i < this._Expressions.Count; i++)
-                {
-                    s.Add(this._Expressions.Name(i), this._Expressions[i].ExpressionReturnAffinity(), this._Expressions[i].ExpressionSize());
-                }
-                return s;
-
-            }
+            get { return this._Columns; }
         }
 
         public bool Exists(string Name)
@@ -126,6 +118,7 @@ namespace Pulse.Expressions.RecordExpressions
         {
             Element.Name = Alias;
             this._Expressions.Allocate(Alias, Element);
+            this._Columns.Add(Alias, Element.ExpressionReturnAffinity(), Element.ExpressionSize());
         }
 
         public void Add(ScalarExpressionSet Elements)
@@ -242,29 +235,31 @@ namespace Pulse.Expressions.RecordExpressions
     public sealed class RecordExpressionStoreRef : RecordExpression
     {
 
-        private string _Name;
-        private ObjectStore _Store;
+        private string _StoreName;
+        private string _ValueName;
+        private Schema _Columns;
 
-        public RecordExpressionStoreRef(Host Host, RecordExpression Parent, string Name, ObjectStore Store)
+        public RecordExpressionStoreRef(Host Host, RecordExpression Parent, string StoreName, string ValueName, Schema Columns)
             : base(Host, Parent)
         {
-            this._Name = Name;
-            this._Store = Store;
+            this._StoreName = StoreName;
+            this._ValueName = ValueName;
+            this._Columns = Columns;
         }
 
         public override Schema Columns
         {
-            get { return this._Store.Records[this._Name].Columns; }
+            get { return this._Columns; }
         }
 
         public override AssociativeRecord EvaluateAssociative(FieldResolver Variants)
         {
-            return this._Store.Records[this._Name];
+            return Variants[this._StoreName].GetRecord(this._ValueName);
         }
 
         public override RecordExpression CloneOfMe()
         {
-            return new RecordExpressionStoreRef(this._Host, this._Parent, this._Name, this._Store);
+            return new RecordExpressionStoreRef(this._Host, this._Parent, this._StoreName, this._ValueName, this._Columns);
         }
 
     }
