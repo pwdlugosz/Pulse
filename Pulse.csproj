@@ -85,6 +85,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Alpha\BString.cs" />
+    <Compile Include="Alpha\Cards.cs" />
     <Compile Include="Elements\ObjectStore.cs" />
     <Compile Include="Expressions\ActionExpressions\ActionExpression.cs" />
     <Compile Include="Expressions\ActionExpressions\ActionExpressionCTOR.cs" />
@@ -131,7 +132,6 @@
     <Compile Include="Elements\CellSerializer.cs" />
     <Compile Include="Elements\CellValues.cs" />
     <Compile Include="Expressions\ExpressionFunction.cs" />
-    <Compile Include="Expressions\ExpressionResolver.cs" />
     <Compile Include="Expressions\IExpressioncs.cs" />
     <Compile Include="Expressions\MatrixExpressions\MatrixExpressionUni.cs" />
     <Compile Include="Expressions\MatrixExpressions\ScalarExpressionStoreRef.cs" />
@@ -140,6 +140,7 @@
     <Compile Include="Expressions\ScalarExpressions\ScalarExpressionRecordRef.cs" />
     <Compile Include="Expressions\ScalarExpressions\ScalarExpressionStoreRef.cs" />
     <Compile Include="Scripting\Visitors\ExpressionVisitor.cs" />
+    <Compile Include="Scripting\Visitors\ObjectFactory.cs" />
     <Compile Include="Scripting\Visitors\RecordExpressionVisitor.cs" />
     <Compile Include="Tables\ClusterState.cs" />
     <Compile Include="Tables\DerivedIndex.cs" />

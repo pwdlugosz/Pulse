@@ -11,48 +11,79 @@ using Pulse.Expressions.RecordExpressions;
 namespace Pulse.Expressions
 {
 
+    public enum ParameterAffinity : byte
+    {
+        Missing,
+        Scalar,
+        Matrix,
+        Record,
+        Table
+    }
 
     public sealed class Parameter
     {
 
-        public enum ParameterAffinity
+        private ParameterAffinity _Affinity;
+        private ScalarExpression _s;
+        private MatrixExpression _m;
+        private RecordExpression _r;
+        private TableExpression _t;
+
+        public Parameter()
         {
-            Scalar,
-            Record,
-            Matrix,
-            Table
+            this._Affinity = ParameterAffinity.Missing;
         }
 
-        public Parameter(ScalarExpression Scalar)
+        public Parameter(ScalarExpression Value)
         {
-            this.Scalar = Scalar;
+            this._s = Value;
+            this._Affinity = ParameterAffinity.Scalar;
+        }
+
+        public Parameter(MatrixExpression Value)
+        {
+            this._m = Value;
+            this._Affinity = ParameterAffinity.Matrix;
+        }
+
+        public Parameter(RecordExpression Value)
+        {
+            this._r = Value;
+            this._Affinity = ParameterAffinity.Record;
+        }
+
+        public Parameter(TableExpression Value)
+        {
+            this._t = Value;
+            this._Affinity = ParameterAffinity.Table;
+        }
+
+        public ParameterAffinity Affinity
+        {
+            get { return this._Affinity; }
         }
 
         public ScalarExpression Scalar
         {
-            get;
-            private set;
-        }
-
-        public ScalarExpressionSet Record
-        {
-            get;
-            private set;
+            get { return this._s; }
         }
 
         public MatrixExpression Matrix
         {
-            get;
-            private set;
+            get { return this._m; }
+        }
+
+        public RecordExpression Record
+        {
+            get { return this._r; }
         }
 
         public TableExpression Table
         {
-            get;
-            private set;
+            get { return this._t; }
         }
-    
-    }
 
+
+    }
 
 }

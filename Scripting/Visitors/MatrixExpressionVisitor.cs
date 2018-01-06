@@ -208,6 +208,33 @@ namespace Pulse.Scripting
 
         }
 
+        public override MatrixExpression VisitMatrixExpressionFunction(PulseParser.MatrixExpressionFunctionContext context)
+        {
+
+            string LibName = ScriptingHelper.GetLibName(context.matrix_name());
+            string FuncName = ScriptingHelper.GetVarName(context.matrix_name());
+
+            if (!this._Host.Libraries.Exists(LibName))
+                throw new Exception(string.Format("Library does not exist '{0}'", LibName));
+
+            if (!this._Host.Libraries[LibName].ScalarFunctionExists(FuncName))
+                throw new Exception(string.Format("Function '{0}' does not exist in '{1}'", FuncName, LibName));
+
+            ObjectFactory of = new ObjectFactory(this._Host, this._sFactory);
+
+            MatrixExpressionFunction f = this._Host.Libraries[LibName].MatrixFunctionLookup(FuncName);
+            foreach (PulseParser.ParamContext ctx in context.param())
+            {
+                Parameter p = of.Render(ctx);
+                f.AddParameter(p);
+            }
+
+            this._Master = f;
+
+            return f;
+
+        }
+
         public override MatrixExpression VisitMatrixParen(PulseParser.MatrixParenContext context)
         {
             return this.Visit(context.matrix_expression());

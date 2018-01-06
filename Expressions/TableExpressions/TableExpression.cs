@@ -21,7 +21,7 @@ namespace Pulse.Expressions.TableExpressions
     /// <summary>
     /// Represents the base class for all table expressions
     /// </summary>
-    public abstract class TableExpression : IBindable, IDisposable, IColumns, IRecyclable, IExpression
+    public abstract class TableExpression : IBindable, IDisposable, IColumns, IRecyclable
     {
 
         protected List<TableExpression> _Children;
@@ -43,7 +43,7 @@ namespace Pulse.Expressions.TableExpressions
             this._OrderBy = new Key();
             this.IsClustered = false;
             this.IsDistinct = false;
-            this._DB = this._Host.TempDB;
+            this._DB = Host.TEMP;
             this._Name = Host.RandomName;
         }
 
@@ -500,16 +500,6 @@ namespace Pulse.Expressions.TableExpressions
             this.RecycleAll();
         }
 
-        public SuperExpressionAffinity SuperAffinity { get { return SuperExpressionAffinity.Table; } }
-
-        public ScalarExpression Scalar { get { return null; } }
-
-        public MatrixExpression Matrix { get { return null; } }
-
-        public RecordExpression Record { get { return null; } }
-
-        public TableExpression Table { get { return this; } }
-
         // Internal Classes //
         /// <summary>
         /// Represents a way to enumerate over all the child tables
@@ -569,6 +559,54 @@ namespace Pulse.Expressions.TableExpressions
             }
 
         }
+
+    }
+
+    public abstract class TableExpressionFunction : TableExpression
+    {
+
+        private string _Name;
+        private int _ParamCount = -1;
+        private List<Parameter> _Parameters;
+
+        public TableExpressionFunction(Host Host, TableExpression Parent, string Name, int Parameters)
+            : base(Host, Parent)
+        {
+            this._Name = Name;
+            this._ParamCount = Parameters;
+            this._Parameters = new List<Parameter>();
+        }
+
+        public virtual bool IsVolatile
+        {
+            get { return true; }
+        }
+
+        public int ParameterCount
+        {
+            get { return this._ParamCount; }
+        }
+
+        public void AddParameter(Parameter Value)
+        {
+            this._Parameters.Add(Value);
+        }
+
+        public void CheckParameters()
+        {
+            
+            if (this._ParamCount < 0 && this._Parameters.Count > (-this._ParamCount))
+            {
+                throw new Exception(string.Format("Function '{0}' can have at most '{1}' parameter(s) but was passed '{2}'", this._Name, -this._ParamCount, this._Parameters.Count));
+            }
+            else if (this._Parameters.Count != this._ParamCount)
+            {
+                throw new Exception(string.Format("Function '{0}' can have exactly '{1}' parameter(s) but was passed '{2}'", this._Name, -this._ParamCount, this._Parameters.Count));
+            }
+
+        }
+
+
 
     }
 

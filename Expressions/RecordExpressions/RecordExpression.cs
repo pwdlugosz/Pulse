@@ -22,28 +22,29 @@ namespace Pulse.Expressions.RecordExpressions
 
         private Heap<ScalarExpression> _Expressions;
         private Schema _Columns;
+        private Host _Host;
 
-        public ScalarExpressionSet()
+        public ScalarExpressionSet(Host Host)
         {
             this._Expressions = new Heap<ScalarExpression>();
             this._Columns = new Schema();
         }
 
-        public ScalarExpressionSet(Schema Columns, string Alias)
-            : this()
+        public ScalarExpressionSet(Host Host, Schema Columns, string Alias)
+            : this(Host)
         {
 
             for (int i = 0; i < Columns.Count; i++)
             {
 
-                ScalarExpressionFieldRef2 e = new ScalarExpressionFieldRef2(null, Alias, Columns.ColumnName(i), Columns.ColumnAffinity(i), Columns.ColumnSize(i));
+                ScalarExpressionFieldRef2 e = new ScalarExpressionFieldRef2(this._Host, null, Alias, Columns.ColumnName(i), Columns.ColumnAffinity(i), Columns.ColumnSize(i));
                 this.Add(Columns.ColumnName(i), e);
             }
 
         }
 
-        public ScalarExpressionSet(AssociativeRecord Record)
-            : this()
+        public ScalarExpressionSet(Host Host, AssociativeRecord Record)
+            : this(Host)
         {
 
             for (int i = 0; i < Record.Count; i++)
@@ -80,7 +81,7 @@ namespace Pulse.Expressions.RecordExpressions
                 CellAffinity c = CellAffinityHelper.LOWEST_AFFINITY;
                 foreach (ScalarExpression se in this._Expressions.Values)
                 {
-                    c = CellAffinityHelper.Highest(c, se.ExpressionReturnAffinity());
+                    c = CellAffinityHelper.Highest(c, se.ReturnAffinity());
                 }
                 return c;
             }
@@ -93,7 +94,7 @@ namespace Pulse.Expressions.RecordExpressions
                 int c = -1;
                 foreach (ScalarExpression se in this._Expressions.Values)
                 {
-                    c = Math.Max(c, se.ExpressionSize());
+                    c = Math.Max(c, se.ReturnSize());
                 }
                 return c;
             }
@@ -118,7 +119,7 @@ namespace Pulse.Expressions.RecordExpressions
         {
             Element.Name = Alias;
             this._Expressions.Allocate(Alias, Element);
-            this._Columns.Add(Alias, Element.ExpressionReturnAffinity(), Element.ExpressionSize());
+            this._Columns.Add(Alias, Element.ReturnAffinity(), Element.ReturnSize());
         }
 
         public void Add(ScalarExpressionSet Elements)
@@ -149,7 +150,7 @@ namespace Pulse.Expressions.RecordExpressions
         public static ScalarExpressionSet operator +(ScalarExpressionSet A, ScalarExpressionSet B)
         {
 
-            ScalarExpressionSet rex = new ScalarExpressionSet();
+            ScalarExpressionSet rex = new ScalarExpressionSet(A._Host);
 
             for (int i = 0; i < A.Count; i++)
                 rex.Add(A.Alias(i), A[i]);
@@ -187,11 +188,9 @@ namespace Pulse.Expressions.RecordExpressions
 
         protected Host _Host;
         protected RecordExpression _Parent;
-        protected List<RecordExpression> _Children;
-
+        
         public RecordExpression(Host Host, RecordExpression Parent)
         {
-            this._Children = new List<RecordExpression>();
             this._Host = Host;
             this._Parent = Parent;
         }
@@ -199,11 +198,6 @@ namespace Pulse.Expressions.RecordExpressions
         public RecordExpression Parent
         {
             get { return this._Parent; }
-        }
-
-        public List<RecordExpression> Children
-        {
-            get { return this._Children; }
         }
 
         public abstract Schema Columns
@@ -245,6 +239,11 @@ namespace Pulse.Expressions.RecordExpressions
             this._StoreName = StoreName;
             this._ValueName = ValueName;
             this._Columns = Columns;
+        }
+
+        public string RecordName
+        {
+            get { return this._ValueName; }
         }
 
         public override Schema Columns
@@ -304,7 +303,7 @@ namespace Pulse.Expressions.RecordExpressions
 
             foreach (KeyValuePair<string, ScalarExpression> kv in this._Scalars.Entries)
             {
-                columns.Add(kv.Key, kv.Value.ExpressionReturnAffinity(), kv.Value.ExpressionSize());
+                columns.Add(kv.Key, kv.Value.ReturnAffinity(), kv.Value.ReturnSize());
                 cells.Add(kv.Value.Evaluate(Variants));
             }
 
@@ -320,7 +319,7 @@ namespace Pulse.Expressions.RecordExpressions
                 Schema columns = new Schema();
                 foreach (KeyValuePair<string, ScalarExpression> kv in this._Scalars.Entries)
                 {
-                    columns.Add(kv.Key, kv.Value.ExpressionReturnAffinity(), kv.Value.ExpressionSize());
+                    columns.Add(kv.Key, kv.Value.ReturnAffinity(), kv.Value.ReturnSize());
                 }
                 return columns;
 
@@ -363,5 +362,56 @@ namespace Pulse.Expressions.RecordExpressions
 
     }
 
+    public abstract class RecordExpressionFunction : RecordExpression
+    {
+
+        private string _Name;
+        private int _ParamCount = -1;
+        private List<Parameter> _Parameters;
+        
+        public RecordExpressionFunction(Host Host, RecordExpression Parent, string Name, int Parameters)
+            : base(Host, Parent)
+        {
+            this._Name = Name;
+            this._ParamCount = Parameters;
+            this._Parameters = new List<Parameter>();
+        }
+
+        public string FunctionName
+        {
+            get { return this._Name; }
+        }
+
+        public virtual bool IsVolatile
+        {
+            get { return true; }
+        }
+
+        public int ParameterCount
+        {
+            get { return this._ParamCount; }
+        }
+
+        public void AddParameter(Parameter Value)
+        {
+            this._Parameters.Add(Value);
+        }
+
+        public void CheckParameters()
+        {
+            
+            if (this._ParamCount < 0 && this._Parameters.Count > (-this._ParamCount))
+            {
+                throw new Exception(string.Format("Function '{0}' can have at most '{1}' parameter(s) but was passed '{2}'", this._Name, -this._ParamCount, this._Parameters.Count));
+            }
+            else if (this._Parameters.Count != this._ParamCount)
+            {
+                throw new Exception(string.Format("Function '{0}' can have exactly '{1}' parameter(s) but was passed '{2}'", this._Name, -this._ParamCount, this._Parameters.Count));
+            }
+
+        }
+
+
+    }
 
 }

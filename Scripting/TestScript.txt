@@ -1,41 +1,41 @@
 ﻿
-X = 'HELLO WORLD!!!';
+/*
+NEW X = 'HELLO WORLD!!!';
 PRINT X;
 
-@R = @{ (INT)NULL : KEY, (DOUBLE)100 : VALUE};
+NEW @R = @{ (INT)NULL : KEY, (DOUBLE)100 : VALUE};
 PRINT @R.VALUE;
 
-$M = $ { 1d, 2d } + { 1d, 3d };
+NEW $M = $ { 1d, 2d } + { 1d, 3d };
 PRINT $M; 
+*/
 
 
-/*
-TABLE PRICE = { INT KEY, TEXT TICKER, DATE TRADE_DT, DOUBLE OPEN_AMT, DOUBLE CLOSE_AMT } : TEMP.PRICE;
-TABLE DIV = { INT KEY, TEXT TICKER, DATE TRADE_DT, DOUBLE DIV_AMT } : TEMP.DIV;
 
-DOUBLE VAL = 100D;
-DATE TDATE = '2014-01-01'T;
-LONG TICKS = 864000000000L;
+NEW A = 127;
+NEW B = 19;
+NEW C = 2 ^ 16 - 1;
+NEW Y = (INT)44;
+NEW V = 0D;
 
-FOR (INT I = 0; I < 252 * 10; I++)
+
+NEW TEMP.#T = { INT KEY, DOUBLE VALUE1, DATE VALUE2, TEXT.4 VALUE3, INT VALUE4 };
+FOR(I = 0; I < 10000; I++)
 {
-
-	VAL = VAL * 1.0005;
-	TDATE += TICKS;
-	PRICE += { I, 'AAPL', TDATE, VAL / 1.0005, VAL };
-
-	IF (I % 21 == 0)
-	{
-		DIV += { I, 'AAPL', TDATE, VAL * 0.005 };
-	};
-
+	Y = (Y * B + A) % C;
+	V = (DOUBLE)Y / (DOUBLE)C;
+	TEMP.#T += @{ I, V, DATE.NOW(), (TEXT.4)(I % 255), I % 16 };
 };
 
-TABLE X = PRICE { TICKER, TRADE_DT } : TEMP.TEST1;
+NEW TEMP.#U = 
+	# { 0 : JKEY, 'AA' : GKEY } + { 1 : JKEY, 'BB' : GKEY } + { 2 : JKEY, 'CC' : GKEY } + { 3 : JKEY, 'DD' : GKEY } 
+	+ { 4 : JKEY, 'EE' : GKEY } + { 5 : JKEY, 'FF' : GKEY } + { 6 : JKEY, 'GG' : GKEY } + { 7 : JKEY, 'HH' : GKEY } 
+	+ { 8 : JKEY, 'II' : GKEY } + { 9 : JKEY, 'JJ' : GKEY } + { 10 : JKEY, 'KK' : GKEY } + { 11 : JKEY, 'LL' : GKEY } 
+	+ { 12 : JKEY, 'MM' : GKEY } + { 13 : JKEY, 'NN' : GKEY } + { 14 : JKEY, 'OO' : GKEY } + { 15 : JKEY, 'PP' : GKEY } ;
 
+NEW TEMP.#V = TEMP.#T : T * TEMP.#U : U & T.VALUE4 == U.JKEY { T.KEY, T.VALUE1 : VALUE, U.GKEY : GROUPER};
 
-TABLE Y = (PRICE / { TICKER, YEAR(TRADE_DT) : YEAR } % { SUM(1) : CNT, MIN(TRADE_DT) : MIN_DT, MAX(TRADE_DT) : MAX_DT }) { YEAR, CNT };
+NEW TEMP.#W = TEMP.#V / { GROUPER } % { MIN(VALUE) : MIN_V, MAX(VALUE) : MAX_V, SUM(VALUE) : SUM_V, COUNT(VALUE) : COUNT_V, AVG(VALUE) : AVG_V, STDEVP(VALUE) : STDEVP_V };
 
+PRINT TEMP.#W;
 
-print y { YEAR, CNT };
-*/

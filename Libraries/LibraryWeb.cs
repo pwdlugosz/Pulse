@@ -17,124 +17,124 @@ namespace Pulse.Libraries
 {
 
 
-    public class LibraryWeb : Library
-    {
+    //public class LibraryWeb : Library
+    //{
 
-        public const string S_GETBYID = "GETBYID";
+    //    public const string S_GETBYID = "GETBYID";
 
-        public LibraryWeb(Host Enviro)
-            : base(Enviro, "WEB")
-        {
-        }
+    //    public LibraryWeb(Host Enviro)
+    //        : base(Enviro, "WEB")
+    //    {
+    //    }
 
 
-        public override ActionExpressionParameterized ActionLookup(string Name)
-        {
+    //    public override ActionExpressionParameterized ActionLookup(string Name)
+    //    {
 
-            string n = Name.Trim().ToUpper();
+    //        string n = Name.Trim().ToUpper();
 
-            switch (n)
-            {
+    //        switch (n)
+    //        {
 
-            }
+    //        }
 
-            return null;
+    //        return null;
 
-        }
+    //    }
 
-        public override bool ActionExists(string Name)
-        {
-            return this.ActionLookup(Name) != null;
-        }
+    //    public override bool ActionExists(string Name)
+    //    {
+    //        return this.ActionLookup(Name) != null;
+    //    }
 
-        public override ScalarExpressionFunction FunctionLookup(string Name)
-        {
+    //    public override ScalarExpressionFunction ScalarFunctionLookup(string Name)
+    //    {
 
-            string t = Name.ToUpper().Trim();
+    //        string t = Name.ToUpper().Trim();
 
-            switch (t)
-            {
-                case S_GETBYID:
-                    return new ScalarExpressionGetByID();
-            }
+    //        switch (t)
+    //        {
+    //            case S_GETBYID:
+    //                return new ScalarExpressionGetByID();
+    //        }
 
-            return null;
+    //        return null;
 
-        }
+    //    }
 
-        public override bool FunctionExists(string Name)
-        {
-            return this.FunctionLookup(Name) != null;
-        }
+    //    public override bool ScalarFunctionExists(string Name)
+    //    {
+    //        return this.ScalarFunctionLookup(Name) != null;
+    //    }
 
-        // Scalars //
-        public class ScalarExpressionGetByID : ScalarExpressionFunction
-        {
+    //    // Scalars //
+    //    public class ScalarExpressionGetByID : ScalarExpressionFunction
+    //    {
 
-            private string _CurrentHTML = null;
-            private HtmlDocument _Doc = null;
+    //        private string _CurrentHTML = null;
+    //        private HtmlDocument _Doc = null;
 
-            public ScalarExpressionGetByID()
-                : base(null, null, 3)
-            {
-            }
+    //        public ScalarExpressionGetByID()
+    //            : base(null, null, null, 3)
+    //        {
+    //        }
 
-            public override CellAffinity ExpressionReturnAffinity()
-            {
-                return CellAffinity.TEXT;
-            }
+    //        public override CellAffinity ReturnAffinity()
+    //        {
+    //            return CellAffinity.TEXT;
+    //        }
 
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ScalarExpressionGetByID();
-            }
+    //        public override ScalarExpression CloneOfMe()
+    //        {
+    //            return new ScalarExpressionGetByID();
+    //        }
 
-            public override Cell Evaluate(FieldResolver Variants)
-            {
+    //        public override Cell Evaluate(FieldResolver Variants)
+    //        {
                 
-                string raw_html = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
-                string xpath = this._ChildNodes[1].Evaluate(Variants).valueSTRING;
-                int occurance = (this._ChildNodes.Count >= 3 ? this._ChildNodes[2].Evaluate(Variants).valueINT : 1);
-                if (occurance < 1) occurance = 1;
+    //            string raw_html = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string xpath = this._ChildNodes[1].Evaluate(Variants).valueSTRING;
+    //            int occurance = (this._ChildNodes.Count >= 3 ? this._ChildNodes[2].Evaluate(Variants).valueINT : 1);
+    //            if (occurance < 1) occurance = 1;
 
-                // Load the html //
-                if ((this._CurrentHTML ?? "") != raw_html)
-                {
-                    this._Doc = new HtmlDocument();
-                    this._Doc.LoadHtml(raw_html);
-                    this._CurrentHTML = raw_html;
-                }
+    //            // Load the html //
+    //            if ((this._CurrentHTML ?? "") != raw_html)
+    //            {
+    //                this._Doc = new HtmlDocument();
+    //                this._Doc.LoadHtml(raw_html);
+    //                this._CurrentHTML = raw_html;
+    //            }
                 
-                // Find the one we want //
-                HtmlNode node = null;
-                if (occurance == 1)
-                {
-                    node = this._Doc.DocumentNode.QuerySelector(xpath);
-                }
-                else
-                {
-                    var v = this._Doc.DocumentNode.QuerySelectorAll(xpath).ToArray();
-                    if (occurance <= v.Length)
-                    {
-                        node = v[occurance - 1];
-                    }
+    //            // Find the one we want //
+    //            HtmlNode node = null;
+    //            if (occurance == 1)
+    //            {
+    //                node = this._Doc.DocumentNode.QuerySelector(xpath);
+    //            }
+    //            else
+    //            {
+    //                var v = this._Doc.DocumentNode.QuerySelectorAll(xpath).ToArray();
+    //                if (occurance <= v.Length)
+    //                {
+    //                    node = v[occurance - 1];
+    //                }
 
-                }
+    //            }
 
-                if (node == null)
-                    return CellValues.NullTEXT;
-                return new Cell(node.InnerText, true);
+    //            if (node == null)
+    //                return CellValues.NullTEXT;
+    //            return new Cell(node.InnerText, true);
 
-            }
-
-
-        }
+    //        }
 
 
+    //    }
 
 
 
-    }
+
+
+    //}
 
 
 }

@@ -645,6 +645,43 @@ namespace Pulse.Elements
 
         }
 
+        public static int CastSizeHelper(CellAffinity Old, CellAffinity New, int PriorSize)
+        {
+
+            if (Old == New) 
+                return PriorSize;
+
+            bool NewIsFixedLength = CellAffinityHelper.IsVariableLength(New);
+            bool OldIsFixedLength = CellAffinityHelper.IsVariableLength(Old);
+
+            if (NewIsFixedLength) return CellSerializer.DefaultLength(New);
+           
+            if (New == CellAffinity.BYTE)
+            {
+
+                if (Old == CellAffinity.STRING)
+                    return PriorSize * 2;
+                else if (Old == CellAffinity.TEXT)
+                    return PriorSize;
+                else
+                    return CellSerializer.DefaultLength(New);
+
+            }
+            else if (New == CellAffinity.STRING || New == CellAffinity.TEXT)
+            {
+
+                if (Old == CellAffinity.TEXT || Old == CellAffinity.STRING)
+                    return PriorSize;
+                else if (Old == CellAffinity.BLOB)
+                    return PriorSize / 2;
+                else
+                    return CellValues.Max(Old).ToString().Length;
+
+            }
+
+            throw new Exception("Invalid combination");
+
+        }
 
     }
 

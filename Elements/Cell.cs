@@ -980,7 +980,7 @@ namespace Pulse.Elements
         /// Adds two cells together for LONG and DOUBLE, concatentates strings, returns null otherwise
         /// </summary>
         /// <param name="C1">Left cell</param>
-        /// <param name="C2">Right cell</param>
+        /// <param name="C2">Value cell</param>
         /// <returns>Cell result</returns>
         public static Cell operator +(Cell C1, Cell C2)
         {
@@ -1164,7 +1164,7 @@ namespace Pulse.Elements
         /// Subtracts two cells together for LONG and DOUBLE, repalces instances of C2 in C1, for date times, return the tick count difference as an LONG
         /// </summary>
         /// <param name="C1">Left cell</param>
-        /// <param name="C2">Right cell</param>
+        /// <param name="C2">Value cell</param>
         /// <returns>Cell result</returns>
         public static Cell operator -(Cell C1, Cell C2)
         {
@@ -1345,7 +1345,7 @@ namespace Pulse.Elements
         /// otherwise, returns the cell passed otherwise
         /// </summary>
         /// <param name="C1">Left cell</param>
-        /// <param name="C2">Right cell</param>
+        /// <param name="C2">Value cell</param>
         /// <returns>Cell result</returns>
         public static Cell operator *(Cell C1, Cell C2)
         {
@@ -1464,7 +1464,7 @@ namespace Pulse.Elements
         /// Divides two cells together for LONG and DOUBLE, returns the cell passed otherwise as null
         /// </summary>
         /// <param name="C1">Left cell</param>
-        /// <param name="C2">Right cell</param>
+        /// <param name="C2">Value cell</param>
         /// <returns>Cell result</returns>
         public static Cell operator /(Cell C1, Cell C2)
         {
@@ -1637,7 +1637,7 @@ namespace Pulse.Elements
         /// Divides two cells together for LONG and DOUBLE, returns the cell passed otherwise as null; if C2 is 0, then it returns 0
         /// </summary>
         /// <param name="C1">Left cell</param>
-        /// <param name="C2">Right cell</param>
+        /// <param name="C2">Value cell</param>
         /// <returns>Cell result</returns>
         public static Cell CheckDivide(Cell C1, Cell C2)
         {
@@ -1817,7 +1817,7 @@ namespace Pulse.Elements
         /// Perform modulo between two cells together for LONG and DOUBLE, returns the cell passed otherwise
         /// </summary>
         /// <param name="C1">Left cell</param>
-        /// <param name="C2">Right cell</param>
+        /// <param name="C2">Value cell</param>
         /// <returns>Cell result</returns>
         public static Cell operator %(Cell C1, Cell C2)
         {
@@ -1990,7 +1990,7 @@ namespace Pulse.Elements
         /// Return the bitwise AND for all types
         /// </summary>
         /// <param name="C1">Left cell</param>
-        /// <param name="C2">Right cell</param>
+        /// <param name="C2">Value cell</param>
         /// <returns>Cell result</returns>
         public static Cell operator &(Cell C1, Cell C2)
         {
@@ -2083,7 +2083,7 @@ namespace Pulse.Elements
         /// Returns the bitwise OR for all types
         /// </summary>
         /// <param name="C1">Left cell</param>
-        /// <param name="C2">Right cell</param>
+        /// <param name="C2">Value cell</param>
         /// <returns>Cell result</returns>
         public static Cell operator |(Cell C1, Cell C2)
         {
@@ -2171,7 +2171,7 @@ namespace Pulse.Elements
         /// Returns the bitwise XOR for all types
         /// </summary>
         /// <param name="C1">Left cell</param>
-        /// <param name="C2">Right cell</param>
+        /// <param name="C2">Value cell</param>
         /// <returns>Cell result</returns>
         public static Cell operator ^(Cell C1, Cell C2)
         {
@@ -2261,7 +2261,7 @@ namespace Pulse.Elements
         /// Checks if two cells are equal
         /// </summary>
         /// <param name="C1">Left cell</param>
-        /// <param name="C2">Right cell</param>
+        /// <param name="C2">Value cell</param>
         /// <returns>A boolean</returns>
         public static bool operator ==(Cell C1, Cell C2)
         {
@@ -2282,7 +2282,7 @@ namespace Pulse.Elements
         /// Checks if two cells are not equal
         /// </summary>
         /// <param name="C1">Left cell</param>
-        /// <param name="C2">Right cell</param>
+        /// <param name="C2">Value cell</param>
         /// <returns>A boolean</returns>
         public static bool operator !=(Cell C1, Cell C2)
         {
@@ -2303,7 +2303,7 @@ namespace Pulse.Elements
         /// Checks if C1 is less than C2
         /// </summary>
         /// <param name="C1">Left cell</param>
-        /// <param name="C2">Right cell</param>
+        /// <param name="C2">Value cell</param>
         /// <returns>A boolean</returns>
         public static bool operator <(Cell C1, Cell C2)
         {
@@ -2314,7 +2314,7 @@ namespace Pulse.Elements
         /// Checks if C1 is less than or equal to C2
         /// </summary>
         /// <param name="C1">Left cell</param>
-        /// <param name="C2">Right cell</param>
+        /// <param name="C2">Value cell</param>
         /// <returns>A boolean</returns>
         public static bool operator <=(Cell C1, Cell C2)
         {
@@ -2325,7 +2325,7 @@ namespace Pulse.Elements
         /// Checks if C1 is greater than C2
         /// </summary>
         /// <param name="C1">Left cell</param>
-        /// <param name="C2">Right cell</param>
+        /// <param name="C2">Value cell</param>
         /// <returns>A boolean</returns>
         public static bool operator >(Cell C1, Cell C2)
         {
@@ -2336,7 +2336,7 @@ namespace Pulse.Elements
         /// Checks if C1 is greater than or equal to C2
         /// </summary>
         /// <param name="C1">Left cell</param>
-        /// <param name="C2">Right cell</param>
+        /// <param name="C2">Value cell</param>
         /// <returns>A boolean</returns>
         public static bool operator >=(Cell C1, Cell C2)
         {
@@ -2381,7 +2381,7 @@ namespace Pulse.Elements
         /// IComparer implementation that compares two cells
         /// </summary>
         /// <param name="C1">Left cell</param>
-        /// <param name="C2">Right cell</param>
+        /// <param name="C2">Value cell</param>
         /// <returns>An integer representing </returns>
         int IComparer<Cell>.Compare(Cell C1, Cell C2)
         {

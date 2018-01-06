@@ -33,7 +33,7 @@ namespace Pulse.Expressions.MatrixExpressions
         public override CellAffinity ReturnAffinity()
         {
             if (this._Association == 0)
-                return this._expression.ExpressionReturnAffinity();
+                return this._expression.ReturnAffinity();
             else
                 return this[0].ReturnAffinity();
         }
@@ -41,7 +41,7 @@ namespace Pulse.Expressions.MatrixExpressions
         public override int ReturnSize()
         {
             if (this._Association == 0)
-                return this._expression.ExpressionSize();
+                return this._expression.ReturnSize();
             else
                 return this[0].ReturnSize();
         }

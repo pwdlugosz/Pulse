@@ -47,6 +47,11 @@ namespace Pulse.Expressions.MatrixExpressions
             return new MatrixExpressionStoreRef(this.ParentNode, this._StoreName, this._MatrixName, this._Affinity, this._Size);
         }
 
+        public string MatrixName
+        {
+            get { return this._MatrixName; }
+        }
+
     }
 
 }

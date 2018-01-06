@@ -1060,10 +1060,10 @@ namespace Pulse.Scripting
 
     //        Library l = this._Host.Libraries[LibName];
 
-    //        if (!l.FunctionExists(VarName))
+    //        if (!l.ScalarFunctionExists(VarName))
     //            throw new Exception(string.Format("Function '{0}' does not exist in '{1}'", VarName, LibName));
 
-    //        ScalarExpressionFunction f = l.FunctionLookup(VarName);
+    //        ScalarExpressionFunction f = l.ScalarFunctionLookup(VarName);
     //        foreach (PulseParser.ExprContext ctx in context.expr())
     //        {
     //            ScalarExpression x = this.Visit(ctx).Scalar;
@@ -1180,7 +1180,7 @@ namespace Pulse.Scripting
     //            throw new Exception("Expression must be a scalar");
 
     //        ScalarExpression scex = ie.Scalar;
-    //        if (scex.ExpressionReturnAffinity() != CellAffinity.BOOL)
+    //        if (scex.ReturnAffinity() != CellAffinity.BOOL)
     //            throw new Exception("Expression must be a boolean");
 
     //        return new Filter(scex);

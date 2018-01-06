@@ -127,9 +127,9 @@ namespace Pulse.Expressions.TableExpressions
         public override void InitializeResolver(FieldResolver Variants)
         {
             if (!Variants.Local.ExistsRecord(this.LeftAlias))
-                Variants.Local.SetRecord(this.LeftAlias, new AssociativeRecord(this._Children[0].Columns));
+                Variants.Local.DeclareRecord(this.LeftAlias, new AssociativeRecord(this._Children[0].Columns));
             if (!Variants.Local.ExistsRecord(this.RightAlias))
-                Variants.Local.SetRecord(this.RightAlias, new AssociativeRecord(this._Children[1].Columns));
+                Variants.Local.DeclareRecord(this.RightAlias, new AssociativeRecord(this._Children[1].Columns));
         }
 
         /// <summary>
@@ -220,7 +220,7 @@ namespace Pulse.Expressions.TableExpressions
                     {
                         lstream.Advance();
                     }
-                    // Right is less than left, control right, but also output an anti join record
+                    // Value is less than left, control right, but also output an anti join record
                     else if (Compare > 0)
                     {
 
@@ -386,7 +386,7 @@ namespace Pulse.Expressions.TableExpressions
 
                             } // Inner Predicate check
 
-                        } // Right While
+                        } // Value While
 
                     } // Inner
 

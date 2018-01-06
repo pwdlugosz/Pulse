@@ -18,13 +18,14 @@ compileUnit
 // ----------------------------------------------- ACTIONS --------------------------------------------- //
 // ----------------------------------------------------------------------------------------------------- //
 action_expression
-	: scalar_name ASSIGN scalar_expression 													# DeclareScalar
-	| matrix_name ASSIGN matrix_expression 													# DeclareMatrix
-	| record_name ASSIGN record_expression													# DeclareRecord
-	| table_name ASSIGN table_expression													# DeclareTable
+	: K_NEW scalar_name ASSIGN scalar_expression 																# DeclareScalar
+	| K_NEW matrix_name ASSIGN matrix_expression 																# DeclareMatrix
+	| K_NEW record_name ASSIGN record_expression																# DeclareRecord
+	| K_NEW table_name ASSIGN LCURL type IDENTIFIER (COMMA type IDENTIFIER)* RCURL								# DeclareTable1
+	| K_NEW table_name ASSIGN table_expression																	# DeclareTable2
 	
-	| scalar_name assignment scalar_expression 												# ActionScalarAssign
-	| scalar_name increment 																# ActionScalarIncrement
+	| scalar_name assignment scalar_expression 																	# ActionScalarAssign
+	| scalar_name increment 																					# ActionScalarIncrement
 	| matrix_name LBRAC scalar_expression COMMA scalar_expression RBRAC assignment scalar_expression 			# ActionMatrixUnit2DAssign
 	| matrix_name LBRAC scalar_expression COMMA scalar_expression RBRAC increment 								# ActionMatrixUnit2DIncrement
 	| matrix_name LBRAC scalar_expression RBRAC assignment scalar_expression 									# ActionMatrixUnit1DAssign
@@ -34,6 +35,9 @@ action_expression
 	| K_PRINT matrix_expression (K_TO scalar_expression)? 														# ActionPrintMatrix
 	| K_PRINT record_expression (K_TO scalar_expression)? 														# ActionPrintRecord
 	| K_PRINT table_expression (K_TO scalar_expression)? 														# ActionPrintTable
+
+	| table_name PLUS ASSIGN record_expression																	# ActionTableInsertRecord
+	| table_name PLUS ASSIGN table_expression																	# ActionTableInsertTable
 	
 	//| var_name LPAREN (expr (COMMA expr)*)? RPAREN											# ActionCallSeq
 	//| var_name LPAREN (parameter_name (COMMA parameter_name)*)? RPAREN						# ActionCallNamed
@@ -65,13 +69,17 @@ increment : (PLUS PLUS | MINUS MINUS);
 // ----------------------------------------------------------------------------------------------------- //
 table_expression
 	: table_expression COLON IDENTIFIER (MUL | NOT | PIPE) table_expression COLON IDENTIFIER 
-		AMPER jframe LCURL nframe RCULR (where)? oframe? (COLON db_name)?										# TableExpressionJoin
-	| table_expression DIV LCURL nframe RCURL MOD LCURL aframe RCURL where? oframe? (COLON db_name)?			# TableExpressionFold1
-	| table_expression DIV LCURL nframe RCURL where? oframe? (COLON db_name)?									# TableExpressionFold2
-	| table_expression MOD LCURL aframe RCURL where? oframe? (COLON db_name)?									# TableExpressionFold3
-	| table_expression LCURL nframe RCURL where? oframe? (COLON db_name)?										# TableExpressionSelect
+		AMPER jframe LCURL nframe RCURL (where)? oframe?														# TableExpressionJoin
+	| table_expression DIV LCURL nframe RCURL MOD LCURL aframe RCURL where? oframe?								# TableExpressionFold1
+	| table_expression DIV LCURL nframe RCURL where? oframe?													# TableExpressionFold2
+	| table_expression MOD LCURL aframe RCURL where? oframe?													# TableExpressionFold3
+	| table_expression LCURL nframe RCURL where? oframe?														# TableExpressionSelect1
+	| table_expression where oframe?																			# TableExpressionSelect2
+	| table_expression oframe																					# TableExpressionSelect3
 	| table_expression (PLUS table_expression)+																	# TableExpressionUnion
-	| LCURL type IDENTIFIER (COMMA type IDENTIFIER)* RCURL (COLON db_name)?										# TableExpressionCTOR
+	| TABLE_TOK LCURL nframe RCURL (PLUS LCURL nframe RCURL)*													# TableExpressionLiteral
+	| table_name LPAREN ( param (COMMA param)*)? RPAREN															# TableExpressionFunction
+	//| LCURL type IDENTIFIER (COMMA type IDENTIFIER)* RCURL (COLON db_name)?										# TableExpressionCTOR
 	| table_name																								# TableExpressionLookup
 	| LPAREN table_expression RPAREN																			# TableExpressionParens
 	;
@@ -86,6 +94,7 @@ table_expression
 	| matrix_expression op=(MUL | DIV | DIV2 | MOD) matrix_expression						# MatrixMulDiv
 	| matrix_expression op=(PLUS | MINUS) matrix_expression									# MatrixAddSub
 	| matrix_name																			# MatrixLookup
+	| matrix_name LPAREN ( param (COMMA param)*)? RPAREN									# MatrixExpressionFunction
 	| MATRIX_TOK LCURL nframe RCURL (PLUS LCURL nframe RCURL)*								# MatrixLiteral
 	| type LBRAC scalar_expression (COMMA scalar_expression)? RBRAC							# MatrixCTOR
 	| LPAREN matrix_expression RPAREN														# MatrixParen
@@ -98,6 +107,7 @@ record_expression
 	: RECORD_TOK LCURL nframe RCURL												# RecordExpressionLiteral			// @ { , , , }
 	| record_name																# RecordExpressionLookup			// @r
 	| record_expression (MUL record_expression)+								# RecordExpressionUnion				// @r + @s + @t
+	| record_name LPAREN ( param (COMMA param)*)? RPAREN						# RecordExpressionFunction
 	| LPAREN record_expression RPAREN											# RecordExpressionParens			// (@r)
 	;
 
@@ -123,11 +133,6 @@ order : LITERAL_INT (K_ASC | K_DESC)?;
 // ----------------------------------------------- SCALARS --------------------------------------------- //
 // ----------------------------------------------------------------------------------------------------- //
 
-// Expressions + Alias //
-scalar_expression_alias 
-	: scalar_expression (K_AS IDENTIFIER)?
-	;
-
 // Expressions
 scalar_expression
 	: IDENTIFIER DOT type																				# Pointer			// X.STRING.5
@@ -142,7 +147,7 @@ scalar_expression
 	
 	| scalar_name																						# TableOrScalarMember	// X.Name
 	| record_name DOT IDENTIFIER																		# RecordMember			// @R.Name
-	| matrix_name LBRAC scalar_expression (COMMA scalar_expression)? RBRAC								# MatrixMember			// $M[]
+	| matrix_expression LBRAC scalar_expression (COMMA scalar_expression)? RBRAC						# MatrixMember			// $M[]
 
 	| LITERAL_STRING																					# LiteralString
 	| LITERAL_TEXT																						# LiteralText
@@ -161,10 +166,17 @@ scalar_expression
 	| scalar_expression NULL_OP scalar_expression														# IfNullOp
 	| scalar_expression IF_OP scalar_expression (COLON scalar_expression)?								# IfOp
 	| LPAREN type RPAREN scalar_expression																# Cast
-	| scalar_name LPAREN ( scalar_expression ( COMMA scalar_expression )* )? RPAREN						# Function
+	//| scalar_name LPAREN ( scalar_expression ( COMMA scalar_expression )* )? RPAREN						# Function
+	| scalar_name LPAREN ( param (COMMA param)*)? RPAREN												# ScalarExpressionFunction
 
 	| LPAREN scalar_expression RPAREN																	# Parens
 	;
+
+// ----------------------------------------------------------------------------------------------------- //
+// -------------------------------------------- Parameters -------------------------------------------- //
+// ----------------------------------------------------------------------------------------------------- //
+param : scalar_expression | matrix_expression | record_expression | table_expression;
+
 
 // ----------------------------------------------------------------------------------------------------- //
 // -------------------------------------------- Expressions -------------------------------------------- //

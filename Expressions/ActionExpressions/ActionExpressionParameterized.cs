@@ -8,47 +8,40 @@ using Pulse.Expressions.TableExpressions;
 using Pulse.Expressions.ScalarExpressions;
 using Pulse.Expressions.MatrixExpressions;
 using Pulse.Expressions.RecordExpressions;
+using Pulse.Expressions;
 
 namespace Pulse.Expressions.ActionExpressions
 {
-    
+
     public abstract class ActionExpressionParameterized : ActionExpression
     {
-
-        public enum ParameterType : byte
-        {
-            Table,
-            Matrix,
-            Record,
-            Scalar
-        }
 
         public sealed class ParameterPointer
         {
 
-            public ParameterPointer(string Name, ParameterType Affinity, bool IsRequired)
+            public ParameterPointer(string Name, ParameterAffinity Affinity, bool IsRequired)
             {
                 this.Name = Name;
                 this.Affinity = Affinity;
                 this.IsRequired = IsRequired;
             }
 
-            public string Name 
-            { 
-                get; 
-                private set; 
-            }
-
-            public ParameterType Affinity
+            public string Name
             {
                 get;
                 private set;
             }
 
-            public bool IsRequired 
-            { 
-                get; 
-                private set; 
+            public ParameterAffinity Affinity
+            {
+                get;
+                private set;
+            }
+
+            public bool IsRequired
+            {
+                get;
+                private set;
             }
 
             public override string ToString()
@@ -62,15 +55,15 @@ namespace Pulse.Expressions.ActionExpressions
                 if (vars.Length != 2 && vars.Length != 3)
                     throw new Exception(string.Format("String passed is invalid: '{0}'", Text));
                 string Name = vars[0];
-                ParameterType Affinity = ParameterType.Scalar;
+                ParameterAffinity Affinity = ParameterAffinity.Scalar;
                 if (vars[1] == "S")
-                    Affinity = ParameterType.Scalar;
+                    Affinity = ParameterAffinity.Scalar;
                 else if (vars[1] == "R")
-                    Affinity = ParameterType.Record;
+                    Affinity = ParameterAffinity.Record;
                 else if (vars[1] == "M")
-                    Affinity = ParameterType.Matrix;
+                    Affinity = ParameterAffinity.Matrix;
                 else if (vars[1] == "T")
-                    Affinity = ParameterType.Table;
+                    Affinity = ParameterAffinity.Table;
                 bool IsRequired = (vars.Length == 2 ? false : vars[2] == "R");
                 return new ParameterPointer(Name, Affinity, IsRequired);
 
@@ -89,99 +82,6 @@ namespace Pulse.Expressions.ActionExpressions
 
                 return map;
 
-            }
-
-        }
-
-        public sealed class Parameter
-        {
-
-            public Parameter(ParameterType Affinity)
-            {
-                if (Affinity == ParameterType.Scalar)
-                {
-                    this.Scalar = ScalarExpression.NullInt;
-                }
-                else if (Affinity == ParameterType.Record)
-                {
-                    this.Record = new ScalarExpressionSet();
-                }
-                else if (Affinity == ParameterType.Matrix)
-                {
-                    this.Matrix = MatrixExpression.Empty;
-                }
-                this.Affinity = Affinity;
-                this.IsNull = true;
-            }
-
-            public Parameter(TableExpression Value)
-            {
-                this.Table = Value;
-                this.Affinity = ParameterType.Table;
-                this.IsNull = false;
-            }
-
-            public Parameter(MatrixExpression Value)
-            {
-                this.Matrix = Value;
-                this.Affinity = ParameterType.Matrix;
-                this.IsNull = false;
-            }
-
-            public Parameter(ScalarExpressionSet Value)
-            {
-                this.Record = Value;
-                this.Affinity = ParameterType.Record;
-                this.IsNull = false;
-            }
-
-            public Parameter(ScalarExpression Value)
-            {
-                this.Scalar = Value;
-                this.Affinity = ParameterType.Scalar;
-                this.IsNull = false;
-            }
-
-            public bool IsNull
-            {
-                get;
-                private set;
-            }
-
-            public int HeapRef
-            {
-                get;
-                set;
-            } 
-
-            public ParameterType Affinity
-            {
-                get;
-                private set;
-            }
-
-            public TableExpression Table
-            {
-                get;
-                private set;
-            }
-
-            public MatrixExpression Matrix
-            {
-                get;
-                private set;
-            }
-
-            public ScalarExpressionSet Record
-            {
-                get;
-                private set;
-            }
-
-            public ScalarExpression Scalar
-            {
-                get;
-                private set;
             }
 
         }
@@ -222,7 +122,7 @@ namespace Pulse.Expressions.ActionExpressions
         {
             get
             {
-                
+
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < this._Map.Count; i++)
                 {
@@ -258,31 +158,31 @@ namespace Pulse.Expressions.ActionExpressions
         public void AddParameter(ScalarExpression Value)
         {
             ParameterPointer p = this._Map[this._Parameters.Count];
-            if (p.Affinity != ParameterType.Scalar)
+            if (p.Affinity != ParameterAffinity.Scalar)
                 throw new Exception(string.Format("Parameter '{0}' must be a scalar", p.Name));
             if (Value == null && p.IsRequired)
                 throw new Exception(string.Format("Parameter '{0}' is required", p.Name));
             Parameter x = new Parameter(Value);
             if (Value == null)
-                x = new Parameter(ParameterType.Scalar);
+                x = new Parameter();
             this._Parameters.Allocate(p.Name, x);
         }
 
-        public void AddParameter(string Name, ScalarExpressionSet Value)
+        public void AddParameter(string Name, RecordExpression Value)
         {
             this._Parameters.Allocate(Name, new Parameter(Value));
         }
 
-        public void AddParameter(ScalarExpressionSet Value)
+        public void AddParameter(RecordExpression Value)
         {
             ParameterPointer p = this._Map[this._Parameters.Count];
-            if (p.Affinity != ParameterType.Record)
+            if (p.Affinity != ParameterAffinity.Record)
                 throw new Exception(string.Format("Parameter '{0}' must be a record", p.Name));
             if (Value == null && p.IsRequired)
                 throw new Exception(string.Format("Parameter '{0}' is required", p.Name));
             Parameter x = new Parameter(Value);
             if (Value == null)
-                x = new Parameter(ParameterType.Record);
+                x = new Parameter();
             this._Parameters.Allocate(p.Name, x);
         }
 
@@ -294,13 +194,13 @@ namespace Pulse.Expressions.ActionExpressions
         public void AddParameter(MatrixExpression Value)
         {
             ParameterPointer p = this._Map[this._Parameters.Count];
-            if (p.Affinity != ParameterType.Matrix)
+            if (p.Affinity != ParameterAffinity.Matrix)
                 throw new Exception(string.Format("Parameter '{0}' must be a matrix", p.Name));
             if (Value == null && p.IsRequired)
                 throw new Exception(string.Format("Parameter '{0}' is required", p.Name));
             Parameter x = new Parameter(Value);
             if (Value == null)
-                x = new Parameter(ParameterType.Matrix);
+                x = new Parameter();
             this._Parameters.Allocate(p.Name, x);
         }
 
@@ -312,23 +212,23 @@ namespace Pulse.Expressions.ActionExpressions
         public void AddParameter(TableExpression Value)
         {
             ParameterPointer p = this._Map[this._Parameters.Count];
-            if (p.Affinity != ParameterType.Table)
+            if (p.Affinity != ParameterAffinity.Table)
                 throw new Exception(string.Format("Parameter '{0}' must be a table", p.Name));
             if (Value == null && p.IsRequired)
                 throw new Exception(string.Format("Parameter '{0}' is required", p.Name));
             Parameter x = new Parameter(Value);
             if (Value == null)
-                x = new Parameter(ParameterType.Table);
+                x = new Parameter();
             this._Parameters.Allocate(p.Name, x);
         }
 
         // Other //
         public void CheckRequired()
         {
-            
+
             for (int i = 0; i < this._Map.Count; i++)
             {
-                
+
                 if (this._Map[i].IsRequired && !this._Parameters.Exists(this._Map.Name(i)))
                 {
                     throw new Exception(string.Format("'{0}' is missing parameter '{1}'", this.Name, this._Map.Name(i)));
@@ -336,7 +236,7 @@ namespace Pulse.Expressions.ActionExpressions
                 else if (!this._Map[i].IsRequired && !this._Parameters.Exists(this._Map.Name(i)))
                 {
                     ParameterPointer pp = this._Map[i];
-                    this._Parameters.Allocate(pp.Name, new Parameter(pp.Affinity));
+                    this._Parameters.Allocate(pp.Name, new Parameter());
                 }
 
             }

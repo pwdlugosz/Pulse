@@ -23,17 +23,19 @@ namespace Pulse
 
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
 
-            //AdHoc.Simulation();
-
             Host Enviro = new Host();
-            Enviro.Libraries.Allocate("TABLE", new Libraries.TableLibrary(Enviro));
-            Enviro.Libraries.Allocate("FILE", new Libraries.LibraryFile(Enviro));
-            Enviro.Libraries.Allocate("WEB", new Libraries.LibraryWeb(Enviro));
+            Enviro.Libraries.Allocate("DATE", new Libraries.DateLibrary(Enviro));
+            //Enviro.Libraries.Allocate("TABLE", new Libraries.TableLibrary(Enviro));
+            //Enviro.Libraries.Allocate("FILE", new Libraries.LibraryFile(Enviro));
+            //Enviro.Libraries.Allocate("WEB", new Libraries.LibraryWeb(Enviro));
 
             Scripting.ScriptProcessor sp = new Scripting.ScriptProcessor(Enviro);
             string script = System.IO.File.ReadAllText(@"C:\Users\pwdlu_000\Documents\Pulse\Pulse\Scripting\TestScript.txt");
             sp.RenderAction(script);
             Enviro.ShutDown();
+
+            //Deck d = Deck.ShuffledDeck(1000, 127);
+            //Console.WriteLine(d.ToString());
 
             
             Console.WriteLine("::::::::::::::::::::::::::::::::: Complete :::::::::::::::::::::::::::::::::");

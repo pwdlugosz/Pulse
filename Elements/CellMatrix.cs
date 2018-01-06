@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,7 @@ namespace Pulse.Elements
     /// <summary>
     /// An array of cells with the same type
     /// </summary>
-    public class CellMatrix
+    public class CellMatrix : IEnumerable<Cell>, IEnumerable
     {
 
         // Private Variables //
@@ -300,6 +301,16 @@ namespace Pulse.Elements
 
             return new CellMatrix(this);
 
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return new MatrixEnumerator(this);
+        }
+
+        IEnumerator<Cell> IEnumerable<Cell>.GetEnumerator()
+        {
+            return new MatrixEnumerator(this);
         }
 
         #region Opperators
@@ -938,6 +949,54 @@ namespace Pulse.Elements
         /// </summary>
         /// <param name="A"></param>
         /// <returns></returns>
+        public static Cell Min(CellMatrix A)
+        {
+
+            Cell d = CellValues.Max(A.Affinity);
+            for (int i = 0; i < A.RowCount; i++)
+                for (int j = 0; j < A.ColumnCount; j++)
+                    d = CellFunctions.Min(A[i, j], d);
+            return d;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
+        public static Cell Max(CellMatrix A)
+        {
+
+            Cell d = CellValues.Min(A.Affinity);
+            for (int i = 0; i < A.RowCount; i++)
+                for (int j = 0; j < A.ColumnCount; j++)
+                    d = CellFunctions.Max(A[i, j], d);
+            return d;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
+        public static Cell Coalesce(CellMatrix A)
+        {
+
+            Cell d = CellValues.Null(A.Affinity);
+            for (int i = 0; i < A.RowCount; i++)
+                for (int j = 0; j < A.ColumnCount; j++)
+                    d = (!A[i, j].IsNull ? A[i, j] : d);
+            return d;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
         public static Cell SumSquare(CellMatrix A)
         {
 
@@ -1221,6 +1280,63 @@ namespace Pulse.Elements
                 }
 
                 return X;
+
+            }
+
+        }
+
+        private struct MatrixEnumerator : IEnumerator<Cell>, IEnumerator, IDisposable
+        {
+
+            private CellMatrix _M;
+            private int _i;
+            private int _j;
+            private Cell _v;
+
+            public MatrixEnumerator(CellMatrix M)
+            {
+                this._M = M;
+                this._i = 0;
+                this._j = 0;
+                this._v = new Cell(M.Affinity);
+            }
+
+            Cell IEnumerator<Cell>.Current
+            {
+                get { return this._M[this._i, this._j]; }
+            }
+
+            object IEnumerator.Current
+            {
+                get { return this._M[this._i, this._j]; }
+            }
+
+            public bool MoveNext()
+            {
+                if (this._i >= this._M.RowCount)
+                    this._i++;
+                if (this._j >= this._M.ColumnCount)
+                    this._j++;
+                if (this._i < this._M.RowCount && this._j < this._M.ColumnCount)
+                {
+                    this._v = this._M[this._i, this._j];
+                    return true;
+                }
+                else
+                {
+                    this._v = new Cell(this._M.Affinity);
+                    return false;
+                }
+            }
+
+            public void Reset()
+            {
+                this._i = 0;
+                this._j = 0;
+            }
+
+            public void Dispose()
+            {
 
             }
 

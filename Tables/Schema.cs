@@ -332,6 +332,10 @@ namespace Pulse.Tables
             if (Name.Length > MAX_COLUMN_NAME_LEN)
                 Name = Name.Substring(0, MAX_COLUMN_NAME_LEN);
 
+            // Check the size //
+            if (CellAffinityHelper.IsVariableLength(Affinity) && Size == 0)
+                throw new Exception("Variable length types must have a size greater than zero");
+
             // Check if exists //
             if (this.Contains(Name))
                 throw new Exception("Column already exists: " + Name);

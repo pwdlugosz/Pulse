@@ -81,7 +81,7 @@ namespace Pulse.Scripting
 
         public static string GetLibName(PulseParser.Table_nameContext context)
         {
-            if (context.lib_name() == null) return Host.GLOBAL;
+            if (context.lib_name() == null) return Host.TEMP;
             return context.lib_name().GetText();
         }
 

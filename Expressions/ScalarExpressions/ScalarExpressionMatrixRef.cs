@@ -17,11 +17,13 @@ namespace Pulse.Expressions.ScalarExpressions
     {
 
         private MatrixExpression _Value;
+        private Host _Host;
 
-        public ScalarExpressionMatrixRef(ScalarExpression Parent, MatrixExpression Value)
+        public ScalarExpressionMatrixRef(Host Host, ScalarExpression Parent, MatrixExpression Value)
             : base(Parent, ScalarExpressionAffinity.Matrix)
         {
             this._Value = Value;
+            this._Host = Host;
         }
 
         // Overrides //
@@ -34,15 +36,15 @@ namespace Pulse.Expressions.ScalarExpressions
 
         public override ScalarExpression CloneOfMe()
         {
-            return new ScalarExpressionMatrixRef(this._ParentNode, this._Value);
+            return new ScalarExpressionMatrixRef(this._Host, this._ParentNode, this._Value);
         }
 
-        public override int ExpressionSize()
+        public override int ReturnSize()
         {
             return this._Value.ReturnSize();
         }
 
-        public override CellAffinity ExpressionReturnAffinity()
+        public override CellAffinity ReturnAffinity()
         {
             return this._Value.ReturnAffinity();
         }

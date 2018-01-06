@@ -258,7 +258,8 @@ namespace Pulse.Expressions.TableExpressions
 
                     // Append the data //
                     Variants.Local.SetRecord(this.SecondaryAlias, new AssociativeRecord(SecondSchema, Elements.Record.Join(k, v)));
-                    Writer.Insert(this._Select.Evaluate(Variants));
+                    Record n = this._Select.Evaluate(Variants);
+                    Writer.Insert(n);
 
                 }
 

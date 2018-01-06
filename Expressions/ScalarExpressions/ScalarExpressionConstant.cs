@@ -39,12 +39,12 @@ namespace Pulse.Expressions.ScalarExpressions
             return new ScalarExpressionConstant(this._ParentNode, this._Value);
         }
 
-        public override int ExpressionSize()
+        public override int ReturnSize()
         {
             return CellSerializer.Length(this._Value);
         }
 
-        public override CellAffinity ExpressionReturnAffinity()
+        public override CellAffinity ReturnAffinity()
         {
             return this._Value.Affinity;
         }

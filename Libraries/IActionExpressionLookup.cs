@@ -8,13 +8,13 @@ using Pulse.Expressions.ActionExpressions;
 namespace Pulse.Libraries
 {
     
-    public interface IActionExpressionLookup
-    {
+    //public interface IActionExpressionLookup
+    //{
 
-        bool Exists(string Name);
+    //    bool Exists(string Name);
 
-        ActionExpressionParameterized Lookup(string Name);
+    //    ActionExpressionParameterized Lookup(string Name);
 
-    }
+    //}
 
 }

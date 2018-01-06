@@ -45,6 +45,7 @@ namespace Pulse.Elements
         private Heap<string> _Connections;
         public readonly long StartTicks = DateTime.Now.Ticks;
         private TableStore _Cache;
+        private static long _Tocks = 0;
         
         /// <summary>
         /// Creates a host
@@ -59,7 +60,7 @@ namespace Pulse.Elements
             this._RNG = new RandomCell();
             this._Timer = Stopwatch.StartNew();
             this._Libraries = new Heap<Library>();
-            this._Base = new Library.BaseLibrary(this);
+            this._Base = new BaseLibrary(this);
 
             // Tables //
             this._Cache = new TableStore(this);
@@ -361,6 +362,11 @@ namespace Pulse.Elements
             x.B6 = (byte)(y[6] ^ y[14]);
             x.B7 = (byte)(y[7] ^ y[15]);
             return x.LONG < 0 ? ~x.LONG : x.LONG;
+        }
+
+        public static long Tocks()
+        {
+            return _Tocks++;
         }
 
         // Directories //

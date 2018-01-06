@@ -225,6 +225,15 @@ namespace Pulse.Elements
             return this._Records[Name];
         }
 
+        public Schema GetColumns(string Name)
+        {
+            if (!this.ExistsRecord(Name))
+                throw new ObjectDoesNotExistException(Name);
+            if (!this.CanRead(Name))
+                throw new ObjectLockException(Name);
+            return this._Records[Name].Columns;
+        }
+
         public void SetRecord(string Name, AssociativeRecord Value)
         {
             if (!this.ExistsRecord(Name))

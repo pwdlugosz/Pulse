@@ -145,19 +145,41 @@ namespace Pulse.Expressions.MatrixExpressions
     public abstract class MatrixExpressionFunction : MatrixExpression
     {
 
-        private string _Name;
-        private int _ParamCount = -1;
-        private List<ScalarExpression> _Parameters;
+        protected string _Name;
+        protected int _ParamCount = -1;
+        protected List<Parameter> _Parameters;
+        protected CellAffinity _FunctionReturnAffinity;
 
-        public MatrixExpressionFunction(MatrixExpression Parent, string Name, int Parameters)
+        public MatrixExpressionFunction(MatrixExpression Parent, string Name, int Parameters, CellAffinity FunctionReturnAffinity)
             : base(Parent)
         {
             this._Name = Name;
             this._ParamCount = Parameters;
-            this._Parameters = new List<ScalarExpression>();
+            this._Parameters = new List<Parameter>();
+            this._FunctionReturnAffinity = FunctionReturnAffinity;
         }
 
-        public void AddParameter(ScalarExpression Value)
+        public virtual bool IsVolatile
+        {
+            get { return true; }
+        }
+
+        public string FunctionName
+        {
+            get { return this._Name; }
+        }
+
+        public override CellAffinity ReturnAffinity()
+        {
+            return this._FunctionReturnAffinity;
+        }
+
+        public int ParameterCount
+        {
+            get { return this._ParamCount; }
+        }
+
+        public void AddParameter(Parameter Value)
         {
             this._Parameters.Add(Value);
         }
@@ -175,48 +197,6 @@ namespace Pulse.Expressions.MatrixExpressions
             }
 
         }
-
-        // Derived //
-        //public sealed class MatrixExpressionSplit : MatrixExpressionFunction
-        //{
-
-        //    public MatrixExpressionSplit(MatrixExpression Parent)
-        //        : base(Parent, "SPLIT", -3)
-        //    {
-        //    }
-
-        //    public override MatrixExpression CloneOfMe()
-        //    {
-        //        return new MatrixExpressionSplit(null);
-        //    }
-
-        //    public override CellAffinity ReturnAffinity()
-        //    {
-        //        return CellAffinity.STRING;
-        //    }
-
-        //    public override CellMatrix Evaluate(FieldResolver Variant)
-        //    {
-                
-        //        // Get the values //
-        //        if (this._Parameters.Count < 2)
-        //            throw new ArgumentException("SPLIT requires at least two arguments");
-
-        //        string text = this._Parameters[0].Evaluate(Variant).valueSTRING;
-        //        char delim = this._Parameters[1].Evaluate(Variant).valueSTRING.First();
-        //        char escape = (this._Parameters.Count >= 3 ? this._Parameters[2].Evaluate(Variant).valueSTRING.First() : char.MaxValue);
-
-        //        string[] s = Util.StringUtil.Split(text, delim, escape);
-        //        CellMatrix m = new CellMatrix(s.Length, 1, CellValues.NullSTRING);
-        //        for (int i = 0; i < s.Length; i++)
-        //            m[i, 0] = new Cell(s[i]);
-
-        //        return m;
-
-        //    }
-
-        //}
-
 
     }
 

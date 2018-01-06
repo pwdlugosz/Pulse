@@ -7,6 +7,7 @@ using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using Pulse.Elements;
 using Pulse.Expressions.ScalarExpressions;
+using Pulse.Expressions.MatrixExpressions;
 using Pulse.Libraries;
 using Pulse.Expressions.Aggregates;
 using Pulse.Tables;
@@ -94,7 +95,7 @@ namespace Pulse.Scripting
             int Size = ScriptingHelper.GetTypeSize(context.type());
             CellAffinity Type = ScriptingHelper.GetTypeAffinity(context.type());
 
-            return new ScalarExpressionPointer(this._Master, Name, Type, Size);
+            return new ScalarExpressionPointer(this._Host, this._Master, Name, Type, Size);
 
         }
 
@@ -104,13 +105,13 @@ namespace Pulse.Scripting
             ScalarExpression a = this.Visit(context.scalar_expression());
             a.ParentNode = this._Master;
 
-            ScalarExpressionFunction f = null;
+            ScalarExpression f = null;
             if (context.PLUS() != null)
-                f = new ScalarExpressionFunction.ExpressionPlus();
+                f = +a;
             else if (context.MINUS() != null)
-                f = new ScalarExpressionFunction.ExpressionMinus();
+                f = -a;
             else if (context.NOT() != null)
-                f = new ScalarExpressionFunction.ExpressionNot();
+                f = !a;
             else
                 throw new Exception("Unknow opperation");
 
@@ -128,8 +129,7 @@ namespace Pulse.Scripting
             a.ParentNode = this._Master;
             ScalarExpression b = this.Visit(context.scalar_expression()[1]);
             b.ParentNode = this._Master;
-            ScalarExpressionFunction.ExpressionPower f = new ScalarExpressionFunction.ExpressionPower();
-            f.AddChildren(a, b);
+            ScalarExpression f = new ScalarExpressionBinary.ScalarExpressionPower(a,b);
             this._Master = f;
             return f;
 
@@ -145,17 +145,16 @@ namespace Pulse.Scripting
             ScalarExpression f = null;
 
             if (context.MUL() != null)
-                f = new ScalarExpressionFunction.ExpressionMultiply();
+                f = a * b;
             else if (context.DIV() != null)
-                f = new ScalarExpressionFunction.ExpressionDivide();
+                f = a / b;
             else if (context.MOD() != null)
-                f = new ScalarExpressionFunction.ExpressionModulo();
+                f = a % b;
             else if (context.DIV2() != null)
-                f = new ScalarExpressionFunction.ExpressionCheckedDivide();
+                f = ScalarExpression.CDIV(a, b);
             else
                 throw new Exception("Unknow opperation");
 
-            f.AddChildren(a, b);
             this._Master = f;
 
             return f;
@@ -172,13 +171,12 @@ namespace Pulse.Scripting
             ScalarExpression f = null;
 
             if (context.PLUS() != null)
-                f = new ScalarExpressionFunction.ExpressionAdd();
+                f = a + b;
             else if (context.MINUS() != null)
-                f = new ScalarExpressionFunction.ExpressionSubtract();
+                f = a - b;
             else
                 throw new Exception("Unknow opperation");
 
-            f.AddChildren(a, b);
             this._Master = f;
 
             return f;
@@ -195,19 +193,17 @@ namespace Pulse.Scripting
             ScalarExpression f = null;
 
             if (context.GT() != null)
-                f = new ScalarExpressionFunction.ExpressionGreaterThan();
+                f = ScalarExpression.GT(a, b);
             else if (context.LT() != null)
-                f = new ScalarExpressionFunction.ExpressionLessThan();
+                f = ScalarExpression.LT(a, b);
             else if (context.GTE() != null)
-                f = new ScalarExpressionFunction.ExpressionGreaterThanOrEqualTo();
+                f = ScalarExpression.GTE(a, b);
             else if (context.LTE() != null)
-                f = new ScalarExpressionFunction.ExpressionLessThanOrEqualTo();
+                f = ScalarExpression.LTE(a, b);
             else
                 throw new Exception("Unknow opperation");
 
-            f.AddChildren(a, b);
             this._Master = f;
-
             return f;
 
         }
@@ -219,11 +215,8 @@ namespace Pulse.Scripting
             a.ParentNode = this._Master;
             ScalarExpression b = this.Visit(context.scalar_expression()[1]);
             b.ParentNode = this._Master;
-            ScalarExpression f = new ScalarExpressionFunction.ExpressionAnd();
-
-            f.AddChildren(a, b);
+            ScalarExpression f = ScalarExpression.AND(a, b);
             this._Master = f;
-
             return f;
 
         }
@@ -238,13 +231,12 @@ namespace Pulse.Scripting
             ScalarExpression f = null;
 
             if (context.EQ() != null)
-                f = new ScalarExpressionFunction.ExpressionEquals();
+                f = ScalarExpression.EQ(a, b);
             else if (context.NEQ() != null)
-                f = new ScalarExpressionFunction.ExpressionNotEquals();
+                f = ScalarExpression.NEQ(a, b);
             else
                 throw new Exception("Unknow opperation");
 
-            f.AddChildren(a, b);
             this._Master = f;
 
             return f;
@@ -261,13 +253,12 @@ namespace Pulse.Scripting
             ScalarExpression f = null;
 
             if (context.OR() != null)
-                f = new ScalarExpressionFunction.ExpressionOr();
+                f = ScalarExpression.OR(a, b);
             else if (context.XOR() != null)
-                f = new ScalarExpressionFunction.ExpressionXor();
+                f = ScalarExpression.XOR(a, b);
             else
                 throw new Exception("Unknow opperation");
 
-            f.AddChildren(a, b);
             this._Master = f;
 
             return f;
@@ -289,18 +280,20 @@ namespace Pulse.Scripting
                 {
                     if (this._Map[Major].ExistsScalar(Minor))
                     {
-                        return new ScalarExpressionStoreRef(this._Master, Major, Minor, this._Map[Major].Scalars[Minor].Affinity, this._Map[Major].Scalars[Minor].Length);
+                        return new ScalarExpressionStoreRef(this._Host, this._Master, Major, Minor, this._Map[Major].Scalars[Minor].Affinity, this._Map[Major].Scalars[Minor].Length);
                     }
                 }
 
                 // Must be a record ref //
                 if (this._Map.Global.ExistsRecord(Major) && this._Map.Global.GetRecord(Major).Columns.ColumnIndex(Minor) != -1)
                 {
-                    return new ScalarExpressionRecordRef(this._Master, FieldResolver.GLOBAL, Major, Minor, this._Map.Global.GetRecord(Major)[Minor].Affinity, this._Map.Global.GetRecord(Major)[Minor].Length);
+                    Schema v = this._Map.Global.GetColumns(Major);
+                    return new ScalarExpressionRecordRef(this._Host, this._Master, FieldResolver.GLOBAL, Major, Minor, v.ColumnAffinity(Minor), v.ColumnSize(Minor));
                 }
                 else if (this._Map.Local.ExistsRecord(Major) && this._Map.Local.GetRecord(Major).Columns.ColumnIndex(Minor) != -1)
                 {
-                    return new ScalarExpressionRecordRef(this._Master, FieldResolver.LOCAL, Major, Minor, this._Map.Local.GetRecord(Major)[Minor].Affinity, this._Map.Local.GetRecord(Major)[Minor].Length);
+                    Schema v = this._Map.Local.GetColumns(Major);
+                    return new ScalarExpressionRecordRef(this._Host, this._Master, FieldResolver.LOCAL, Major, Minor, v.ColumnAffinity(Minor), v.ColumnSize(Minor));
                 }
 
                 throw new Exception(string.Format("Field '{0}.{1}' is invalid", Major, Minor));
@@ -316,15 +309,16 @@ namespace Pulse.Scripting
                 // Check if it's a global variable //
                 if (this._Map.Global.ExistsScalar(Minor))
                 {
-                    return new ScalarExpressionStoreRef(this._Master, FieldResolver.GLOBAL, Minor, this._Map.Global.Scalars[Minor].Affinity, this._Map.Global.Scalars[Minor].Length);
+                    return new ScalarExpressionStoreRef(this._Host, this._Master, FieldResolver.GLOBAL, Minor, this._Map.Global.Scalars[Minor].Affinity, this._Map.Global.Scalars[Minor].Length);
                 }
 
                 // Otherwise, check if the primary context exists in local and the value is in the primary context
                 if (this._PrimaryContext != null && this._Map.Local.ExistsRecord(this._PrimaryContext) && this._Map.Local.Records[this._PrimaryContext].Columns.ColumnIndex(Minor) != -1)
                 {
-                    return new ScalarExpressionRecordRef(this._Master, FieldResolver.LOCAL, this._PrimaryContext, Minor, this._Map.Local.GetRecord(this._PrimaryContext)[Minor].Affinity, this._Map.Local.GetRecord(this._PrimaryContext)[Minor].Length);
+                    Schema v = this._Map.Local.GetColumns(this._PrimaryContext);
+                    return new ScalarExpressionRecordRef(this._Host, this._Master, FieldResolver.LOCAL, this._PrimaryContext, Minor, v.ColumnAffinity(Minor), v.ColumnSize(Minor));
                 }
-                throw new Exception(string.Format("Field '{1}' is invalid", Minor));
+                throw new Exception(string.Format("Field '{0}' is invalid", Minor));
 
             }
 
@@ -335,12 +329,19 @@ namespace Pulse.Scripting
             string Major = ScriptingHelper.GetLibName(context.record_name());
             string Medium = ScriptingHelper.GetVarName(context.record_name());
             string Minor = context.IDENTIFIER().GetText();
-            return new ScalarExpressionRecordRef(this._Master, Major, Medium, Minor, this._Map[Major].GetRecord(Medium)[Minor].Affinity, this._Map[Major].GetRecord(Medium)[Minor].Length);
+            return new ScalarExpressionRecordRef(this._Host, this._Master, Major, Medium, Minor, this._Map[Major].GetRecord(Medium)[Minor].Affinity, this._Map[Major].GetRecord(Medium)[Minor].Length);
         }
 
         public override ScalarExpression VisitMatrixMember(PulseParser.MatrixMemberContext context)
         {
-            return base.VisitMatrixMember(context);
+
+            ScalarExpression row = this.Visit(context.scalar_expression()[0]);
+            ScalarExpression col = (context.scalar_expression().Length >= 2 ? this.Visit(context.scalar_expression()[1]) : new ScalarExpressionConstant(null, CellValues.ZeroINT));
+            MatrixExpression m = (new MatrixExpressionVisitor(this._Host, this)).Render(context.matrix_expression());
+            ScalarExpressionMatrixRef s = new ScalarExpressionMatrixRef(this._Host, this._Master, m);
+            s.AddChildren(row, col);
+            return s;
+
         }
 
         public override ScalarExpression VisitLiteralBool(PulseParser.LiteralBoolContext context)
@@ -384,6 +385,7 @@ namespace Pulse.Scripting
         public override ScalarExpression VisitLiteralFloat(PulseParser.LiteralFloatContext context)
         {
             string s = context.GetText();
+            s = s.Replace("F", "").Replace("f", "");
             return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.FLOAT));
         }
 
@@ -423,7 +425,7 @@ namespace Pulse.Scripting
         {
             CellAffinity x = ScriptingHelper.GetTypeAffinity(context.type());
             byte y = (byte)x;
-            return new ScalarExpressionConstant(this._Master, new Cell((long)y));
+            return new ScalarExpressionConstant(this._Master, new Cell(y));
         }
 
         public override ScalarExpression VisitIfNullOp(PulseParser.IfNullOpContext context)
@@ -433,8 +435,7 @@ namespace Pulse.Scripting
             a.ParentNode = this._Master;
             ScalarExpression b = this.Visit(context.scalar_expression()[1]);
             b.ParentNode = this._Master;
-            ScalarExpressionFunction.ExpressionIfNull f = new ScalarExpressionFunction.ExpressionIfNull();
-            f.AddChildren(a, b);
+            ScalarExpression f = ScalarExpression.IFNULL(a, b);
             this._Master = f;
             return f;
 
@@ -447,17 +448,17 @@ namespace Pulse.Scripting
             a.ParentNode = this._Master;
             ScalarExpression b = this.Visit(context.scalar_expression()[1]);
             b.ParentNode = this._Master;
-            ScalarExpression c = (context.scalar_expression().Length == 3 ? this.Visit(context.scalar_expression()[2]) : new ScalarExpressionConstant(this._Master, new Cell(b.ExpressionReturnAffinity())));
+            ScalarExpression c = (context.scalar_expression().Length == 3 ? this.Visit(context.scalar_expression()[2]) : new ScalarExpressionConstant(this._Master, new Cell(b.ReturnAffinity())));
             c.ParentNode = this._Master;
 
-            ScalarExpressionFunction.ExpressionIf f = new ScalarExpressionFunction.ExpressionIf();
-            f.AddChildren(a, b, c);
+            ScalarExpression f = ScalarExpression.IF(a, b, c);
+
             this._Master = f;
             return f;
 
         }
 
-        public override ScalarExpression VisitFunction(PulseParser.FunctionContext context)
+        public override ScalarExpression VisitScalarExpressionFunction(PulseParser.ScalarExpressionFunctionContext context)
         {
 
             string LibName = ScriptingHelper.GetLibName(context.scalar_name());
@@ -466,19 +467,21 @@ namespace Pulse.Scripting
             if (!this._Host.Libraries.Exists(LibName))
                 throw new Exception(string.Format("Library does not exist '{0}'", LibName));
 
-            if (!this._Host.Libraries[LibName].FunctionExists(FuncName))
+            if (!this._Host.Libraries[LibName].ScalarFunctionExists(FuncName))
                 throw new Exception(string.Format("Function '{0}' does not exist in '{1}'", FuncName, LibName));
 
-            ScalarExpressionFunction f = this._Host.Libraries[LibName].FunctionLookup(FuncName);
-            foreach (PulseParser.Scalar_expressionContext ctx in context.scalar_expression())
+            ObjectFactory of = new ObjectFactory(this._Host, this);
+
+            ScalarExpressionFunction f = this._Host.Libraries[LibName].ScalarFunctionLookup(FuncName);
+            foreach (PulseParser.ParamContext ctx in context.param())
             {
-                f.AddChildNode(this.Visit(ctx));
+                Parameter p = of.Render(ctx);
+                f.AddParameter(p);
             }
 
             this._Master = f;
 
             return f;
-
         }
 
         public override ScalarExpression VisitCast(PulseParser.CastContext context)
@@ -486,8 +489,7 @@ namespace Pulse.Scripting
 
             CellAffinity t = ScriptingHelper.GetTypeAffinity(context.type());
             ScalarExpression s = this.Visit(context.scalar_expression());
-            ScalarExpression x = new ScalarExpressionFunction.ExpressionCast(t);
-            x.AddChildNode(s);
+            ScalarExpression x = ScalarExpression.CAST(s, t);
 
             this._Master = x;
 
@@ -509,11 +511,12 @@ namespace Pulse.Scripting
 
         public ScalarExpressionSet Render(PulseParser.NframeContext context)
         {
-            ScalarExpressionSet rex = new ScalarExpressionSet();
+            ScalarExpressionSet rex = new ScalarExpressionSet(this._Host);
             foreach (PulseParser.NelementContext s in context.nelement())
             {
                 ScalarExpression se = this.Render(s.scalar_expression());
-                string alias = (s.IDENTIFIER() == null ? "F" + rex.Count.ToString() : s.IDENTIFIER().GetText());
+                string alias = (s.IDENTIFIER() == null ? se.BuildAlias() : s.IDENTIFIER().GetText());
+                
                 rex.Add(alias, se);
             }
             return rex;
@@ -661,5 +664,6 @@ namespace Pulse.Scripting
         }
 
     }
+
 
 }

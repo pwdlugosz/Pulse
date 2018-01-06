@@ -24,12 +24,13 @@ namespace Pulse.Scripting
 
         private Host _Host;
         private TableExpression _Master;
+        private ScalarExpressionVisitor _sFactory;
 
         public TableExpressionVisitor(Host Host, ScalarExpressionVisitor SFactory)
             : base()
         {
             this._Host = Host;
-            this.SeedVisitor = SFactory;
+            this._sFactory = SFactory;
         }
 
         public TableExpressionVisitor(Host Host)
@@ -43,8 +44,19 @@ namespace Pulse.Scripting
         /// </summary>
         public ScalarExpressionVisitor SeedVisitor
         {
-            get;
-            set;
+            get { return this._sFactory;}
+            set { this._sFactory = value;}
+        }
+
+        // Other Support //
+        public Table GetTable(PulseParser.Table_nameContext context)
+        {
+
+            string StoreName = ScriptingHelper.GetLibName(context);
+            string TableName = ScriptingHelper.GetVarName(context);
+
+            return this._Host.OpenTable(StoreName, TableName);
+
         }
 
         // Expressions //
@@ -101,7 +113,7 @@ namespace Pulse.Scripting
         public override TableExpression VisitTableExpressionFold1(PulseParser.TableExpressionFold1Context context)
         {
 
-            TableExpression t = this.Visit(context);
+            TableExpression t = this.Visit(context.table_expression());
             string alias = t.Name;
             string salias = ALIAS2_PREFIX + alias;
 
@@ -112,7 +124,7 @@ namespace Pulse.Scripting
             Filter f = this.SeedVisitor.Render(context.where());
             
             this.SeedVisitor.Map.Local.DeclareRecord(salias, new AssociativeRecord(Schema.Join(grouper.Columns, aggs.Columns)));
-            ScalarExpressionSet select = new ScalarExpressionSet(Schema.Join(grouper.Columns, aggs.Columns), salias);
+            ScalarExpressionSet select = new ScalarExpressionSet(this._Host, Schema.Join(grouper.Columns, aggs.Columns), salias);
 
             TableExpressionFold x = new TableExpressionFold.TableExpressionFoldDictionary(this._Host, this._Master, grouper, aggs, f, select, alias);
             x.AddChild(t);
@@ -130,7 +142,7 @@ namespace Pulse.Scripting
         public override TableExpression VisitTableExpressionFold2(PulseParser.TableExpressionFold2Context context)
         {
 
-            TableExpression t = this.Visit(context);
+            TableExpression t = this.Visit(context.table_expression());
             string alias = t.Name;
             string salias = ALIAS2_PREFIX + alias;
 
@@ -141,7 +153,7 @@ namespace Pulse.Scripting
             Filter f = this.SeedVisitor.Render(context.where());
 
             this.SeedVisitor.Map.Local.DeclareRecord(salias, new AssociativeRecord(Schema.Join(grouper.Columns, aggs.Columns)));
-            ScalarExpressionSet select = new ScalarExpressionSet(Schema.Join(grouper.Columns, aggs.Columns), salias);
+            ScalarExpressionSet select = new ScalarExpressionSet(this._Host, Schema.Join(grouper.Columns, aggs.Columns), salias);
 
             TableExpressionFold x = new TableExpressionFold.TableExpressionFoldDictionary(this._Host, this._Master, grouper, aggs, f, select, alias);
             x.AddChild(t);
@@ -159,18 +171,18 @@ namespace Pulse.Scripting
         public override TableExpression VisitTableExpressionFold3(PulseParser.TableExpressionFold3Context context)
         {
 
-            TableExpression t = this.Visit(context);
+            TableExpression t = this.Visit(context.table_expression());
             string alias = t.Name;
             string salias = ALIAS2_PREFIX + alias;
 
             this.SeedVisitor.Map.Local.DeclareRecord(alias, new AssociativeRecord(t.Columns));
             this.SeedVisitor.PrimaryContext = alias;
-            ScalarExpressionSet grouper = new ScalarExpressionSet();
+            ScalarExpressionSet grouper = new ScalarExpressionSet(this._Host);
             AggregateCollection aggs = this.SeedVisitor.Render(context.aframe());
             Filter f = this.SeedVisitor.Render(context.where());
 
             this.SeedVisitor.Map.Local.DeclareRecord(salias, new AssociativeRecord(Schema.Join(grouper.Columns, aggs.Columns)));
-            ScalarExpressionSet select = new ScalarExpressionSet(Schema.Join(grouper.Columns, aggs.Columns), salias);
+            ScalarExpressionSet select = new ScalarExpressionSet(this._Host, Schema.Join(grouper.Columns, aggs.Columns), salias);
 
             TableExpressionFold x = new TableExpressionFold.TableExpressionFoldDictionary(this._Host, this._Master, grouper, aggs, f, select, alias);
             x.AddChild(t);
@@ -204,7 +216,38 @@ namespace Pulse.Scripting
 
         }
 
-        public override TableExpression VisitTableExpressionSelect(PulseParser.TableExpressionSelectContext context)
+        public override TableExpression VisitTableExpressionSelect1(PulseParser.TableExpressionSelect1Context context)
+        {
+
+            // Get the base expression //
+            TableExpression t = this.Visit(context.table_expression());
+            string alias = t.Name;
+            
+            // Get the where and the fields //
+            ScalarExpressionVisitor vis = this.SeedVisitor.CloneOfMe();
+            vis.AddSchema(alias, t.Columns);
+            vis.PrimaryContext = alias;
+            ScalarExpressionSet select = vis.Render(context.nframe());
+            Filter where = vis.Render(context.where());
+
+            // Create the expression //
+            TableExpression x = new TableExpressionSelect(this._Host, this._Master, select, where, alias);
+            x.AddChild(t);
+
+            // Get the order by //
+            if (context.oframe() != null)
+            {
+                Key k = this.RenderKey(context.oframe());
+            }
+
+            // Set the master //
+            this._Master = x;
+
+            return x;
+
+        }
+
+        public override TableExpression VisitTableExpressionSelect2(PulseParser.TableExpressionSelect2Context context)
         {
 
             // Get the base expression //
@@ -214,8 +257,34 @@ namespace Pulse.Scripting
             // Get the where and the fields //
             ScalarExpressionVisitor vis = this.SeedVisitor.CloneOfMe();
             vis.AddSchema(alias, t.Columns);
-            ScalarExpressionSet select = vis.Render(context.nframe());
+            vis.PrimaryContext = alias;
+            ScalarExpressionSet select = new ScalarExpressionSet(this._Host, t.Columns, alias);
             Filter where = vis.Render(context.where());
+
+            // Create the expression //
+            TableExpression x = new TableExpressionSelect(this._Host, this._Master, select, where, alias);
+            x.AddChild(t);
+
+            // Set the master //
+            this._Master = x;
+
+            return x;
+
+        }
+
+        public override TableExpression VisitTableExpressionSelect3(PulseParser.TableExpressionSelect3Context context)
+        {
+
+            // Get the base expression //
+            TableExpression t = this.Visit(context.table_expression());
+            string alias = t.Name;
+
+            // Get the where and the fields //
+            ScalarExpressionVisitor vis = this.SeedVisitor.CloneOfMe();
+            vis.AddSchema(alias, t.Columns);
+            vis.PrimaryContext = alias;
+            ScalarExpressionSet select = new ScalarExpressionSet(this._Host, t.Columns, alias);
+            Filter where = Filter.TrueForAll;
 
             // Create the expression //
             TableExpression x = new TableExpressionSelect(this._Host, this._Master, select, where, alias);
@@ -238,18 +307,58 @@ namespace Pulse.Scripting
             return x;
         }
 
-        public override TableExpression VisitTableExpressionCTOR(PulseParser.TableExpressionCTORContext context)
+        public override TableExpression VisitTableExpressionLiteral(PulseParser.TableExpressionLiteralContext context)
         {
 
-            Schema cols = new Schema();
-            for (int i = 0; i < context.IDENTIFIER().Length; i++)
+            List<ScalarExpressionSet> z = new List<ScalarExpressionSet>();
+            foreach (PulseParser.NframeContext ctx in context.nframe())
             {
-                cols.Add(context.IDENTIFIER()[i].GetText(), ScriptingHelper.GetTypeAffinity(context.type()[i]), ScriptingHelper.GetTypeSize(context.type()[i]));
+                ScalarExpressionSet v = this._sFactory.Render(ctx);
+                z.Add(v);
             }
-            string db = context.db_name().IDENTIFIER()[0].GetText();
-            string name = context.db_name().IDENTIFIER()[1].GetText();
+            return new TableExpressionLiteral(this._Host, this._Master, z, z.First().Columns);
 
-            return new TableExpressionCTOR(this._Host, null, cols, db, name, new Key());
+        }
+
+        //public override TableExpression VisitTableExpressionCTOR(PulseParser.TableExpressionCTORContext context)
+        //{
+
+        //    Schema cols = new Schema();
+        //    for (int i = 0; i < context.IDENTIFIER().Length; i++)
+        //    {
+        //        cols.Add(context.IDENTIFIER()[i].GetText(), ScriptingHelper.GetTypeAffinity(context.type()[i]), ScriptingHelper.GetTypeSize(context.type()[i]));
+        //    }
+        //    string db = context.db_name().IDENTIFIER()[0].GetText();
+        //    string name = context.db_name().IDENTIFIER()[1].GetText();
+
+        //    return new TableExpressionCTOR(this._Host, null, cols, db, name, new Key());
+
+        //}
+
+        public override TableExpression VisitTableExpressionFunction(PulseParser.TableExpressionFunctionContext context)
+        {
+
+            string LibName = ScriptingHelper.GetLibName(context.table_name());
+            string FuncName = ScriptingHelper.GetVarName(context.table_name());
+
+            if (!this._Host.Libraries.Exists(LibName))
+                throw new Exception(string.Format("Library does not exist '{0}'", LibName));
+
+            if (!this._Host.Libraries[LibName].ScalarFunctionExists(FuncName))
+                throw new Exception(string.Format("Function '{0}' does not exist in '{1}'", FuncName, LibName));
+
+            ObjectFactory of = new ObjectFactory(this._Host, this._sFactory);
+
+            TableExpressionFunction f = this._Host.Libraries[LibName].TableFunctionLookup(FuncName);
+            foreach (PulseParser.ParamContext ctx in context.param())
+            {
+                Parameter p = of.Render(ctx);
+                f.AddParameter(p);
+            }
+
+            this._Master = f;
+
+            return f;
 
         }
 

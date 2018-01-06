@@ -19,14 +19,16 @@ namespace Pulse.Expressions.ScalarExpressions
         private string _FieldName = null;
         private int _FieldSize;
         private CellAffinity _FieldAffinity;
+        private Host _Host;
 
-        public ScalarExpressionFieldRef2(ScalarExpression Parent, string RecordName, string FieldName, CellAffinity FieldAffinity, int FieldSize)
+        public ScalarExpressionFieldRef2(Host Host, ScalarExpression Parent, string RecordName, string FieldName, CellAffinity FieldAffinity, int FieldSize)
             : base(Parent, ScalarExpressionAffinity.Field)
         {
             this._RecordName = RecordName;
             this._FieldName = FieldName;
             this._FieldAffinity = FieldAffinity;
             this._FieldSize = FieldSize;
+            this._Host = Host;
         }
 
         // Field Name //
@@ -37,7 +39,7 @@ namespace Pulse.Expressions.ScalarExpressions
 
         public string RecordName
         {
-            get { return this._StoreName; }
+            get { return this._RecordName; }
         }
 
         // Overrides //
@@ -48,15 +50,15 @@ namespace Pulse.Expressions.ScalarExpressions
 
         public override ScalarExpression CloneOfMe()
         {
-            return new ScalarExpressionFieldRef2(this._ParentNode, this._RecordName, this._FieldName, this._FieldAffinity, this._FieldSize);
+            return new ScalarExpressionFieldRef2(this._Host, this._ParentNode, this._RecordName, this._FieldName, this._FieldAffinity, this._FieldSize);
         }
 
-        public override int ExpressionSize()
+        public override int ReturnSize()
         {
             return this._FieldSize;
         }
 
-        public override CellAffinity ExpressionReturnAffinity()
+        public override CellAffinity ReturnAffinity()
         {
             return this._FieldAffinity;
         }
@@ -69,6 +71,11 @@ namespace Pulse.Expressions.ScalarExpressions
         public override int GetHashCode()
         {
             return this._StoreName.GetHashCode() ^ this._RecordName.GetHashCode() ^ this._FieldName.GetHashCode() ^ (int)this._FieldAffinity ^ this._FieldSize;
+        }
+
+        public override string BuildAlias()
+        {
+            return this._FieldName;
         }
 
     }

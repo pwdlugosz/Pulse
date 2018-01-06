@@ -83,22 +83,26 @@ namespace Pulse.Expressions.ActionExpressions
     public class ActionExpressionDeclareTable : ActionExpression
     {
 
-        private ObjectStore _Store;
+        private string _DB;
         private string _Name;
         private TableExpression _Value;
 
-        public ActionExpressionDeclareTable(Host Host, ActionExpression Parent, ObjectStore Store, string Name, TableExpression Value)
+        public ActionExpressionDeclareTable(Host Host, ActionExpression Parent, string Database, string Name, TableExpression Value)
             : base(Host, Parent)
         {
-            this._Store = Store;
+            this._DB = Database;
             this._Name = Name;
             this._Value = Value;
+            if (Value == null) throw new Exception();
         }
 
         public override void Invoke(FieldResolver Variant)
         {
-            Table t = this._Value.Select(Variant);
-            this._Store.DeclareTable(this._Name, t.Header.Path);
+            Table q = this._Host.CreateTable(this._DB, this._Name, this._Value.Columns);
+            using (RecordWriter w = q.OpenWriter())
+            {
+                this._Value.Evaluate(Variant, w);
+            }
         }
 
 

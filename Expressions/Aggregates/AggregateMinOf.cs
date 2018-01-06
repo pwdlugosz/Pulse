@@ -38,19 +38,19 @@ namespace Pulse.Expressions.Aggregates
         public override Schema WorkSchema()
         {
             Schema s = new Schema();
-            s.Add("A", this._Key.ExpressionReturnAffinity(), this._Key.ExpressionSize());
-            s.Add("B", this._Value.ExpressionReturnAffinity(), this._Value.ExpressionSize());
+            s.Add("A", this._Key.ReturnAffinity(), this._Key.ReturnSize());
+            s.Add("B", this._Value.ReturnAffinity(), this._Value.ReturnSize());
             return s;
         }
 
         public override CellAffinity AggregateAffinity()
         {
-            return this._Value.ExpressionReturnAffinity();
+            return this._Value.ReturnAffinity();
         }
 
         public override int AggregateSize()
         {
-            return this._Value.ExpressionSize();
+            return this._Value.ReturnSize();
         }
 
         public override Aggregate CloneOfMe()
@@ -60,7 +60,7 @@ namespace Pulse.Expressions.Aggregates
 
         public override void Initialize(Record Work, int Offset)
         {
-            Work[Offset] = CellValues.Max(this._Key.ExpressionReturnAffinity());
+            Work[Offset] = CellValues.Max(this._Key.ReturnAffinity());
             Work[Offset + 1] = new Cell(this.AggregateAffinity());
         }
 

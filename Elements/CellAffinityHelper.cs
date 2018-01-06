@@ -264,6 +264,26 @@ namespace Pulse.Elements
                 || A == CellAffinity.LONG || A == CellAffinity.FLOAT || A == CellAffinity.DOUBLE;
         }
 
+        public static bool IsFloatingPoint(CellAffinity A)
+        {
+            return (A == CellAffinity.DOUBLE) || (A == CellAffinity.FLOAT);
+        }
+
+        public static bool IsIntegral(CellAffinity A)
+        {
+            return A == CellAffinity.BYTE || A == CellAffinity.SHORT || A == CellAffinity.INT || A == CellAffinity.LONG;
+        }
+
+        /// <summary>
+        /// Returns true if the type has a variable length
+        /// </summary>
+        /// <param name="A"></param>
+        /// <returns></returns>
+        public static bool IsVariableLength(CellAffinity A)
+        {
+            return (A == CellAffinity.BLOB || A == CellAffinity.STRING || A == CellAffinity.TEXT);
+        }
+
     }
 
 }

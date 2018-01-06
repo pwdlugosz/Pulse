@@ -17,16 +17,18 @@ namespace Pulse.Expressions.ScalarExpressions
 
         private string _StoreName;
         private string _FieldName;
-        private CellAffinity _Affinity;
+        private CellAffinity _ValueAffinity;
         private int _Size;
+        private Host _Host;
 
-        public ScalarExpressionStoreRef(ScalarExpression Parent, string StoreName, string FieldName, CellAffinity Affinity, int Size)
+        public ScalarExpressionStoreRef(Host Host, ScalarExpression Parent, string StoreName, string FieldName, CellAffinity Affinity, int Size)
             : base(Parent, ScalarExpressionAffinity.Heap)
         {
             this._StoreName = StoreName;
             this._FieldName = FieldName;
-            this._Affinity = Affinity;
+            this._ValueAffinity = Affinity;
             this._Size = Size;
+            this._Host = Host;
         }
 
         // Overrides //
@@ -37,22 +39,27 @@ namespace Pulse.Expressions.ScalarExpressions
 
         public override ScalarExpression CloneOfMe()
         {
-            return new ScalarExpressionStoreRef(this.ParentNode, this._StoreName, this._FieldName, this._Affinity, this._Size);
+            return new ScalarExpressionStoreRef(this._Host, this.ParentNode, this._StoreName, this._FieldName, this._ValueAffinity, this._Size);
         }
 
-        public override int ExpressionSize()
+        public override int ReturnSize()
         {
             return this._Size;
         }
 
-        public override CellAffinity ExpressionReturnAffinity()
+        public override CellAffinity ReturnAffinity()
         {
-            return this._Affinity;
+            return this._ValueAffinity;
         }
 
         public override Cell Evaluate(FieldResolver Variants)
         {
             return Variants[this._StoreName].GetScalar(this._FieldName);
+        }
+
+        public override string BuildAlias()
+        {
+            return this._FieldName;
         }
 
     }

@@ -17,7 +17,7 @@ namespace Pulse.Expressions.ScalarExpressions
     /// <summary>
     /// Represents the base class for all expressions
     /// </summary>
-    public abstract class ScalarExpression : IBindable, IExpression
+    public abstract class ScalarExpression : IBindable
     {
 
         protected ScalarExpressionAffinity _Affinity;
@@ -165,7 +165,7 @@ namespace Pulse.Expressions.ScalarExpressions
         {
             List<CellAffinity> c = new List<CellAffinity>();
             foreach (ScalarExpression x in _ChildNodes)
-                c.Add(x.ExpressionReturnAffinity());
+                c.Add(x.ReturnAffinity());
             return c.ToArray();
         }
 
@@ -179,7 +179,7 @@ namespace Pulse.Expressions.ScalarExpressions
 
             List<int> c = new List<int>();
             foreach (ScalarExpression x in _ChildNodes)
-                c.Add(x.ExpressionSize());
+                c.Add(x.ReturnSize());
             return c.ToArray();
 
         }
@@ -190,20 +190,23 @@ namespace Pulse.Expressions.ScalarExpressions
         /// </summary>
         /// <param name="Variants"></param>
         /// <returns></returns>
-        public abstract CellAffinity ExpressionReturnAffinity();
+        public abstract CellAffinity ReturnAffinity();
 
         /// <summary>
         /// Gets the return size
         /// </summary>
         /// <param name="Variants"></param>
         /// <returns></returns>
-        public abstract int ExpressionSize();
+        public abstract int ReturnSize();
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public abstract ScalarExpression CloneOfMe();
+        public virtual ScalarExpression CloneOfMe()
+        {
+            return this;
+        }
 
         /// <summary>
         /// 
@@ -216,7 +219,10 @@ namespace Pulse.Expressions.ScalarExpressions
         /// 
         /// </summary>
         /// <returns></returns>
-        public abstract string Unparse(FieldResolver Variants);
+        public virtual string Unparse(FieldResolver Variants)
+        {
+            return "NULL";
+        }
 
         /// <summary>
         /// Binds an expression to the tree
@@ -237,123 +243,121 @@ namespace Pulse.Expressions.ScalarExpressions
             get { return false; }
         }
 
-        // Inderfaces //
-        public SuperExpressionAffinity SuperAffinity { get { return SuperExpressionAffinity.Scalar; } }
-
-        public ScalarExpression Scalar { get { return this; } }
-
-        public MatrixExpression Matrix { get { return null; } }
-
-        public RecordExpression Record { get { return null; } }
-
-        public TableExpression Table { get { return null; } }
+        /// <summary>
+        /// Returns a field name to use as an alias; this is NOT gauranteed to be unique
+        /// </summary>
+        /// <returns></returns>
+        public virtual string BuildAlias()
+        {
+            return "X" + Host.Tocks().ToString();
+        }
 
         // Opperators //
+        public static ScalarExpression operator -(ScalarExpression A)
+        {
+            return new ScalarExpressionUnary.SclarExpressionMinus(A);
+        }
+
+        public static ScalarExpression operator +(ScalarExpression A)
+        {
+            return new ScalarExpressionUnary.SclarExpressionPlus(A);
+        }
+
+        public static ScalarExpression operator !(ScalarExpression A)
+        {
+            return new ScalarExpressionUnary.SclarExpressionNot(A);
+        }
+
         public static ScalarExpression operator +(ScalarExpression A, ScalarExpression B)
         {
-            ScalarExpression x = new ScalarExpressionFunction.ExpressionAdd();
-            x.AddChildren(A, B);
-            return x;
+            return new ScalarExpressionBinary.ScalarExpressionAdd(A, B);
         }
 
         public static ScalarExpression operator -(ScalarExpression A, ScalarExpression B)
         {
-            ScalarExpression x = new ScalarExpressionFunction.ExpressionSubtract();
-            x.AddChildren(A, B);
-            return x;
+            return new ScalarExpressionBinary.ScalarExpressionSubtract(A, B);
         }
 
         public static ScalarExpression operator *(ScalarExpression A, ScalarExpression B)
         {
-            ScalarExpression x = new ScalarExpressionFunction.ExpressionMultiply();
-            x.AddChildren(A, B);
-            return x;
+            return new ScalarExpressionBinary.ScalarExpressionMultiply(A, B);
         }
 
         public static ScalarExpression operator /(ScalarExpression A, ScalarExpression B)
         {
-            ScalarExpression x = new ScalarExpressionFunction.ExpressionDivide();
-            x.AddChildren(A, B);
-            return x;
+            return new ScalarExpressionBinary.ScalarExpressionDivide(A, B);
         }
 
         public static ScalarExpression operator %(ScalarExpression A, ScalarExpression B)
         {
-            ScalarExpression x = new ScalarExpressionFunction.ExpressionModulo();
-            x.AddChildren(A, B);
-            return x;
+            return new ScalarExpressionBinary.ScalarExpressionMod(A, B);
         }
 
         public static ScalarExpression CDIV(ScalarExpression A, ScalarExpression B)
         {
-            ScalarExpression x = new ScalarExpressionFunction.ExpressionCheckedDivide();
-            x.AddChildren(A, B);
-            return x;
+            return new ScalarExpressionBinary.ScalarExpressionCheckDivide(A, B);
         }
 
         public static ScalarExpression EQ(ScalarExpression A, ScalarExpression B)
         {
-            ScalarExpression x = new ScalarExpressionFunction.ExpressionEquals();
-            x.AddChildren(A, B);
-            return x;
+            return new ScalarExpressionLogical.ScalarExpressionEquals(A, B);
         }
 
         public static ScalarExpression NEQ(ScalarExpression A, ScalarExpression B)
         {
-            ScalarExpression x = new ScalarExpressionFunction.ExpressionNotEquals();
-            x.AddChildren(A, B);
-            return x;
+            return new ScalarExpressionLogical.ScalarExpressionNotEquals(A, B);
         }
 
         public static ScalarExpression GT(ScalarExpression A, ScalarExpression B)
         {
-            ScalarExpression x = new ScalarExpressionFunction.ExpressionGreaterThan();
-            x.AddChildren(A, B);
-            return x;
+            return new ScalarExpressionLogical.ScalarExpressionGreaterThan(A, B);
         }
 
         public static ScalarExpression GTE(ScalarExpression A, ScalarExpression B)
         {
-            ScalarExpression x = new ScalarExpressionFunction.ExpressionGreaterThanOrEqualTo();
-            x.AddChildren(A, B);
-            return x;
+            return new ScalarExpressionLogical.ScalarExpressionGreaterThanOrEquals(A, B);
         }
 
         public static ScalarExpression LT(ScalarExpression A, ScalarExpression B)
         {
-            ScalarExpression x = new ScalarExpressionFunction.ExpressionLessThan();
-            x.AddChildren(A, B);
-            return x;
+            return new ScalarExpressionLogical.ScalarExpressionLessThan(A, B);
         }
 
         public static ScalarExpression LTE(ScalarExpression A, ScalarExpression B)
         {
-            ScalarExpression x = new ScalarExpressionFunction.ExpressionLessThanOrEqualTo();
-            x.AddChildren(A, B);
-            return x;
+            return new ScalarExpressionLogical.ScalarExpressionLessThanOrEquals(A, B);
         }
 
         public static ScalarExpression AND(ScalarExpression A, ScalarExpression B)
         {
-            ScalarExpression x = new ScalarExpressionFunction.ExpressionAnd();
-            x.AddChildren(A, B);
-            return x;
+            return new ScalarExpressionBinary.ScalarExpressionAnd(A, B);
         }
 
         public static ScalarExpression OR(ScalarExpression A, ScalarExpression B)
         {
-            ScalarExpression x = new ScalarExpressionFunction.ExpressionOr();
-            x.AddChildren(A, B);
-            return x;
+            return new ScalarExpressionBinary.ScalarExpressionOr(A, B);
         }
 
         public static ScalarExpression XOR(ScalarExpression A, ScalarExpression B)
         {
-            ScalarExpression x = new ScalarExpressionFunction.ExpressionXor();
-            x.AddChildren(A, B);
-            return x;
+            return new ScalarExpressionBinary.ScalarExpressionXor(A, B);
         }
 
+        public static ScalarExpression IF(ScalarExpression Predicate, ScalarExpression TrueValue, ScalarExpression FalseValue)
+        {
+            return new ScalarExpression.SclarExpressionIf(Predicate, TrueValue, FalseValue);
+        }
+
+        public static ScalarExpression IFNULL(ScalarExpression CheckValue, ScalarExpression IfNullValue)
+        {
+            return new ScalarExpression.SclarExpressionIfNull(CheckValue, IfNullValue);
+        }
+
+        public static ScalarExpression CAST(ScalarExpression Value, CellAffinity Type)
+        {
+            return new ScalarExpression.SclarExpressionCast(Value, Type);
+        }
+        
         public static ScalarExpression Value(bool Value)
         {
             return new ScalarExpressionConstant(null, new Cell(Value));
@@ -364,7 +368,27 @@ namespace Pulse.Expressions.ScalarExpressions
             return new ScalarExpressionConstant(null, new Cell(Value));
         }
 
+        public static ScalarExpression Value(byte Value)
+        {
+            return new ScalarExpressionConstant(null, new Cell(Value));
+        }
+
+        public static ScalarExpression Value(short Value)
+        {
+            return new ScalarExpressionConstant(null, new Cell(Value));
+        }
+
+        public static ScalarExpression Value(int Value)
+        {
+            return new ScalarExpressionConstant(null, new Cell(Value));
+        }
+
         public static ScalarExpression Value(long Value)
+        {
+            return new ScalarExpressionConstant(null, new Cell(Value));
+        }
+
+        public static ScalarExpression Value(float Value)
         {
             return new ScalarExpressionConstant(null, new Cell(Value));
         }
@@ -393,29 +417,6 @@ namespace Pulse.Expressions.ScalarExpressions
         {
             return new ScalarExpressionConstant(null, new Cell(Affinity));
         }
-
-        //public static ScalarExpression Field(IColumns Schema, string Store, string Name)
-        //{
-        //    int FieldOffset = Schema.Columns.ColumnIndex(Name);
-        //    CellAffinity Affinity = Schema.Columns.ColumnAffinity(FieldOffset);
-        //    int Size = Schema.Columns.ColumnSize(FieldOffset);
-        //    return new ScalarExpressionFieldRef2(null, ResolverOffset, FieldOffset, Affinity, Size);
-        //}
-
-        //public static ScalarExpression HeapRef(Host Host, string LibName, string ValName)
-        //{
-            
-        //    if (!Host.Libraries.Exists(LibName))
-        //        throw new Exception(string.Format("Library does not exist '{0}'", LibName));
-        //    if (!Host.Libraries[LibName].Values.Exists(ValName))
-        //        throw new Exception(string.Format("Variable '{0}' does not exist in '{1}'", ValName, LibName));
-
-        //    int HeapRef = Host.Libraries.GetPointer(LibName);
-        //    int ValRef = Host.Libraries[LibName].Values.GetPointer(ValName);
-
-        //    return new ScalarExpressionStoreRef(null, HeapRef, ValRef, Host.Libraries[HeapRef].Values[ValRef].Affinity, CellSerializer.Length(Host.Libraries[HeapRef].Values[ValRef]));
-
-        //}
 
         // Constants //
         public static ScalarExpression True
@@ -453,11 +454,6 @@ namespace Pulse.Expressions.ScalarExpressions
             get { return new ScalarExpressionConstant(null, new Cell("")); }
         }
 
-        public static ScalarExpression Now
-        {
-            get { return new ScalarExpressionConstant(null, new Cell(DateTime.Now)); }
-        }
-
         public static ScalarExpression NullBool
         {
             get { return new ScalarExpressionConstant(null, CellValues.NullBOOL); }
@@ -487,6 +483,527 @@ namespace Pulse.Expressions.ScalarExpressions
         {
             get { return new ScalarExpressionConstant(null, CellValues.NullBLOB); }
         }
+
+        public sealed class SclarExpressionCast : ScalarExpression
+        {
+
+            private CellAffinity _Type;
+            private ScalarExpression _Value;
+
+            public SclarExpressionCast(ScalarExpression Value, CellAffinity Type)
+                :base(null, ScalarExpressionAffinity.Function)
+            {
+                this._Type = Type;
+                this._Value = Value;
+            }
+
+            public override CellAffinity ReturnAffinity()
+            {
+                return this._Type;
+            }
+
+            public override int ReturnSize()
+            {
+                return CellConverter.CastSizeHelper(this._Value.ReturnAffinity(), this._Type, this._Value.ReturnSize());
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return CellConverter.Cast(this._Value.Evaluate(Variants), this._Type);
+            }
+
+        }
+
+        public sealed class SclarExpressionIf : ScalarExpression
+        {
+
+            private ScalarExpression _Predicate;
+            private ScalarExpression _ValueIfTrue;
+            private ScalarExpression _ValueIfFalse;
+
+            public SclarExpressionIf(ScalarExpression Predicate, ScalarExpression ValueIfTrue, ScalarExpression ValueIfFalse)
+                : base(null, ScalarExpressionAffinity.Function)
+            {
+                this._Predicate = Predicate;
+                this._ValueIfTrue = ValueIfTrue;
+                this._ValueIfFalse = (ValueIfFalse ?? new ScalarExpressionConstant(null, new Cell(ValueIfTrue.ReturnAffinity())));
+            }
+
+            public override CellAffinity ReturnAffinity()
+            {
+                CellAffinity vt = this._ValueIfTrue.ReturnAffinity();
+                CellAffinity vf = this._ValueIfFalse.ReturnAffinity();
+                if (vt >= vf)
+                    return vt;
+                return vf;
+            }
+
+            public override int ReturnSize()
+            {
+                CellAffinity vt = this._ValueIfTrue.ReturnAffinity();
+                CellAffinity vf = this._ValueIfFalse.ReturnAffinity();
+                if (vt >= vf)
+                    return this._ValueIfTrue.ReturnSize();
+                return this._ValueIfFalse.ReturnSize();
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                if (this._Predicate.Evaluate(Variants).valueBOOL == true)
+                    return this._ValueIfTrue.Evaluate(Variants);
+                else
+                    return this._ValueIfFalse.Evaluate(Variants);
+            }
+
+        }
+
+        public sealed class SclarExpressionIfNull : ScalarExpression
+        {
+
+            private ScalarExpression _TestValue;
+            private ScalarExpression _ValueIfNull;
+
+            public SclarExpressionIfNull(ScalarExpression TestValue, ScalarExpression ValueIfNull)
+                : base(null, ScalarExpressionAffinity.Function)
+            {
+                this._TestValue = TestValue;
+                this._ValueIfNull = ValueIfNull;
+            }
+
+            public override CellAffinity ReturnAffinity()
+            {
+                CellAffinity vt = this._TestValue.ReturnAffinity();
+                CellAffinity vf = this._ValueIfNull.ReturnAffinity();
+                if (vt >= vf)
+                    return vt;
+                return vf;
+            }
+
+            public override int ReturnSize()
+            {
+                CellAffinity vt = this._TestValue.ReturnAffinity();
+                CellAffinity vf = this._ValueIfNull.ReturnAffinity();
+                if (vt >= vf)
+                    return this._TestValue.ReturnSize();
+                return this._ValueIfNull.ReturnSize();
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                Cell Test = this._TestValue.Evaluate(Variants);
+                Cell ValueIfNull = this._ValueIfNull.Evaluate(Variants);
+                return (Test.IsNull ? ValueIfNull : Test);
+            }
+
+        }
+
+    
+    }
+
+    public abstract class ScalarExpressionUnary : ScalarExpression
+    {
+
+        private ScalarExpression _Value;
+
+        public ScalarExpressionUnary(ScalarExpression Parent, string Symbol, string Name, ScalarExpression Value)
+            : base(Parent, ScalarExpressionAffinity.Function)
+        {
+            this._Value = Value;
+        }
+
+        public override CellAffinity ReturnAffinity()
+        {
+            return this._Value.ReturnAffinity();
+        }
+
+        public override int ReturnSize()
+        {
+            return this._Value.ReturnSize();
+        }
+
+        public sealed class SclarExpressionPlus : ScalarExpressionUnary
+        {
+
+            public SclarExpressionPlus(ScalarExpression Value)
+                : base(null, "+", "PLUS", Value)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return +this._Value.Evaluate(Variants);
+            }
+
+        }
+
+        public sealed class SclarExpressionMinus : ScalarExpressionUnary
+        {
+
+            public SclarExpressionMinus(ScalarExpression Value)
+                : base(null, "-", "MINUS", Value)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return -this._Value.Evaluate(Variants);
+            }
+
+        }
+
+        public sealed class SclarExpressionNot : ScalarExpressionUnary
+        {
+
+            public SclarExpressionNot(ScalarExpression Value)
+                : base(null, "!", "NOT", Value)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return !this._Value.Evaluate(Variants);
+            }
+
+        }
+
+    }
+
+    public abstract class ScalarExpressionBinary : ScalarExpression
+    {
+
+        private ScalarExpression _Left;
+        private ScalarExpression _Right;
+        private string _FuncName;
+        private string _Symbol;
+
+        public ScalarExpressionBinary(ScalarExpression Parent, string Symbol, string Name, ScalarExpression Left, ScalarExpression Right)
+            : base(Parent, ScalarExpressionAffinity.Function)
+        {
+            this._Left = Left;
+            this._Right = Right;
+            this._FuncName = Name;
+            this._Symbol = Symbol;
+        }
+
+        public override CellAffinity ReturnAffinity()
+        {
+            CellAffinity l = this._Left.ReturnAffinity();
+            CellAffinity r = this._Right.ReturnAffinity();
+            return (l > r ? l : r);
+        }
+
+        public override int ReturnSize()
+        {
+            CellAffinity l = this._Left.ReturnAffinity();
+            CellAffinity r = this._Right.ReturnAffinity();
+            return (l > r ? this._Left.ReturnSize() : this._Right.ReturnSize());
+        }
+
+
+        public sealed class ScalarExpressionAdd : ScalarExpressionBinary
+        {
+
+            public ScalarExpressionAdd(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "+", "ADD", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return this._Left.Evaluate(Variants) + this._Right.Evaluate(Variants);
+            }
+
+        }
+
+        public sealed class ScalarExpressionSubtract : ScalarExpressionBinary
+        {
+
+            public ScalarExpressionSubtract(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "-", "SUBTRACT", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return this._Left.Evaluate(Variants) - this._Right.Evaluate(Variants);
+            }
+
+        }
+
+        public sealed class ScalarExpressionMultiply : ScalarExpressionBinary
+        {
+
+            public ScalarExpressionMultiply(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "*", "MULTIPLY", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return this._Left.Evaluate(Variants) * this._Right.Evaluate(Variants);
+            }
+
+        }
+
+        public sealed class ScalarExpressionDivide : ScalarExpressionBinary
+        {
+
+            public ScalarExpressionDivide(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "/", "DIVIDE", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return this._Left.Evaluate(Variants) / this._Right.Evaluate(Variants);
+            }
+
+        }
+
+        public sealed class ScalarExpressionCheckDivide : ScalarExpressionBinary
+        {
+
+            public ScalarExpressionCheckDivide(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "/?", "CDIVIDE", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return Cell.CheckDivide(this._Left.Evaluate(Variants), this._Right.Evaluate(Variants));
+            }
+
+        }
+
+        public sealed class ScalarExpressionMod : ScalarExpressionBinary
+        {
+
+            public ScalarExpressionMod(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "%", "MOD", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return this._Left.Evaluate(Variants) % this._Right.Evaluate(Variants);
+            }
+
+        }
+
+        public sealed class ScalarExpressionPower : ScalarExpressionBinary
+        {
+
+            public ScalarExpressionPower(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "^", "POWER", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return CellFunctions.Power(this._Left.Evaluate(Variants), this._Right.Evaluate(Variants));
+            }
+
+        }
+
+        public sealed class ScalarExpressionAnd : ScalarExpressionBinary
+        {
+
+            public ScalarExpressionAnd(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "&&", "And", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return this._Left.Evaluate(Variants) && this._Right.Evaluate(Variants);
+            }
+
+        }
+
+        public sealed class ScalarExpressionOr : ScalarExpressionBinary
+        {
+
+            public ScalarExpressionOr(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "||", "Or", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return this._Left.Evaluate(Variants) || this._Right.Evaluate(Variants);
+            }
+
+        }
+
+        public sealed class ScalarExpressionXor : ScalarExpressionBinary
+        {
+
+            public ScalarExpressionXor(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "^^", "Xor", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return this._Left.Evaluate(Variants) ^ this._Right.Evaluate(Variants);
+            }
+
+        }
+
+
+
+
+
+    }
+
+    public abstract class ScalarExpressionLogical : ScalarExpression
+    {
+
+        private ScalarExpression _Left;
+        private ScalarExpression _Right;
+
+        public ScalarExpressionLogical(ScalarExpression Parent, string Symbol, string Name, ScalarExpression Left, ScalarExpression Right)
+            : base(Parent, ScalarExpressionAffinity.Function)
+        {
+            this._Left = Left;
+            this._Right = Right;
+        }
+
+        public override CellAffinity ReturnAffinity()
+        {
+            return CellAffinity.BOOL;
+        }
+
+        public override int ReturnSize()
+        {
+            return CellSerializer.BOOL_SIZE;
+        }
+
+        public sealed class ScalarExpressionEquals : ScalarExpressionLogical
+        {
+
+            public ScalarExpressionEquals(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "==", "EQUALS", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return (this._Left.Evaluate(Variants) == this._Right.Evaluate(Variants) ? CellValues.True : CellValues.False);
+            }
+
+        }
+
+        public sealed class ScalarExpressionStrictEquals : ScalarExpressionLogical
+        {
+
+            public ScalarExpressionStrictEquals(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "===", "STRICTEQUALS", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                Cell l = this._Left.Evaluate(Variants);
+                Cell r = this._Right.Evaluate(Variants);
+                return (l == r && l.Affinity == r.AFFINITY ? CellValues.True : CellValues.False);
+            }
+
+        }
+
+        public sealed class ScalarExpressionNotEquals : ScalarExpressionLogical
+        {
+
+            public ScalarExpressionNotEquals(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "!=", "NOTEQUALS", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return (this._Left.Evaluate(Variants) != this._Right.Evaluate(Variants) ? CellValues.True : CellValues.False);
+            }
+
+        }
+
+        public sealed class ScalarExpressionStrictNotEquals : ScalarExpressionLogical
+        {
+
+            public ScalarExpressionStrictNotEquals(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "!==", "STRICTNOTEQUALS", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                Cell l = this._Left.Evaluate(Variants);
+                Cell r = this._Right.Evaluate(Variants);
+                return !(l == r && l.Affinity == r.AFFINITY ? CellValues.True : CellValues.False);
+            }
+
+        }
+
+        public sealed class ScalarExpressionLessThan : ScalarExpressionLogical
+        {
+
+            public ScalarExpressionLessThan(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "<", "LESSTHAN", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return (this._Left.Evaluate(Variants) < this._Right.Evaluate(Variants) ? CellValues.True : CellValues.False);
+            }
+
+        }
+
+        public sealed class ScalarExpressionLessThanOrEquals : ScalarExpressionLogical
+        {
+
+            public ScalarExpressionLessThanOrEquals(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "<=", "LESSTHANOREQUALS", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return (this._Left.Evaluate(Variants) <= this._Right.Evaluate(Variants) ? CellValues.True : CellValues.False);
+            }
+
+        }
+
+        public sealed class ScalarExpressionGreaterThan : ScalarExpressionLogical
+        {
+
+            public ScalarExpressionGreaterThan(ScalarExpression Left, ScalarExpression Right)
+                : base(null, ">", "GREATERTHAN", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return (this._Left.Evaluate(Variants) > this._Right.Evaluate(Variants) ? CellValues.True : CellValues.False);
+            }
+
+        }
+
+        public sealed class ScalarExpressionGreaterThanOrEquals : ScalarExpressionLogical
+        {
+
+            public ScalarExpressionGreaterThanOrEquals(ScalarExpression Left, ScalarExpression Right)
+                : base(null, ">=", "GREATERTHANOREQUALS", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                return (this._Left.Evaluate(Variants) >= this._Right.Evaluate(Variants) ? CellValues.True : CellValues.False);
+            }
+
+        }
+
+
     }
 
 }

@@ -42,12 +42,12 @@ namespace Pulse.Expressions.Aggregates
 
         public override CellAffinity AggregateAffinity()
         {
-            return this._Value.ExpressionReturnAffinity();
+            return this._Value.ReturnAffinity();
         }
 
         public override int AggregateSize()
         {
-            return this._Value.ExpressionSize();
+            return this._Value.ReturnSize();
         }
 
         public override Aggregate CloneOfMe()

@@ -15,25 +15,31 @@ namespace Pulse.Expressions.ScalarExpressions
     public abstract class ScalarExpressionFunction : ScalarExpression
     {
 
-        private int _MaxParamterCount;
-        private bool _DynamicReturn;
-        private CellAffinity _ReturnAffinity;
+        protected int _MaxParamterCount;
+        protected bool _DynamicReturn;
+        protected CellAffinity _ReturnAffinity;
+        protected List<Parameter> _Params;
+        protected Host _Host;
 
-        public ScalarExpressionFunction(ScalarExpression Parent, string Name, int ParameterCount)
+        public ScalarExpressionFunction(Host Host, ScalarExpression Parent, string Name, int ParameterCount)
             : base(Parent, ScalarExpressionAffinity.Function)
         {
             this.Name = Name;
             this._MaxParamterCount = ParameterCount;
             this._DynamicReturn = true;
+            this._Host = Host;
+            this._Params = new List<Parameter>();
         }
 
-        public ScalarExpressionFunction(ScalarExpression Parent, string Name, int ParameterCount, CellAffinity ReturnAffinity)
+        public ScalarExpressionFunction(Host Host, ScalarExpression Parent, string Name, int ParameterCount, CellAffinity ReturnAffinity)
             : base(Parent, ScalarExpressionAffinity.Function)
         {
             this.Name = Name;
             this._MaxParamterCount = ParameterCount;
             this._ReturnAffinity = ReturnAffinity;
             this._DynamicReturn = false;
+            this._Host = Host;
+            this._Params = new List<Parameter>();
         }
 
         /// <summary>
@@ -59,7 +65,7 @@ namespace Pulse.Expressions.ScalarExpressions
         /// </summary>
         /// <param name="Variants"></param>
         /// <returns></returns>
-        public override CellAffinity ExpressionReturnAffinity()
+        public override CellAffinity ReturnAffinity()
         {
             if (this._DynamicReturn)
                 return CellAffinityHelper.Highest(this.ReturnAffinityChildren());
@@ -71,8 +77,10 @@ namespace Pulse.Expressions.ScalarExpressions
         /// </summary>
         /// <param name="Variants"></param>
         /// <returns></returns>
-        public override int ExpressionSize()
+        public override int ReturnSize()
         {
+            if (this._ChildNodes.Count == 0)
+                return CellSerializer.DefaultLength(this._ReturnAffinity);
             return this.ReturnSizeChildren().Max();
         }
 
@@ -100,2155 +108,29 @@ namespace Pulse.Expressions.ScalarExpressions
             }
         }
 
-        //---------------------------------------------------------------------------------------------
-        //---------------------------------------------------------------------------------------------
-        //---------------------------------------------------------------------------------------------
-
-        // Unary Opperations //
-        public const string NAME_NOT = "NOT";
-        public const string NAME_PLUS = "PLUS";
-        public const string NAME_MINUS = "MINUS";
-
-        // Binary Opperations //
-        public const string NAME_ADD = "ADD";
-        public const string NAME_SUB = "SUB";
-        public const string NAME_MULT = "MULT";
-        public const string NAME_DIV = "DIV";
-        public const string NAME_CDIV = "CDIV";
-        public const string NAME_MOD = "MOD";
-        public const string NAME_POWER = "POWER";
-        public const string NAME_EQ = "EQ";
-        public const string NAME_NEQ = "NEQ";
-        public const string NAME_GT = "GT";
-        public const string NAME_GTE = "GTE";
-        public const string NAME_LT = "LT";
-        public const string NAME_LTE = "LTE";
-        public const string NAME_AND = "AND";
-        public const string NAME_OR = "OR";
-        public const string NAME_XOR = "XOR";
-
-        // Special Opperations //
-        public const string NAME_IF = "IF";
-        public const string NAME_IFNULL = "IF_NULL";
-        public const string NAME_CAST = "CAST";
-
-        // Special Functions //
-        public const string NAME_LIKE = "LIKE";
-        public const string NAME_MATCH = "MATCH";
-        public const string NAME_GUID = "GUID";
-        public const string NAME_THREAD_ID = "THREAD_ID";
-        public const string NAME_RAND_BOOL = "RAND_BOOL";
-        public const string NAME_RAND_DATE = "RAND_DATE";
-        public const string NAME_RAND_INT = "RAND_INT";
-        public const string NAME_RAND_NUM = "RAND_NUM";
-        public const string NAME_RAND_BLOB = "RAND_BLOB";
-        public const string NAME_RAND_STRING = "RAND_STRING";
-
-        // Date Functions //
-        public const string NAME_DATE_BUILD = "DATE_BUILD";
-        public const string NAME_NOW = "NOW";
-        public const string NAME_YEAR = "YEAR";
-        public const string NAME_MONTH = "MONTH";
-        public const string NAME_DAY = "DAY";
-        public const string NAME_HOUR = "HOUR";
-        public const string NAME_MINUTE = "MINUTE";
-        public const string NAME_SECOND = "SECOND";
-        public const string NAME_MILISECOND = "MILISECOND";
-        public const string NAME_TICKS = "TICKS";
-        public const string NAME_ELAPSED = "ELAPSED";
-        public const string NAME_TIME_SPAN = "TIME_SPAN";
-
-        // String Functions //
-        public const string NAME_SUBSTR = "SUBSTR";
-        public const string NAME_REPLACE = "REPLACE";
-        public const string NAME_POSITION = "POSITION";
-        public const string NAME_LENGTH = "LENGTH";
-        public const string NAME_TRIM = "TRIM";
-        public const string NAME_TO_UTF16 = "TO_UTF16";
-        public const string NAME_TO_UTF8 = "TO_UTF8";
-        public const string NAME_TO_HEX = "TO_HEX";
-        public const string NAME_FROM_UTF16 = "FROM_UTF16";
-        public const string NAME_FROM_UTF8 = "FROM_UTF8";
-        public const string NAME_FROM_HEX = "FROM_HEX";
-
-        // Numerics //
-        public const string NAME_LOG = "LOG";
-        public const string NAME_EXP = "EXP";
-        public const string NAME_SQRT = "SQRT";
-        public const string NAME_SIN = "SIN";
-        public const string NAME_COS = "COS";
-        public const string NAME_TAN = "TAN";
-        public const string NAME_SINH = "SINH";
-        public const string NAME_COSH = "COSH";
-        public const string NAME_TANH = "TANH";
-        public const string NAME_LOGIT = "LOGIT";
-        public const string NAME_NORMAL = "NORMAL";
-        public const string NAME_ABS = "ABS";
-        public const string NAME_SIGN = "SIGN";
-        public const string NAME_ROUND = "ROUND";
-
-        // Meta //
-        public const string NAME_FORMULA = "FORMULA";
-        public const string NAME_TYPEOF = "TYPEOF";
-        public const string NAME_SIZEOF = "SIZEOF";
-
-        // Uninary Opperations //
-        public class ExpressionNot : ScalarExpressionFunction
-        {
-
-            public ExpressionNot()
-                : base(null, NAME_NOT, 1)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionNot();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return !this._ChildNodes[0].Evaluate(Variants);
-
-            }
-
-        }
-
-        public class ExpressionPlus : ScalarExpressionFunction
-        {
-
-            public ExpressionPlus()
-                : base(null, NAME_ADD, 1)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionPlus();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return +this._ChildNodes[0].Evaluate(Variants);
-
-            }
-
-        }
-
-        public class ExpressionMinus : ScalarExpressionFunction
-        {
-
-            public ExpressionMinus()
-                : base(null, NAME_MINUS, 1)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionMinus();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return -this._ChildNodes[0].Evaluate(Variants);
-
-            }
-
-        }
-
-        // Binary Opperations //
-        public class ExpressionAdd : ScalarExpressionFunction
-        {
-
-            public ExpressionAdd()
-                : base(null, NAME_ADD, 2)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionAdd();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return this._ChildNodes[0].Evaluate(Variants) + this._ChildNodes[1].Evaluate(Variants);
-
-            }
-
-        }
-
-        public class ExpressionSubtract : ScalarExpressionFunction
-        {
-
-            public ExpressionSubtract()
-                : base(null, NAME_SUB, 2)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionSubtract();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return this._ChildNodes[0].Evaluate(Variants) - this._ChildNodes[1].Evaluate(Variants);
-
-            }
-
-        }
-
-        public class ExpressionMultiply : ScalarExpressionFunction
-        {
-
-            public ExpressionMultiply()
-                : base(null, NAME_MULT, 2)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionMultiply();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return this._ChildNodes[0].Evaluate(Variants) * this._ChildNodes[1].Evaluate(Variants);
-
-            }
-
-        }
-
-        public class ExpressionDivide : ScalarExpressionFunction
-        {
-
-            public ExpressionDivide()
-                : base(null, NAME_DIV, 2)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionDivide();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return this._ChildNodes[0].Evaluate(Variants) / this._ChildNodes[1].Evaluate(Variants);
-
-            }
-
-        }
-
-        public class ExpressionCheckedDivide : ScalarExpressionFunction
-        {
-
-            public ExpressionCheckedDivide()
-                : base(null, NAME_CDIV, 2)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionCheckedDivide();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return Cell.CheckDivide(this._ChildNodes[0].Evaluate(Variants), this._ChildNodes[1].Evaluate(Variants));
-
-            }
-
-        }
-
-        public class ExpressionModulo : ScalarExpressionFunction
-        {
-
-            public ExpressionModulo()
-                : base(null, NAME_MOD, 2)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionModulo();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return this._ChildNodes[0].Evaluate(Variants) % this._ChildNodes[1].Evaluate(Variants);
-
-            }
-
-        }
-
-        public class ExpressionPower : ScalarExpressionFunction
-        {
-
-            public ExpressionPower()
-                : base(null, NAME_POWER, 2)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionPower();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return CellFunctions.Power(this._ChildNodes[0].Evaluate(Variants), this._ChildNodes[1].Evaluate(Variants));
-
-            }
-
-        }
-
-        public class ExpressionEquals : ScalarExpressionFunction
-        {
-
-            public ExpressionEquals()
-                : base(null, NAME_EQ, 2, CellAffinity.BOOL)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionEquals();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return this._ChildNodes[0].Evaluate(Variants) == this._ChildNodes[1].Evaluate(Variants) ? CellValues.True : CellValues.False;
-
-            }
-
-        }
-
-        public class ExpressionNotEquals : ScalarExpressionFunction
-        {
-
-            public ExpressionNotEquals()
-                : base(null, NAME_EQ, 2, CellAffinity.BOOL)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionNotEquals();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return this._ChildNodes[0].Evaluate(Variants) != this._ChildNodes[1].Evaluate(Variants) ? CellValues.True : CellValues.False;
-
-            }
-
-        }
-
-        public class ExpressionLessThan : ScalarExpressionFunction
-        {
-
-            public ExpressionLessThan()
-                : base(null, NAME_LT, 2, CellAffinity.BOOL)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionLessThan();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return this._ChildNodes[0].Evaluate(Variants) < this._ChildNodes[1].Evaluate(Variants) ? CellValues.True : CellValues.False;
-
-            }
-
-        }
-
-        public class ExpressionLessThanOrEqualTo : ScalarExpressionFunction
-        {
-
-            public ExpressionLessThanOrEqualTo()
-                : base(null, NAME_LTE, 2, CellAffinity.BOOL)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionLessThanOrEqualTo();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return this._ChildNodes[0].Evaluate(Variants) <= this._ChildNodes[1].Evaluate(Variants) ? CellValues.True : CellValues.False;
-
-            }
-
-        }
-
-        public class ExpressionGreaterThan : ScalarExpressionFunction
-        {
-
-            public ExpressionGreaterThan()
-                : base(null, NAME_GT, 2, CellAffinity.BOOL)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionGreaterThan();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return this._ChildNodes[0].Evaluate(Variants) > this._ChildNodes[1].Evaluate(Variants) ? CellValues.True : CellValues.False;
-
-            }
-
-        }
-
-        public class ExpressionGreaterThanOrEqualTo : ScalarExpressionFunction
-        {
-
-            public ExpressionGreaterThanOrEqualTo()
-                : base(null, NAME_GTE, 2, CellAffinity.BOOL)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionGreaterThanOrEqualTo();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return this._ChildNodes[0].Evaluate(Variants) >= this._ChildNodes[1].Evaluate(Variants) ? CellValues.True : CellValues.False;
-
-            }
-
-        }
-
-        public class ExpressionAnd : ScalarExpressionFunction
-        {
-
-            public ExpressionAnd()
-                : base(null, NAME_AND, 2)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionAnd();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return this._ChildNodes[0].Evaluate(Variants) & this._ChildNodes[1].Evaluate(Variants);
-
-            }
-
-        }
-
-        public class ExpressionOr : ScalarExpressionFunction
-        {
-
-            public ExpressionOr()
-                : base(null, NAME_OR, 2)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionOr();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return this._ChildNodes[0].Evaluate(Variants) | this._ChildNodes[1].Evaluate(Variants);
-
-            }
-
-        }
-
-        public class ExpressionXor : ScalarExpressionFunction
-        {
-
-            public ExpressionXor()
-                : base(null, NAME_XOR, 2)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionXor();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return this._ChildNodes[0].Evaluate(Variants) ^ this._ChildNodes[1].Evaluate(Variants);
-
-            }
-
-        }
-
-        // Special Opperations //
-        public class ExpressionIf : ScalarExpressionFunction
-        {
-
-            public ExpressionIf()
-                : base(null, NAME_IF, 3)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionIf();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return CellFunctions.If(this._ChildNodes[0].Evaluate(Variants), this._ChildNodes[1].Evaluate(Variants), this._ChildNodes[2].Evaluate(Variants));
-
-            }
-
-        }
-
-        public class ExpressionIfNull : ScalarExpressionFunction
-        {
-
-            public ExpressionIfNull()
-                : base(null, NAME_IFNULL, 2)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionIfNull();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-                return x.IsNull ? this._ChildNodes[1].Evaluate(Variants) : x;
-
-            }
-
-        }
-
-        public class ExpressionCast : ScalarExpressionFunction
-        {
-
-            private CellAffinity _t;
-
-            public ExpressionCast(CellAffinity Type)
-                : base(null, NAME_CAST, 1)
-            {
-                this._t = Type;
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionCast(this._t);
-            }
-
-            public override CellAffinity ExpressionReturnAffinity()
-            {
-                return this._t;
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return CellConverter.Cast(this._ChildNodes[0].Evaluate(Variants), this._t);
-
-            }
-
-        }
-
-        // Special Functions //
-        public class ExpressionLike : ScalarExpressionFunction
-        {
-
-            public const char WILD_CARD = '*';
-
-            public ExpressionLike()
-                : base(null, NAME_LIKE, 2, CellAffinity.BOOL)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionLike();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell cText = this._ChildNodes[0].Evaluate(Variants);
-                Cell cPatern = this._ChildNodes[1].Evaluate(Variants);
-                string Text = cText.valueSTRING;
-                string Patern = cPatern.valueSTRING;
-
-                if (cText.IsNull || cPatern.IsNull)
-                    return CellValues.False;
-
-                bool x = false, y = false, z = false;
-
-                if (Patern.First() == WILD_CARD)
-                {
-                    Patern = Patern.Remove(0, 1);
-                    x = true;
-                }
-
-                if (Patern.Last() == WILD_CARD)
-                {
-                    Patern = Patern.Remove(Patern.Length - 1, 1);
-                    y = true;
-                }
-
-                if (x && y) // '*Hello World*' //
-                {
-                    z = Text.ToUpper().Contains(Patern.ToUpper());
-                }
-                else if (x && !y) // '*Hello World' //
-                {
-                    z = Text.EndsWith(Patern, StringComparison.OrdinalIgnoreCase);
-                }
-                else if (!x && y) // 'Hello World*' //
-                {
-                    z = Text.StartsWith(Patern, StringComparison.OrdinalIgnoreCase);
-                }
-                else // !OriginalPage && !NewNode // 'Hello World' //
-                {
-                    z = string.Equals(Text, Patern, StringComparison.OrdinalIgnoreCase);
-                }
-
-                return new Cell(z);
-
-            }
-
-        }
-
-        public class ExpressionMatch : ScalarExpressionFunction
-        {
-
-            public ExpressionMatch()
-                : base(null, NAME_MATCH, -128, CellAffinity.LONG)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionMatch();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count <= 1)
-                    return CellValues.NullLONG;
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-                for (int i = 1; i < this._ChildNodes.Count; i++)
-                {
-
-                    Cell y = this._ChildNodes[i].Evaluate(Variants);
-                    if (x == y)
-                        return new Cell(i - 1);
-
-                }
-
-                return CellValues.NullLONG;
-
-            }
-
-        }
-
-        public class ExpressionGUID : ScalarExpressionFunction
-        {
-
-            public ExpressionGUID()
-                : base(null, NAME_GUID, 0, CellAffinity.BLOB)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionGUID();
-            }
-
-            public override bool IsVolatile
-            {
-                get { return true; }
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-                return new Cell(Guid.NewGuid().ToByteArray());
-            }
-
-        }
-
-        public class ExpressionThreadID : ScalarExpressionFunction
-        {
-
-            public ExpressionThreadID()
-                : base(null, NAME_THREAD_ID, 0, CellAffinity.LONG)
-            {
-            }
-
-            public override bool IsVolatile
-            {
-                get { return true; }
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionThreadID();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-                return new Cell(System.Threading.Thread.CurrentThread.ManagedThreadId);
-            }
-
-        }
-
-        public class ExpressionRandomBool : ScalarExpressionFunction
-        {
-
-            private RandomCell _Generator;
-
-            public ExpressionRandomBool(RandomCell Generator)
-                : base(null, NAME_RAND_BOOL, -128, CellAffinity.BOOL)
-            {
-                this._Generator = Generator;
-            }
-
-            public override bool IsVolatile
-            {
-                get { return true; }
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionRandomBool(this._Generator);
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count == 0)
-                    return this._Generator.NextBool();
-
-                double p = this._ChildNodes[0].Evaluate(Variants).valueDOUBLE;
-                return this._Generator.NextBool(p);
-
-            }
-
-        }
-
-        public class ExpressionRandomDate : ScalarExpressionFunction
-        {
-
-            private RandomCell _Generator;
-
-            public ExpressionRandomDate(RandomCell Generator)
-                : base(null, NAME_RAND_DATE, -128, CellAffinity.DATE)
-            {
-                this._Generator = Generator;
-            }
-
-            public override bool IsVolatile
-            {
-                get { return true; }
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionRandomDate(this._Generator);
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count == 0)
-                    return this._Generator.NextDate();
-
-                DateTime min = (this._ChildNodes.Count >= 1 ? this._ChildNodes[0].Evaluate(Variants).valueDATE : DateTime.MinValue);
-                DateTime max = (this._ChildNodes.Count >= 2 ? this._ChildNodes[1].Evaluate(Variants).valueDATE : DateTime.MaxValue);
-
-                return this._Generator.NextDate(min, max);
-
-            }
-
-        }
-
-        public class ExpressionRandomInt : ScalarExpressionFunction
-        {
-
-            private RandomCell _Generator;
-
-            public ExpressionRandomInt(RandomCell Generator)
-                : base(null, NAME_RAND_INT, -128, CellAffinity.LONG)
-            {
-                this._Generator = Generator;
-            }
-
-            public override bool IsVolatile
-            {
-                get { return true; }
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionRandomInt(this._Generator);
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count == 0)
-                    return this._Generator.NextLong();
-
-                long min = (this._ChildNodes.Count >= 1 ? this._ChildNodes[0].Evaluate(Variants).valueLONG : 0);
-                long max = (this._ChildNodes.Count >= 2 ? this._ChildNodes[1].Evaluate(Variants).valueLONG : long.MaxValue);
-
-                return this._Generator.NextLong(min, max);
-
-            }
-
-        }
-
-        public class ExpressionRandomNum : ScalarExpressionFunction
-        {
-
-            private RandomCell _Generator;
-
-            public ExpressionRandomNum(RandomCell Generator)
-                : base(null, NAME_RAND_NUM, -128, CellAffinity.DOUBLE)
-            {
-                this._Generator = Generator;
-            }
-
-            public override bool IsVolatile
-            {
-                get { return true; }
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionRandomNum(this._Generator);
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count == 0)
-                    return this._Generator.NextDouble();
-
-                double min = (this._ChildNodes.Count >= 1 ? this._ChildNodes[0].Evaluate(Variants).valueDOUBLE : 0D);
-                double max = (this._ChildNodes.Count >= 2 ? this._ChildNodes[1].Evaluate(Variants).valueDOUBLE : 1D);
-
-                if (min == max && min == 0)
-                    return this._Generator.NextDoubleGauss();
-
-                return this._Generator.NextDouble(min, max);
-
-            }
-
-        }
-
-        public class ExpressionRandomBLOB : ScalarExpressionFunction
-        {
-
-            private RandomCell _Generator;
-
-            public ExpressionRandomBLOB(RandomCell Generator)
-                : base(null, NAME_RAND_NUM, -128, CellAffinity.BLOB)
-            {
-                this._Generator = Generator;
-            }
-
-            public override bool IsVolatile
-            {
-                get { return true; }
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionRandomBLOB(this._Generator);
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count == 0)
-                    return this._Generator.NextBLOB(32);
-
-                int Length = (int)this._ChildNodes[0].Evaluate(Variants).valueLONG;
-
-                return this._Generator.NextBLOB(Length);
-
-            }
-
-        }
-
-        public class ExpressionRandomString : ScalarExpressionFunction
-        {
-
-            private RandomCell _Generator;
-
-            public ExpressionRandomString(RandomCell Generator)
-                : base(null, NAME_RAND_NUM, -128, CellAffinity.STRING)
-            {
-                this._Generator = Generator;
-            }
-
-            public override bool IsVolatile
-            {
-                get { return true; }
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionRandomString(this._Generator);
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count == 0)
-                {
-                    return this._Generator.NextStringASCIIPrintable(16);
-                }
-                else if (this._ChildNodes.Count == 1)
-                {
-                    int Length = (int)this._ChildNodes[0].Evaluate(Variants).valueLONG;
-                    return this._Generator.NextStringASCIIPrintable(Length);
-                }
-                else
-                {
-                    int Length = (int)this._ChildNodes[0].Evaluate(Variants).valueLONG;
-                    string Corpus = this._ChildNodes[1].Evaluate(Variants).valueSTRING;
-                    return this._Generator.NextString(Length, Corpus);
-                }
-
-
-            }
-
-        }
-
-        // Date Functions //
-        public class ExpressionDateBuild : ScalarExpressionFunction
-        {
-
-            public ExpressionDateBuild()
-                : base(null, NAME_DATE_BUILD, -7, CellAffinity.DATE)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionDateBuild();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count == 0)
-                    return CellValues.NullDATE;
-
-                int[] xdate = new int[7];
-
-                for (int i = 0; i < 7; i++)
-                {
-
-                    if (this._ChildNodes.Count >= i)
-                    {
-                        xdate[i] = (int)this._ChildNodes[i].Evaluate(Variants).valueLONG;
-                    }
-
-                }
-
-                DateTime x = new DateTime(xdate[0], xdate[1], xdate[2], xdate[3], xdate[4], xdate[5], xdate[6]);
-
-                return new Cell(x);
-
-            }
-
-        }
-
-        public class ExpressionNow : ScalarExpressionFunction
-        {
-
-            public ExpressionNow()
-                : base(null, NAME_NOW, 0, CellAffinity.DATE)
-            {
-            }
-
-            public override bool IsVolatile
-            {
-                get { return true; }
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionDateBuild();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-                return new Cell(DateTime.Now);
-            }
-
-        }
-
-        public class ExpressionTicks : ScalarExpressionFunction
-        {
-
-            public ExpressionTicks()
-                : base(null, NAME_TICKS, 0, CellAffinity.LONG)
-            {
-            }
-
-            public override bool IsVolatile
-            {
-                get { return true; }
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionTicks();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-                return new Cell(DateTime.Now.Ticks);
-            }
-
-        }
-
-        public class ExpressionYear : ScalarExpressionFunction
-        {
-
-            public ExpressionYear()
-                : base(null, NAME_YEAR, 1, CellAffinity.LONG)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionYear();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return CellFunctions.Year(this._ChildNodes[0].Evaluate(Variants));
-
-            }
-
-        }
-
-        public class ExpressionMonth : ScalarExpressionFunction
-        {
-
-            public ExpressionMonth()
-                : base(null, NAME_MONTH, 1, CellAffinity.LONG)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionMonth();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return CellFunctions.Month(this._ChildNodes[0].Evaluate(Variants));
-
-            }
-
-        }
-
-        public class ExpressionDay : ScalarExpressionFunction
-        {
-
-            public ExpressionDay()
-                : base(null, NAME_DAY, 1, CellAffinity.LONG)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionDay();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return CellFunctions.Day(this._ChildNodes[0].Evaluate(Variants));
-
-            }
-
-        }
-
-        public class ExpressionHour : ScalarExpressionFunction
-        {
-
-            public ExpressionHour()
-                : base(null, NAME_HOUR, 1, CellAffinity.LONG)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionHour();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return CellFunctions.Hour(this._ChildNodes[0].Evaluate(Variants));
-
-            }
-
-        }
-
-        public class ExpressionMinute : ScalarExpressionFunction
-        {
-
-            public ExpressionMinute()
-                : base(null, NAME_MINUTE, 1, CellAffinity.LONG)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionMinute();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return CellFunctions.Minute(this._ChildNodes[0].Evaluate(Variants));
-
-            }
-
-        }
-
-        public class ExpressionSecond : ScalarExpressionFunction
-        {
-
-            public ExpressionSecond()
-                : base(null, NAME_SECOND, 1, CellAffinity.LONG)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionSecond();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return CellFunctions.Second(this._ChildNodes[0].Evaluate(Variants));
-
-            }
-
-        }
-
-        public class ExpressionMillisecond : ScalarExpressionFunction
-        {
-
-            public ExpressionMillisecond()
-                : base(null, NAME_MILISECOND, 1, CellAffinity.LONG)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionMillisecond();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return CellFunctions.Millisecond(this._ChildNodes[0].Evaluate(Variants));
-
-            }
-
-        }
-
-        public class ExpressionElapsed : ScalarExpressionFunction
-        {
-
-            private Host _Host;
-
-            public ExpressionElapsed(Host Host)
-                : base(null, NAME_ELAPSED, 0, CellAffinity.LONG)
-            {
-                this._Host = Host;
-            }
-
-            public override bool IsVolatile
-            {
-                get { return true; }
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionElapsed(this._Host);
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                return new Cell(DateTime.Now.Ticks - this._Host.StartTicks);
-
-            }
-
-        }
-
-        public class ExpressionTimeSpan : ScalarExpressionFunction
-        {
-
-            public ExpressionTimeSpan()
-                : base(null, NAME_TIME_SPAN, 1, CellAffinity.STRING)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionTimeSpan();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                TimeSpan ts = new TimeSpan(this._ChildNodes[0].Evaluate(Variants).valueLONG);
-
-                return new Cell(ts.ToString());
-
-            }
-
-        }
-
-        // Strings //
-        public class ExpressionSubstring : ScalarExpressionFunction
-        {
-
-            public ExpressionSubstring()
-                : base(null, NAME_SUBSTR, 3)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionSubstring();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell value = this._ChildNodes[0].Evaluate(Variants);
-                Cell start = this._ChildNodes[1].Evaluate(Variants);
-                Cell length = this._ChildNodes[2].Evaluate(Variants);
-
-                return CellFunctions.Substring(value, start.valueLONG, length.valueLONG);
-
-            }
-
-        }
-
-        public class ExpressionReplace : ScalarExpressionFunction
-        {
-
-            public ExpressionReplace()
-                : base(null, NAME_REPLACE, 3)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionReplace();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != this._MaxParamterCount)
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell value = this._ChildNodes[0].Evaluate(Variants);
-                Cell pattern = this._ChildNodes[1].Evaluate(Variants);
-                Cell new_pattern = this._ChildNodes[2].Evaluate(Variants);
-
-                return CellFunctions.Replace(value, pattern, new_pattern);
-
-            }
-
-        }
-
-        public class ExpressionPosition : ScalarExpressionFunction
-        {
-
-            public ExpressionPosition()
-                : base(null, NAME_POSITION, -2, CellAffinity.LONG)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionPosition();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count < Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell value = this._ChildNodes[0].Evaluate(Variants);
-                Cell pattern = this._ChildNodes[1].Evaluate(Variants);
-                int start = (this._ChildNodes.Count >= 3 ? (int)this._ChildNodes[2].Evaluate(Variants).valueLONG : 0);
-
-                return CellFunctions.Position(value, pattern, start);
-
-            }
-
-        }
-
-        public class ExpressionLength : ScalarExpressionFunction
-        {
-
-            public ExpressionLength()
-                : base(null, NAME_LENGTH, 1, CellAffinity.INT)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionLength();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-                if (x.IsNull)
-                    return CellValues.NullINT;
-
-                return new Cell(CellSerializer.Length(x));
-
-            }
-
-        }
-
-        public class ExpressionTrim : ScalarExpressionFunction
-        {
-
-            public ExpressionTrim()
-                : base(null, NAME_TRIM, 1)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionTrim();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-                if (x.IsNull)
-                    return new Cell(this.ExpressionReturnAffinity());
-
-                return CellFunctions.Trim(x);
-
-            }
-
-        }
-
-        public class ExpressionToUTF16 : ScalarExpressionFunction
-        {
-
-            public ExpressionToUTF16()
-                : base(null, NAME_TO_UTF16, 1, CellAffinity.STRING)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionToUTF16();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-
-                if (x.AFFINITY != CellAffinity.BLOB)
-                    return CellValues.NullSTRING;
-
-                return new Cell(CellFunctions.ByteArrayToUTF16String(x.valueBLOB));
-
-            }
-
-            public override int ExpressionSize()
-            {
-                return base.ExpressionSize() * 2;
-            }
-
-        }
-
-        public class ExpressionToUTF8 : ScalarExpressionFunction
-        {
-
-            public ExpressionToUTF8()
-                : base(null, NAME_TO_UTF8, 1, CellAffinity.STRING)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionToUTF8();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-
-                if (x.AFFINITY != CellAffinity.BLOB)
-                    return CellValues.NullSTRING;
-
-                return new Cell(ASCIIEncoding.ASCII.GetString(x.valueBLOB));
-
-            }
-
-        }
-
-        public class ExpressionToHex : ScalarExpressionFunction
-        {
-
-            public ExpressionToHex()
-                : base(null, NAME_TO_HEX, 1, CellAffinity.STRING)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionToHex();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-
-                if (x.AFFINITY != CellAffinity.BLOB)
-                    return CellValues.NullSTRING;
-
-                return new Cell(BitConverter.ToString(x.valueBLOB));
-
-            }
-
-            public override int ExpressionSize()
-            {
-                return base.ExpressionSize() * 4;
-            }
-
-        }
-
-        public class ExpressionFromUTF16 : ScalarExpressionFunction
-        {
-
-            public ExpressionFromUTF16()
-                : base(null, NAME_FROM_UTF16, 1, CellAffinity.BLOB)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionFromUTF16();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-
-                if (x.AFFINITY != CellAffinity.STRING || x.NULL == 1)
-                    return CellValues.NullBLOB;
-
-                x.BLOB = ASCIIEncoding.BigEndianUnicode.GetBytes(x.STRING);
-                x.AFFINITY = CellAffinity.BLOB;
-
-                return x;
-
-            }
-
-            public override int ExpressionSize()
-            {
-                return base.ExpressionSize();
-            }
-
-        }
-
-        public class ExpressionFromUTF8 : ScalarExpressionFunction
-        {
-
-            public ExpressionFromUTF8()
-                : base(null, NAME_FROM_UTF8, 1, CellAffinity.BLOB)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionFromUTF8();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-
-                if (x.AFFINITY != CellAffinity.STRING || x.NULL == 1)
-                    return CellValues.NullBLOB;
-
-                x.BLOB = ASCIIEncoding.ASCII.GetBytes(x.STRING.ToCharArray());
-                x.AFFINITY = CellAffinity.BLOB;
-
-                return x;
-
-            }
-
-        }
-
-        public class ExpressionFromHex : ScalarExpressionFunction
-        {
-
-            public ExpressionFromHex()
-                : base(null, NAME_FROM_HEX, 1, CellAffinity.BLOB)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionFromHex();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-
-                if (x.AFFINITY != CellAffinity.STRING || x.NULL == 1)
-                    return CellValues.NullBLOB;
-
-                return CellParser.ByteParse(x.STRING);
-
-            }
-
-            public override int ExpressionSize()
-            {
-                return base.ExpressionSize() / 4;
-            }
-
-        }
-
-        // Numerical Functions //
-        public class ExpressionLog : ScalarExpressionFunction
-        {
-
-            public ExpressionLog()
-                : base(null, NAME_LOG, 1)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionLog();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-
-                return CellFunctions.Log(x);
-
-            }
-
-        }
-
-        public class ExpressionExp : ScalarExpressionFunction
-        {
-
-            public ExpressionExp()
-                : base(null, NAME_EXP, 1)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionExp();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-
-                return CellFunctions.Exp(x);
-
-            }
-
-        }
-
-        public class ExpressionSine : ScalarExpressionFunction
-        {
-
-            public ExpressionSine()
-                : base(null, NAME_SIN, 1)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionSine();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-
-                return CellFunctions.Sin(x);
-
-            }
-
-        }
-
-        public class ExpressionCosine : ScalarExpressionFunction
-        {
-
-            public ExpressionCosine()
-                : base(null, NAME_COS, 1)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionCosine();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-
-                return CellFunctions.Cos(x);
-
-            }
-
-        }
-
-        public class ExpressionTangent : ScalarExpressionFunction
-        {
-
-            public ExpressionTangent()
-                : base(null, NAME_TAN, 1)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionTangent();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-
-                return CellFunctions.Tan(x);
-
-            }
-
-        }
-
-        public class ExpressionHyperbolicSine : ScalarExpressionFunction
-        {
-
-            public ExpressionHyperbolicSine()
-                : base(null, NAME_SINH, 1)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionHyperbolicSine();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-
-                return CellFunctions.Sinh(x);
-
-            }
-
-        }
-
-        public class ExpressionHyperbolicCosine : ScalarExpressionFunction
-        {
-
-            public ExpressionHyperbolicCosine()
-                : base(null, NAME_COSH, 1)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionHyperbolicCosine();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-
-                return CellFunctions.Cosh(x);
-
-            }
-
-        }
-
-        public class ExpressionHyperbolicTangent : ScalarExpressionFunction
-        {
-
-            public ExpressionHyperbolicTangent()
-                : base(null, NAME_TANH, 1)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionHyperbolicTangent();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-
-                return CellFunctions.Tanh(x);
-
-            }
-
-        }
-
-        public class ExpressionAbsoluteValue : ScalarExpressionFunction
-        {
-
-            public ExpressionAbsoluteValue()
-                : base(null, NAME_ABS, 1)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionAbsoluteValue();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-
-                return CellFunctions.Abs(x);
-
-            }
-
-        }
-
-        public class ExpressionSquareRoot : ScalarExpressionFunction
-        {
-
-            public ExpressionSquareRoot()
-                : base(null, NAME_SQRT, 1)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionSquareRoot();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-
-                return CellFunctions.Sqrt(x);
-
-            }
-
-        }
-
-        public class ExpressionSign : ScalarExpressionFunction
-        {
-
-            public ExpressionSign()
-                : base(null, NAME_SIGN, 1)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionSign();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-
-                return CellFunctions.Sign(x);
-
-            }
-
-        }
-
-        public class ExpressionRound : ScalarExpressionFunction
-        {
-
-            public ExpressionRound()
-                : base(null, NAME_ROUND, 2)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionRound();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                Cell x = this._ChildNodes[0].Evaluate(Variants);
-                if (x.AFFINITY != CellAffinity.DOUBLE)
-                    return new Cell(this.ExpressionReturnAffinity());
-
-                Cell y = this._ChildNodes[0].Evaluate(Variants);
-
-                return new Cell(Math.Round(x.DOUBLE, (int)y.valueLONG));
-
-            }
-
-        }
-
-        public class ExpressionLogit : ScalarExpressionFunction
-        {
-
-            public ExpressionLogit()
-                : base(null, NAME_LOGIT, 1)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionLogit();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                throw new NotImplementedException();
-
-            }
-
-        }
-
-        public class ExpressionNormal : ScalarExpressionFunction
-        {
-
-            public ExpressionNormal()
-                : base(null, NAME_NORMAL, 1)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionNormal();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-
-                if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
-                    throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
-
-                throw new NotImplementedException();
-
-            }
-
-        }
-
-        // Meta Functions //
-        public class ExpressionMeta_Formula : ScalarExpressionFunction
-        {
-
-            public ExpressionMeta_Formula()
-                : base(null, NAME_FORMULA, 1)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionMeta_Formula();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-                return new Cell(this._ChildNodes[0].Unparse(Variants));
-            }
-
-        }
-
-        public class ExpressionTypeOf : ScalarExpressionFunction
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Value"></param>
+        public void AddParameter(Parameter Value)
         {
-
-            public ExpressionTypeOf()
-                : base(null, NAME_TYPEOF, 1, CellAffinity.BYTE)
-            {
-            }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionTypeOf();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
-            {
-                return new Cell((byte)this._ChildNodes[0].ExpressionReturnAffinity());
-            }
-
-
+            this._Params.Add(Value);
         }
 
-        public class ExpressionSizeOf : ScalarExpressionFunction
+        /// <summary>
+        /// 
+        /// </summary>
+        public void CheckParameters()
         {
 
-            public ExpressionSizeOf()
-                : base(null, NAME_SIZEOF, 1, CellAffinity.INT)
+            if (this._MaxParamterCount < 0 && this._Params.Count > (-this._MaxParamterCount))
             {
+                throw new Exception(string.Format("Function '{0}' can have at most '{1}' parameter(s) but was passed '{2}'", this._name, -this._MaxParamterCount, this._Params.Count));
             }
-
-            public override ScalarExpression CloneOfMe()
-            {
-                return new ExpressionSizeOf();
-            }
-
-            public override Cell Evaluate(FieldResolver Variants)
+            else if (this._Params.Count != this._MaxParamterCount)
             {
-                return new Cell(CellSerializer.Length(this._ChildNodes[0].Evaluate(Variants)));
+                throw new Exception(string.Format("Function '{0}' can have exactly '{1}' parameter(s) but was passed '{2}'", this._name, -this._MaxParamterCount, this._Params.Count));
             }
-
 
         }
 
@@ -2256,110 +138,1999 @@ namespace Pulse.Expressions.ScalarExpressions
         //---------------------------------------------------------------------------------------------
         //---------------------------------------------------------------------------------------------
 
-        public class BaseLibraryFunctions : IScalarExpressionLookup
-        {
+        // Unary Opperations //
+        //public const string NAME_NOT = "NOT";
+        //public const string NAME_PLUS = "PLUS";
+        //public const string NAME_MINUS = "MINUS";
 
-            public BaseLibraryFunctions(Host Host)
-            {
-                this.Enviro = Host;
-            }
+        //// Binary Opperations //
+        //public const string NAME_ADD = "ADD";
+        //public const string NAME_SUB = "SUB";
+        //public const string NAME_MULT = "MULT";
+        //public const string NAME_DIV = "DIV";
+        //public const string NAME_CDIV = "CDIV";
+        //public const string NAME_MOD = "MOD";
+        //public const string NAME_POWER = "POWER";
+        //public const string NAME_EQ = "EQ";
+        //public const string NAME_NEQ = "NEQ";
+        //public const string NAME_GT = "GT";
+        //public const string NAME_GTE = "GTE";
+        //public const string NAME_LT = "LT";
+        //public const string NAME_LTE = "LTE";
+        //public const string NAME_AND = "AND";
+        //public const string NAME_OR = "OR";
+        //public const string NAME_XOR = "XOR";
 
-            public Host Enviro
-            {
-                get;
-                private set;
-            }
+        //// Special Opperations //
+        //public const string NAME_IF = "IF";
+        //public const string NAME_IFNULL = "IF_NULL";
+        //public const string NAME_CAST = "CAST";
 
-            public ScalarExpressionFunction Lookup(string Name)
-            {
+        //// Special Functions //
+        //public const string NAME_LIKE = "LIKE";
+        //public const string NAME_MATCH = "MATCH";
+        //public const string NAME_GUID = "GUID";
+        //public const string NAME_THREAD_ID = "THREAD_ID";
+        //public const string NAME_RAND_BOOL = "RAND_BOOL";
+        //public const string NAME_RAND_DATE = "RAND_DATE";
+        //public const string NAME_RAND_INT = "RAND_INT";
+        //public const string NAME_RAND_NUM = "RAND_NUM";
+        //public const string NAME_RAND_BLOB = "RAND_BLOB";
+        //public const string NAME_RAND_STRING = "RAND_STRING";
 
-                switch (Name.ToUpper())
-                {
-                    case NAME_NOT: return new ExpressionNot();
-                    case NAME_PLUS: return new ExpressionPlus();
-                    case NAME_MINUS: return new ExpressionMinus();
-                    case NAME_ADD: return new ExpressionAdd();
-                    case NAME_SUB: return new ExpressionSubtract();
-                    case NAME_MULT: return new ExpressionMultiply();
-                    case NAME_DIV: return new ExpressionDivide();
-                    case NAME_CDIV: return new ExpressionCheckedDivide();
-                    case NAME_MOD: return new ExpressionModulo();
-                    case NAME_POWER: return new ExpressionPower();
-                    case NAME_EQ: return new ExpressionEquals();
-                    case NAME_NEQ: return new ExpressionNotEquals();
-                    case NAME_GT: return new ExpressionGreaterThan();
-                    case NAME_GTE: return new ExpressionGreaterThanOrEqualTo();
-                    case NAME_LT: return new ExpressionLessThan();
-                    case NAME_LTE: return new ExpressionLessThanOrEqualTo();
-                    case NAME_AND: return new ExpressionAnd();
-                    case NAME_OR: return new ExpressionOr();
-                    case NAME_XOR: return new ExpressionXor();
-                    case NAME_IF: return new ExpressionIf();
-                    case NAME_IFNULL: return new ExpressionIfNull();
-                    //case NAME_CAST: return new ExpressionCast(); // Note: CAST uses the C# syntax and is handeled in the parser not as a function
-                    case NAME_LIKE: return new ExpressionLike();
-                    case NAME_MATCH: return new ExpressionMatch();
-                    case NAME_GUID: return new ExpressionGUID();
-                    case NAME_THREAD_ID: return new ExpressionThreadID();
-                    case NAME_RAND_BOOL: return new ExpressionRandomBool(this.Enviro.BaseRNG);
-                    case NAME_RAND_DATE: return new ExpressionRandomDate(this.Enviro.BaseRNG);
-                    case NAME_RAND_INT: return new ExpressionRandomInt(this.Enviro.BaseRNG);
-                    case NAME_RAND_NUM: return new ExpressionRandomNum(this.Enviro.BaseRNG);
-                    case NAME_RAND_BLOB: return new ExpressionRandomBLOB(this.Enviro.BaseRNG);
-                    case NAME_RAND_STRING: return new ExpressionRandomString(this.Enviro.BaseRNG);
-                    case NAME_DATE_BUILD: return new ExpressionDateBuild();
-                    case NAME_NOW: return new ExpressionNow();
-                    case NAME_YEAR: return new ExpressionYear();
-                    case NAME_MONTH: return new ExpressionMonth();
-                    case NAME_DAY: return new ExpressionDay();
-                    case NAME_HOUR: return new ExpressionHour();
-                    case NAME_MINUTE: return new ExpressionMinute();
-                    case NAME_SECOND: return new ExpressionSecond();
-                    case NAME_MILISECOND: return new ExpressionMillisecond();
-                    case NAME_TICKS: return new ExpressionTicks();
-                    case NAME_ELAPSED: return new ExpressionElapsed(this.Enviro);
-                    case NAME_TIME_SPAN: return new ExpressionTimeSpan();
-                    case NAME_SUBSTR: return new ExpressionSubstring();
-                    case NAME_REPLACE: return new ExpressionReplace();
-                    case NAME_POSITION: return new ExpressionPosition();
-                    case NAME_LENGTH: return new ExpressionLength();
-                    case NAME_TRIM: return new ExpressionTrim();
-                    case NAME_TO_UTF16: return new ExpressionToUTF16();
-                    case NAME_TO_UTF8: return new ExpressionToUTF8();
-                    case NAME_TO_HEX: return new ExpressionToHex();
-                    case NAME_FROM_UTF16: return new ExpressionFromUTF16();
-                    case NAME_FROM_UTF8: return new ExpressionFromUTF8();
-                    case NAME_FROM_HEX: return new ExpressionFromHex();
-                    case NAME_LOG: return new ExpressionLog();
-                    case NAME_EXP: return new ExpressionExp();
-                    case NAME_SQRT: return new ExpressionSquareRoot();
-                    case NAME_SIN: return new ExpressionSine();
-                    case NAME_COS: return new ExpressionCosine();
-                    case NAME_TAN: return new ExpressionTangent();
-                    case NAME_SINH: return new ExpressionHyperbolicSine();
-                    case NAME_COSH: return new ExpressionHyperbolicCosine();
-                    case NAME_TANH: return new ExpressionHyperbolicTangent();
-                    case NAME_LOGIT: return new ExpressionLogit();
-                    case NAME_NORMAL: return new ExpressionNormal();
-                    case NAME_ABS: return new ExpressionAbsoluteValue();
-                    case NAME_SIGN: return new ExpressionSign();
-                    case NAME_ROUND: return new ExpressionRound();
-                    case NAME_FORMULA: return new ExpressionMeta_Formula();
-                    case NAME_TYPEOF: return new ExpressionTypeOf();
-                    case NAME_SIZEOF: return new ExpressionSizeOf();
+        //// Date Functions //
+        //public const string NAME_DATE_BUILD = "DATE_BUILD";
+        //public const string NAME_NOW = "NOW";
+        //public const string NAME_YEAR = "YEAR";
+        //public const string NAME_MONTH = "MONTH";
+        //public const string NAME_DAY = "DAY";
+        //public const string NAME_HOUR = "HOUR";
+        //public const string NAME_MINUTE = "MINUTE";
+        //public const string NAME_SECOND = "SECOND";
+        //public const string NAME_MILISECOND = "MILISECOND";
+        //public const string NAME_TICKS = "TICKS";
+        //public const string NAME_ELAPSED = "ELAPSED";
+        //public const string NAME_TIME_SPAN = "TIME_SPAN";
 
-                }
+        //// String Functions //
+        //public const string NAME_SUBSTR = "SUBSTR";
+        //public const string NAME_REPLACE = "REPLACE";
+        //public const string NAME_POSITION = "POSITION";
+        //public const string NAME_LENGTH = "LENGTH";
+        //public const string NAME_TRIM = "TRIM";
+        //public const string NAME_TO_UTF16 = "TO_UTF16";
+        //public const string NAME_TO_UTF8 = "TO_UTF8";
+        //public const string NAME_TO_HEX = "TO_HEX";
+        //public const string NAME_FROM_UTF16 = "FROM_UTF16";
+        //public const string NAME_FROM_UTF8 = "FROM_UTF8";
+        //public const string NAME_FROM_HEX = "FROM_HEX";
 
-                return null;
+        //// Numerics //
+        //public const string NAME_LOG = "LOG";
+        //public const string NAME_EXP = "EXP";
+        //public const string NAME_SQRT = "SQRT";
+        //public const string NAME_SIN = "SIN";
+        //public const string NAME_COS = "COS";
+        //public const string NAME_TAN = "TAN";
+        //public const string NAME_SINH = "SINH";
+        //public const string NAME_COSH = "COSH";
+        //public const string NAME_TANH = "TANH";
+        //public const string NAME_LOGIT = "LOGIT";
+        //public const string NAME_NORMAL = "NORMAL";
+        //public const string NAME_ABS = "ABS";
+        //public const string NAME_SIGN = "SIGN";
+        //public const string NAME_ROUND = "ROUND";
 
-            }
+        //// Meta //
+        //public const string NAME_FORMULA = "FORMULA";
+        //public const string NAME_TYPEOF = "TYPEOF";
+        //public const string NAME_SIZEOF = "SIZEOF";
 
-            public bool Exists(string Name)
-            {
-                return this.Lookup(Name) != null;
-            }
+        //// Uninary Opperations //
+        //public class ExpressionNot : ScalarExpressionFunction
+        //{
 
-        }
+        //    public ExpressionNot(Host Host)
+        //        : base(Host, null, NAME_NOT, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionNot(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return !this._ChildNodes[0].Evaluate(Variants);
+
+        //    }
+
+        //}
+
+        //public class ExpressionPlus : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionPlus(Host Host)
+        //        : base(Host, null, NAME_ADD, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionPlus(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return +this._ChildNodes[0].Evaluate(Variants);
+
+        //    }
+
+        //}
+
+        //public class ExpressionMinus : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionMinus(Host Host)
+        //        : base(Host, null, NAME_MINUS, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionMinus(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return -this._ChildNodes[0].Evaluate(Variants);
+
+        //    }
+
+        //}
+
+        //// Binary Opperations //
+        //public class ExpressionAdd : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionAdd(Host Host)
+        //        : base(Host, null, NAME_ADD, 2)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionAdd(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return this._ChildNodes[0].Evaluate(Variants) + this._ChildNodes[1].Evaluate(Variants);
+
+        //    }
+
+        //}
+
+        //public class ExpressionSubtract : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionSubtract(Host Host)
+        //        : base(Host, null, NAME_SUB, 2)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionSubtract(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return this._ChildNodes[0].Evaluate(Variants) - this._ChildNodes[1].Evaluate(Variants);
+
+        //    }
+
+        //}
+
+        //public class ExpressionMultiply : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionMultiply(Host Host)
+        //        : base(Host, null, NAME_MULT, 2)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionMultiply(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return this._ChildNodes[0].Evaluate(Variants) * this._ChildNodes[1].Evaluate(Variants);
+
+        //    }
+
+        //}
+
+        //public class ExpressionDivide : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionDivide(Host Host)
+        //        : base(Host, null, NAME_DIV, 2)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionDivide(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return this._ChildNodes[0].Evaluate(Variants) / this._ChildNodes[1].Evaluate(Variants);
+
+        //    }
+
+        //}
+
+        //public class ExpressionCheckedDivide : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionCheckedDivide(Host Host)
+        //        : base(Host, null, NAME_CDIV, 2)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionCheckedDivide(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return Cell.CheckDivide(this._ChildNodes[0].Evaluate(Variants), this._ChildNodes[1].Evaluate(Variants));
+
+        //    }
+
+        //}
+
+        //public class ExpressionModulo : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionModulo(Host Host)
+        //        : base(Host, null, NAME_MOD, 2)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionModulo(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return this._ChildNodes[0].Evaluate(Variants) % this._ChildNodes[1].Evaluate(Variants);
+
+        //    }
+
+        //}
+
+        //public class ExpressionPower : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionPower(Host Host)
+        //        : base(Host, null, NAME_POWER, 2)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionPower(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return CellFunctions.Power(this._ChildNodes[0].Evaluate(Variants), this._ChildNodes[1].Evaluate(Variants));
+
+        //    }
+
+        //}
+
+        //public class ExpressionEquals : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionEquals(Host Host)
+        //        : base(Host, null, NAME_EQ, 2, CellAffinity.BOOL)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionEquals(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return this._ChildNodes[0].Evaluate(Variants) == this._ChildNodes[1].Evaluate(Variants) ? CellValues.True : CellValues.False;
+
+        //    }
+
+        //}
+
+        //public class ExpressionNotEquals : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionNotEquals(Host Host)
+        //        : base(Host, null, NAME_EQ, 2, CellAffinity.BOOL)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionNotEquals(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return this._ChildNodes[0].Evaluate(Variants) != this._ChildNodes[1].Evaluate(Variants) ? CellValues.True : CellValues.False;
+
+        //    }
+
+        //}
+
+        //public class ExpressionLessThan : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionLessThan(Host Host)
+        //        : base(Host, null, NAME_LT, 2, CellAffinity.BOOL)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionLessThan(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return this._ChildNodes[0].Evaluate(Variants) < this._ChildNodes[1].Evaluate(Variants) ? CellValues.True : CellValues.False;
+
+        //    }
+
+        //}
+
+        //public class ExpressionLessThanOrEqualTo : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionLessThanOrEqualTo(Host Host)
+        //        : base(Host, null, NAME_LTE, 2, CellAffinity.BOOL)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionLessThanOrEqualTo(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return this._ChildNodes[0].Evaluate(Variants) <= this._ChildNodes[1].Evaluate(Variants) ? CellValues.True : CellValues.False;
+
+        //    }
+
+        //}
+
+        //public class ExpressionGreaterThan : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionGreaterThan(Host Host)
+        //        : base(Host, null, NAME_GT, 2, CellAffinity.BOOL)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionGreaterThan(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return this._ChildNodes[0].Evaluate(Variants) > this._ChildNodes[1].Evaluate(Variants) ? CellValues.True : CellValues.False;
+
+        //    }
+
+        //}
+
+        //public class ExpressionGreaterThanOrEqualTo : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionGreaterThanOrEqualTo(Host Host)
+        //        : base(Host, null, NAME_GTE, 2, CellAffinity.BOOL)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionGreaterThanOrEqualTo(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return this._ChildNodes[0].Evaluate(Variants) >= this._ChildNodes[1].Evaluate(Variants) ? CellValues.True : CellValues.False;
+
+        //    }
+
+        //}
+
+        //public class ExpressionAnd : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionAnd(Host Host)
+        //        : base(Host, null, NAME_AND, 2)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionAnd(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return this._ChildNodes[0].Evaluate(Variants) & this._ChildNodes[1].Evaluate(Variants);
+
+        //    }
+
+        //}
+
+        //public class ExpressionOr : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionOr(Host Host)
+        //        : base(Host, null, NAME_OR, 2)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionOr(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return this._ChildNodes[0].Evaluate(Variants) | this._ChildNodes[1].Evaluate(Variants);
+
+        //    }
+
+        //}
+
+        //public class ExpressionXor : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionXor(Host Host)
+        //        : base(Host, null, NAME_XOR, 2)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionXor(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return this._ChildNodes[0].Evaluate(Variants) ^ this._ChildNodes[1].Evaluate(Variants);
+
+        //    }
+
+        //}
+
+        //// Special Opperations //
+        //public class ExpressionIf : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionIf(Host Host)
+        //        : base(Host, null, NAME_IF, 3)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionIf(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return CellFunctions.If(this._ChildNodes[0].Evaluate(Variants), this._ChildNodes[1].Evaluate(Variants), this._ChildNodes[2].Evaluate(Variants));
+
+        //    }
+
+        //}
+
+        //public class ExpressionIfNull : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionIfNull(Host Host)
+        //        : base(Host, null, NAME_IFNULL, 2)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionIfNull(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+        //        return x.IsNull ? this._ChildNodes[1].Evaluate(Variants) : x;
+
+        //    }
+
+        //}
+
+        //public class ExpressionCast : ScalarExpressionFunction
+        //{
+
+        //    private CellAffinity _t;
+
+        //    public ExpressionCast(Host Host, CellAffinity Type)
+        //        : base(Host, null, NAME_CAST, 1)
+        //    {
+        //        this._t = Type;
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionCast(this._Host, this._t);
+        //    }
+
+        //    public override CellAffinity ReturnAffinity()
+        //    {
+        //        return this._t;
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return CellConverter.Cast(this._ChildNodes[0].Evaluate(Variants), this._t);
+
+        //    }
+
+        //}
+
+        //// Special Functions //
+        //public class ExpressionLike : ScalarExpressionFunction
+        //{
+
+        //    public const char WILD_CARD = '*';
+
+        //    public ExpressionLike(Host Host)
+        //        : base(Host, null, NAME_LIKE, 2, CellAffinity.BOOL)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionLike(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell cText = this._ChildNodes[0].Evaluate(Variants);
+        //        Cell cPatern = this._ChildNodes[1].Evaluate(Variants);
+        //        string Text = cText.valueSTRING;
+        //        string Patern = cPatern.valueSTRING;
+
+        //        if (cText.IsNull || cPatern.IsNull)
+        //            return CellValues.False;
+
+        //        bool x = false, y = false, z = false;
+
+        //        if (Patern.First() == WILD_CARD)
+        //        {
+        //            Patern = Patern.Remove(0, 1);
+        //            x = true;
+        //        }
+
+        //        if (Patern.Last() == WILD_CARD)
+        //        {
+        //            Patern = Patern.Remove(Patern.Length - 1, 1);
+        //            y = true;
+        //        }
+
+        //        if (x && y) // '*Hello World*' //
+        //        {
+        //            z = Text.ToUpper().Contains(Patern.ToUpper());
+        //        }
+        //        else if (x && !y) // '*Hello World' //
+        //        {
+        //            z = Text.EndsWith(Patern, StringComparison.OrdinalIgnoreCase);
+        //        }
+        //        else if (!x && y) // 'Hello World*' //
+        //        {
+        //            z = Text.StartsWith(Patern, StringComparison.OrdinalIgnoreCase);
+        //        }
+        //        else // !OriginalPage && !NewNode // 'Hello World' //
+        //        {
+        //            z = string.Equals(Text, Patern, StringComparison.OrdinalIgnoreCase);
+        //        }
+
+        //        return new Cell(z);
+
+        //    }
+
+        //}
+
+        //public class ExpressionMatch : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionMatch(Host Host)
+        //        : base(Host, null, NAME_MATCH, -128, CellAffinity.LONG)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionMatch(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count <= 1)
+        //            return CellValues.NullLONG;
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+        //        for (int i = 1; i < this._ChildNodes.Count; i++)
+        //        {
+
+        //            Cell y = this._ChildNodes[i].Evaluate(Variants);
+        //            if (x == y)
+        //                return new Cell(i - 1);
+
+        //        }
+
+        //        return CellValues.NullLONG;
+
+        //    }
+
+        //}
+
+        //public class ExpressionGUID : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionGUID(Host Host)
+        //        : base(Host, null, NAME_GUID, 0, CellAffinity.BLOB)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionGUID(this._Host);
+        //    }
+
+        //    public override bool IsVolatile
+        //    {
+        //        get { return true; }
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+        //        return new Cell(Guid.NewGuid().ToByteArray());
+        //    }
+
+        //}
+
+        //public class ExpressionThreadID : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionThreadID(Host Host)
+        //        : base(Host, null, NAME_THREAD_ID, 0, CellAffinity.LONG)
+        //    {
+        //    }
+
+        //    public override bool IsVolatile
+        //    {
+        //        get { return true; }
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionThreadID(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+        //        return new Cell(System.Threading.Thread.CurrentThread.ManagedThreadId);
+        //    }
+
+        //}
+
+        //// Date Functions //
+        //public class ExpressionDateBuild : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionDateBuild(Host Host)
+        //        : base(Host, null, NAME_DATE_BUILD, -7, CellAffinity.DATE)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionDateBuild(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count == 0)
+        //            return CellValues.NullDATE;
+
+        //        int[] xdate = new int[7];
+
+        //        for (int i = 0; i < 7; i++)
+        //        {
+
+        //            if (this._ChildNodes.Count >= i)
+        //            {
+        //                xdate[i] = (int)this._ChildNodes[i].Evaluate(Variants).valueLONG;
+        //            }
+
+        //        }
+
+        //        DateTime x = new DateTime(xdate[0], xdate[1], xdate[2], xdate[3], xdate[4], xdate[5], xdate[6]);
+
+        //        return new Cell(x);
+
+        //    }
+
+        //}
+
+        //public class ExpressionNow : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionNow(Host Host)
+        //        : base(Host, null, NAME_NOW, 0, CellAffinity.DATE)
+        //    {
+        //    }
+
+        //    public override bool IsVolatile
+        //    {
+        //        get { return true; }
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionNow(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+        //        return new Cell(DateTime.Now);
+        //    }
+
+        //}
+
+        //public class ExpressionYear : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionYear(Host Host)
+        //        : base(Host, null, NAME_YEAR, 1, CellAffinity.LONG)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionYear(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return CellFunctions.Year(this._ChildNodes[0].Evaluate(Variants));
+
+        //    }
+
+        //}
+
+        //public class ExpressionMonth : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionMonth(Host Host)
+        //        : base(Host, null, NAME_MONTH, 1, CellAffinity.LONG)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionMonth(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return CellFunctions.Month(this._ChildNodes[0].Evaluate(Variants));
+
+        //    }
+
+        //}
+
+        //public class ExpressionDay : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionDay(Host Host)
+        //        : base(Host, null, NAME_DAY, 1, CellAffinity.LONG)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionDay(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return CellFunctions.Day(this._ChildNodes[0].Evaluate(Variants));
+
+        //    }
+
+        //}
+
+        //public class ExpressionHour : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionHour(Host Host)
+        //        : base(Host, null, NAME_HOUR, 1, CellAffinity.LONG)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionHour(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return CellFunctions.Hour(this._ChildNodes[0].Evaluate(Variants));
+
+        //    }
+
+        //}
+
+        //public class ExpressionMinute : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionMinute(Host Host)
+        //        : base(Host, null, NAME_MINUTE, 1, CellAffinity.LONG)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionMinute(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return CellFunctions.Minute(this._ChildNodes[0].Evaluate(Variants));
+
+        //    }
+
+        //}
+
+        //public class ExpressionSecond : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionSecond(Host Host)
+        //        : base(Host, null, NAME_SECOND, 1, CellAffinity.LONG)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionSecond(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return CellFunctions.Second(this._ChildNodes[0].Evaluate(Variants));
+
+        //    }
+
+        //}
+
+        //public class ExpressionMillisecond : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionMillisecond(Host Host)
+        //        : base(Host, null, NAME_MILISECOND, 1, CellAffinity.LONG)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionMillisecond(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return CellFunctions.Millisecond(this._ChildNodes[0].Evaluate(Variants));
+
+        //    }
+
+        //}
+
+        //public class ExpressionElapsed : ScalarExpressionFunction
+        //{
+
+        //    private Host _Host;
+
+        //    public ExpressionElapsed(Host Host)
+        //        : base(Host, null, NAME_ELAPSED, 0, CellAffinity.LONG)
+        //    {
+        //        this._Host = Host;
+        //    }
+
+        //    public override bool IsVolatile
+        //    {
+        //        get { return true; }
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionElapsed(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        return new Cell(DateTime.Now.Ticks - this._Host.StartTicks);
+
+        //    }
+
+        //}
+
+        //public class ExpressionTimeSpan : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionTimeSpan(Host Host)
+        //        : base(Host, null, NAME_TIME_SPAN, 1, CellAffinity.STRING)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionTimeSpan(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        TimeSpan ts = new TimeSpan(this._ChildNodes[0].Evaluate(Variants).valueLONG);
+
+        //        return new Cell(ts.ToString());
+
+        //    }
+
+        //}
+
+        //// Strings //
+        //public class ExpressionSubstring : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionSubstring(Host Host)
+        //        : base(Host, null, NAME_SUBSTR, 3)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionSubstring(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell value = this._ChildNodes[0].Evaluate(Variants);
+        //        Cell start = this._ChildNodes[1].Evaluate(Variants);
+        //        Cell length = this._ChildNodes[2].Evaluate(Variants);
+
+        //        return CellFunctions.Substring(value, start.valueLONG, length.valueLONG);
+
+        //    }
+
+        //}
+
+        //public class ExpressionReplace : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionReplace(Host Host)
+        //        : base(Host, null, NAME_REPLACE, 3)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionReplace(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != this._MaxParamterCount)
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell value = this._ChildNodes[0].Evaluate(Variants);
+        //        Cell pattern = this._ChildNodes[1].Evaluate(Variants);
+        //        Cell new_pattern = this._ChildNodes[2].Evaluate(Variants);
+
+        //        return CellFunctions.Replace(value, pattern, new_pattern);
+
+        //    }
+
+        //}
+
+        //public class ExpressionPosition : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionPosition(Host Host)
+        //        : base(Host, null, NAME_POSITION, -2, CellAffinity.LONG)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionPosition(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count < Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell value = this._ChildNodes[0].Evaluate(Variants);
+        //        Cell pattern = this._ChildNodes[1].Evaluate(Variants);
+        //        int start = (this._ChildNodes.Count >= 3 ? (int)this._ChildNodes[2].Evaluate(Variants).valueLONG : 0);
+
+        //        return CellFunctions.Position(value, pattern, start);
+
+        //    }
+
+        //}
+
+        //public class ExpressionLength : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionLength(Host Host)
+        //        : base(Host, null, NAME_LENGTH, 1, CellAffinity.INT)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionLength(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+        //        if (x.IsNull)
+        //            return CellValues.NullINT;
+
+        //        return new Cell(CellSerializer.Length(x));
+
+        //    }
+
+        //}
+
+        //public class ExpressionTrim : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionTrim(Host Host)
+        //        : base(Host, null, NAME_TRIM, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionTrim(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+        //        if (x.IsNull)
+        //            return new Cell(this.ReturnAffinity());
+
+        //        return CellFunctions.Trim(x);
+
+        //    }
+
+        //}
+
+        //public class ExpressionToUTF16 : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionToUTF16(Host Host)
+        //        : base(Host, null, NAME_TO_UTF16, 1, CellAffinity.STRING)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionToUTF16(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+
+        //        if (x.AFFINITY != CellAffinity.BLOB)
+        //            return CellValues.NullSTRING;
+
+        //        return new Cell(CellFunctions.ByteArrayToUTF16String(x.valueBLOB));
+
+        //    }
+
+        //    public override int ReturnSize()
+        //    {
+        //        return base.ReturnSize() * 2;
+        //    }
+
+        //}
+
+        //public class ExpressionToUTF8 : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionToUTF8(Host Host)
+        //        : base(Host, null, NAME_TO_UTF8, 1, CellAffinity.STRING)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionToUTF8(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+
+        //        if (x.AFFINITY != CellAffinity.BLOB)
+        //            return CellValues.NullSTRING;
+
+        //        return new Cell(ASCIIEncoding.ASCII.GetString(x.valueBLOB));
+
+        //    }
+
+        //}
+
+        //public class ExpressionToHex : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionToHex(Host Host)
+        //        : base(Host, null, NAME_TO_HEX, 1, CellAffinity.STRING)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionToHex(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+
+        //        if (x.AFFINITY != CellAffinity.BLOB)
+        //            return CellValues.NullSTRING;
+
+        //        return new Cell(BitConverter.ToString(x.valueBLOB));
+
+        //    }
+
+        //    public override int ReturnSize()
+        //    {
+        //        return base.ReturnSize() * 4;
+        //    }
+
+        //}
+
+        //public class ExpressionFromUTF16 : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionFromUTF16(Host Host)
+        //        : base(Host, null, NAME_FROM_UTF16, 1, CellAffinity.BLOB)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionFromUTF16(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+
+        //        if (x.AFFINITY != CellAffinity.STRING || x.NULL == 1)
+        //            return CellValues.NullBLOB;
+
+        //        x.BLOB = ASCIIEncoding.BigEndianUnicode.GetBytes(x.STRING);
+        //        x.AFFINITY = CellAffinity.BLOB;
+
+        //        return x;
+
+        //    }
+
+        //    public override int ReturnSize()
+        //    {
+        //        return base.ReturnSize();
+        //    }
+
+        //}
+
+        //public class ExpressionFromUTF8 : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionFromUTF8(Host Host)
+        //        : base(Host, null, NAME_FROM_UTF8, 1, CellAffinity.BLOB)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionFromUTF8(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+
+        //        if (x.AFFINITY != CellAffinity.STRING || x.NULL == 1)
+        //            return CellValues.NullBLOB;
+
+        //        x.BLOB = ASCIIEncoding.ASCII.GetBytes(x.STRING.ToCharArray());
+        //        x.AFFINITY = CellAffinity.BLOB;
+
+        //        return x;
+
+        //    }
+
+        //}
+
+        //public class ExpressionFromHex : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionFromHex(Host Host)
+        //        : base(Host, null, NAME_FROM_HEX, 1, CellAffinity.BLOB)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionFromHex(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+
+        //        if (x.AFFINITY != CellAffinity.STRING || x.NULL == 1)
+        //            return CellValues.NullBLOB;
+
+        //        return CellParser.ByteParse(x.STRING);
+
+        //    }
+
+        //    public override int ReturnSize()
+        //    {
+        //        return base.ReturnSize() / 4;
+        //    }
+
+        //}
+
+        //// Numerical Functions //
+        //public class ExpressionLog : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionLog(Host Host)
+        //        : base(Host, null, NAME_LOG, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionLog(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+
+        //        return CellFunctions.Log(x);
+
+        //    }
+
+        //}
+
+        //public class ExpressionExp : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionExp(Host Host)
+        //        : base(Host, null, NAME_EXP, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionExp(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+
+        //        return CellFunctions.Exp(x);
+
+        //    }
+
+        //}
+
+        //public class ExpressionSine : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionSine(Host Host)
+        //        : base(Host, null, NAME_SIN, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionSine(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+
+        //        return CellFunctions.Sin(x);
+
+        //    }
+
+        //}
+
+        //public class ExpressionCosine : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionCosine(Host Host)
+        //        : base(Host, null, NAME_COS, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionCosine(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+
+        //        return CellFunctions.Cos(x);
+
+        //    }
+
+        //}
+
+        //public class ExpressionTangent : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionTangent(Host Host)
+        //        : base(Host, null, NAME_TAN, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionTangent(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+
+        //        return CellFunctions.Tan(x);
+
+        //    }
+
+        //}
+
+        //public class ExpressionHyperbolicSine : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionHyperbolicSine(Host Host)
+        //        : base(Host, null, NAME_SINH, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionHyperbolicSine(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+
+        //        return CellFunctions.Sinh(x);
+
+        //    }
+
+        //}
+
+        //public class ExpressionHyperbolicCosine : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionHyperbolicCosine(Host Host)
+        //        : base(Host, null, NAME_COSH, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionHyperbolicCosine(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+
+        //        return CellFunctions.Cosh(x);
+
+        //    }
+
+        //}
+
+        //public class ExpressionHyperbolicTangent : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionHyperbolicTangent(Host Host)
+        //        : base(Host, null, NAME_TANH, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionHyperbolicTangent(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+
+        //        return CellFunctions.Tanh(x);
+
+        //    }
+
+        //}
+
+        //public class ExpressionAbsoluteValue : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionAbsoluteValue(Host Host)
+        //        : base(Host, null, NAME_ABS, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionAbsoluteValue(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+
+        //        return CellFunctions.Abs(x);
+
+        //    }
+
+        //}
+
+        //public class ExpressionSquareRoot : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionSquareRoot(Host Host)
+        //        : base(Host, null, NAME_SQRT, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionSquareRoot(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+
+        //        return CellFunctions.Sqrt(x);
+
+        //    }
+
+        //}
+
+        //public class ExpressionSign : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionSign(Host Host)
+        //        : base(Host, null, NAME_SIGN, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionSign(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+
+        //        return CellFunctions.Sign(x);
+
+        //    }
+
+        //}
+
+        //public class ExpressionRound : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionRound(Host Host)
+        //        : base(Host, null, NAME_ROUND, 2)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionRound(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        Cell x = this._ChildNodes[0].Evaluate(Variants);
+        //        if (x.AFFINITY != CellAffinity.DOUBLE)
+        //            return new Cell(this.ReturnAffinity());
+
+        //        Cell y = this._ChildNodes[0].Evaluate(Variants);
+
+        //        return new Cell(Math.Round(x.DOUBLE, (int)y.valueLONG));
+
+        //    }
+
+        //}
+
+        //public class ExpressionLogit : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionLogit(Host Host)
+        //        : base(Host, null, NAME_LOGIT, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionLogit(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        throw new NotImplementedException();
+
+        //    }
+
+        //}
+
+        //public class ExpressionNormal : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionNormal(Host Host)
+        //        : base(Host, null, NAME_NORMAL, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionNormal(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+
+        //        if (this._ChildNodes.Count != Math.Abs(this._MaxParamterCount))
+        //            throw new ArgumentException(string.Format("'{0}' requires {1} parameters", this.Name, this._MaxParamterCount));
+
+        //        throw new NotImplementedException();
+
+        //    }
+
+        //}
+
+        //// Meta Functions //
+        //public class ExpressionMeta_Formula : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionMeta_Formula(Host Host)
+        //        : base(Host, null, NAME_FORMULA, 1)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionMeta_Formula(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+        //        return new Cell(this._ChildNodes[0].Unparse(Variants));
+        //    }
+
+        //}
+
+        //public class ExpressionTypeOf : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionTypeOf(Host Host)
+        //        : base(Host, null, NAME_TYPEOF, 1, CellAffinity.BYTE)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionTypeOf(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+        //        return new Cell((byte)this._ChildNodes[0].ReturnAffinity());
+        //    }
+
+
+        //}
+
+        //public class ExpressionSizeOf : ScalarExpressionFunction
+        //{
+
+        //    public ExpressionSizeOf(Host Host)
+        //        : base(Host, null, NAME_SIZEOF, 1, CellAffinity.INT)
+        //    {
+        //    }
+
+        //    public override ScalarExpression CloneOfMe()
+        //    {
+        //        return new ExpressionSizeOf(this._Host);
+        //    }
+
+        //    public override Cell Evaluate(FieldResolver Variants)
+        //    {
+        //        return new Cell(CellSerializer.Length(this._ChildNodes[0].Evaluate(Variants)));
+        //    }
+
+
+        //}
+
+        ////---------------------------------------------------------------------------------------------
+        ////---------------------------------------------------------------------------------------------
+        ////---------------------------------------------------------------------------------------------
+
+        //public class BaseLibraryFunctions : IScalarExpressionLookup
+        //{
+
+        //    private Host _Host;
+
+        //    public BaseLibraryFunctions(Host Host)
+        //    {
+        //        this._Host = Host;
+        //    }
+
+        //    public ScalarExpressionFunction Lookup(string Name)
+        //    {
+
+        //        switch (Name.ToUpper())
+        //        {
+        //            case NAME_NOT: return new ExpressionNot(this._Host);
+        //            case NAME_PLUS: return new ExpressionPlus(this._Host);
+        //            case NAME_MINUS: return new ExpressionMinus(this._Host);
+        //            case NAME_ADD: return new ExpressionAdd(this._Host);
+        //            case NAME_SUB: return new ExpressionSubtract(this._Host);
+        //            case NAME_MULT: return new ExpressionMultiply(this._Host);
+        //            case NAME_DIV: return new ExpressionDivide(this._Host);
+        //            case NAME_CDIV: return new ExpressionCheckedDivide(this._Host);
+        //            case NAME_MOD: return new ExpressionModulo(this._Host);
+        //            case NAME_POWER: return new ExpressionPower(this._Host);
+        //            case NAME_EQ: return new ExpressionEquals(this._Host);
+        //            case NAME_NEQ: return new ExpressionNotEquals(this._Host);
+        //            case NAME_GT: return new ExpressionGreaterThan(this._Host);
+        //            case NAME_GTE: return new ExpressionGreaterThanOrEqualTo(this._Host);
+        //            case NAME_LT: return new ExpressionLessThan(this._Host);
+        //            case NAME_LTE: return new ExpressionLessThanOrEqualTo(this._Host);
+        //            case NAME_AND: return new ExpressionAnd(this._Host);
+        //            case NAME_OR: return new ExpressionOr(this._Host);
+        //            case NAME_XOR: return new ExpressionXor(this._Host);
+        //            case NAME_IF: return new ExpressionIf(this._Host);
+        //            case NAME_IFNULL: return new ExpressionIfNull(this._Host);
+        //            //case NAME_CAST: return new ExpressionCast(this._Host); // Note: CAST uses the C# syntax and is handeled in the parser not as a function
+        //            case NAME_LIKE: return new ExpressionLike(this._Host);
+        //            case NAME_MATCH: return new ExpressionMatch(this._Host);
+        //            case NAME_GUID: return new ExpressionGUID(this._Host);
+        //            case NAME_THREAD_ID: return new ExpressionThreadID(this._Host);
+        //            case NAME_DATE_BUILD: return new ExpressionDateBuild(this._Host);
+        //            case NAME_NOW: return new ExpressionNow(this._Host);
+        //            case NAME_YEAR: return new ExpressionYear(this._Host);
+        //            case NAME_MONTH: return new ExpressionMonth(this._Host);
+        //            case NAME_DAY: return new ExpressionDay(this._Host);
+        //            case NAME_HOUR: return new ExpressionHour(this._Host);
+        //            case NAME_MINUTE: return new ExpressionMinute(this._Host);
+        //            case NAME_SECOND: return new ExpressionSecond(this._Host);
+        //            case NAME_MILISECOND: return new ExpressionMillisecond(this._Host);
+        //            case NAME_ELAPSED: return new ExpressionElapsed(this._Host);
+        //            case NAME_TIME_SPAN: return new ExpressionTimeSpan(this._Host);
+        //            case NAME_SUBSTR: return new ExpressionSubstring(this._Host);
+        //            case NAME_REPLACE: return new ExpressionReplace(this._Host);
+        //            case NAME_POSITION: return new ExpressionPosition(this._Host);
+        //            case NAME_LENGTH: return new ExpressionLength(this._Host);
+        //            case NAME_TRIM: return new ExpressionTrim(this._Host);
+        //            case NAME_TO_UTF16: return new ExpressionToUTF16(this._Host);
+        //            case NAME_TO_UTF8: return new ExpressionToUTF8(this._Host);
+        //            case NAME_TO_HEX: return new ExpressionToHex(this._Host);
+        //            case NAME_FROM_UTF16: return new ExpressionFromUTF16(this._Host);
+        //            case NAME_FROM_UTF8: return new ExpressionFromUTF8(this._Host);
+        //            case NAME_FROM_HEX: return new ExpressionFromHex(this._Host);
+        //            case NAME_LOG: return new ExpressionLog(this._Host);
+        //            case NAME_EXP: return new ExpressionExp(this._Host);
+        //            case NAME_SQRT: return new ExpressionSquareRoot(this._Host);
+        //            case NAME_SIN: return new ExpressionSine(this._Host);
+        //            case NAME_COS: return new ExpressionCosine(this._Host);
+        //            case NAME_TAN: return new ExpressionTangent(this._Host);
+        //            case NAME_SINH: return new ExpressionHyperbolicSine(this._Host);
+        //            case NAME_COSH: return new ExpressionHyperbolicCosine(this._Host);
+        //            case NAME_TANH: return new ExpressionHyperbolicTangent(this._Host);
+        //            case NAME_LOGIT: return new ExpressionLogit(this._Host);
+        //            case NAME_NORMAL: return new ExpressionNormal(this._Host);
+        //            case NAME_ABS: return new ExpressionAbsoluteValue(this._Host);
+        //            case NAME_SIGN: return new ExpressionSign(this._Host);
+        //            case NAME_ROUND: return new ExpressionRound(this._Host);
+        //            case NAME_FORMULA: return new ExpressionMeta_Formula(this._Host);
+        //            case NAME_TYPEOF: return new ExpressionTypeOf(this._Host);
+        //            case NAME_SIZEOF: return new ExpressionSizeOf(this._Host);
+
+        //        }
+
+        //        return null;
+
+        //    }
+
+        //    public bool Exists(string Name)
+        //    {
+        //        return this.Lookup(Name) != null;
+        //    }
+
+        //}
 
     }
 

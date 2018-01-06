@@ -118,6 +118,22 @@ namespace Pulse.Util
             return Split(Text, Delim, char.MaxValue);
         }
 
+        // Splicer //
+        public static string[] Splice(string Text, int[] Map)
+        {
+
+            int idx = 0;
+            List<string> vals = new List<string>();
+            foreach (int j in Map)
+            {
+                string s = Text.Substring(idx, j - idx);
+                vals.Add(s);
+                idx = j + 1;
+            }
+            return vals.ToArray();
+
+        }
+
         // Records //
         public static Record ToRecord(string Text, Schema Columns, char[] Delims, char Escape)
         {
