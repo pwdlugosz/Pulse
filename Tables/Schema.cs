@@ -31,7 +31,7 @@ namespace Pulse.Tables
          *      -- Affinity
          *      -- Null bit
          * -- Bools (BOOL) take up 1 byte
-         * -- Longs (LONG), Dates (DATE), floating points (DOUBLE) all take up 8 bytes
+         * -- Longs (LONG), Dates (DATE_TIME), floating points (DOUBLE) all take up 8 bytes
          * -- Strings take up 4 + 2 OriginalPage n bytes of data (4 == length, each n takes up 2 bytes)
          * -- Blobs take up 4 + n bytes of data
          * 
@@ -63,7 +63,7 @@ namespace Pulse.Tables
             {
                 if (Cache[i].Count == RECORD_LEN)
                 {
-                    this._Cache.Allocate(Cache[i][OFFSET_NAME].valueSTRING, Cache[i]);
+                    this._Cache.Allocate(Cache[i][OFFSET_NAME].valueCSTRING, Cache[i]);
                     this._HashCode += Cache[i].GetHashCode(new Key(1, 2)) * this.Count;
                 }
             }
@@ -238,7 +238,7 @@ namespace Pulse.Tables
         {
             if (Index < 0 || Index >= this.Count)
                 throw new Exception("Index supplied is invalid: " + Index.ToString() + " : " + this.Count.ToString());
-            return this._Cache[Index][OFFSET_NAME].valueSTRING;
+            return this._Cache[Index][OFFSET_NAME].valueCSTRING;
         }
 
         /// <summary>
@@ -468,11 +468,11 @@ namespace Pulse.Tables
                     throw new Exception(String.Format("Column Affinities do not match {0} : {1} != {2}", i, R[i].Affinity, this.ColumnAffinity(i)));
                 else if (R[i].Affinity != this.ColumnAffinity(i))
                     R[i] = CellConverter.Cast(R[i], this.ColumnAffinity(i));
-                else if (this.ColumnSize(i) <= CellSerializer.Length(R[i]) && this.ColumnAffinity(i) == CellAffinity.STRING)
-                    R._data[i].STRING = R[i].STRING.Substring(0, this.ColumnSize(i));
-                else if (this.ColumnSize(i) <= CellSerializer.Length(R[i]) && this.ColumnAffinity(i) == CellAffinity.BLOB)
+                else if (this.ColumnSize(i) <= CellSerializer.Length(R[i]) && this.ColumnAffinity(i) == CellAffinity.CSTRING)
+                    R._data[i].CSTRING = R[i].CSTRING.Substring(0, this.ColumnSize(i));
+                else if (this.ColumnSize(i) <= CellSerializer.Length(R[i]) && this.ColumnAffinity(i) == CellAffinity.BINARY)
                 {
-                    Array.Resize(ref R._data[i].BLOB, this.ColumnSize(i));
+                    Array.Resize(ref R._data[i].BINARY, this.ColumnSize(i));
                 }
 
                 // Check nullness //
@@ -639,7 +639,7 @@ namespace Pulse.Tables
             for (int i = 0; i < this._Cache.Count; i++)
             {
                 sb.Append(this.ColumnName(i) + " " + this.ColumnAffinity(i).ToString());
-                if (this.ColumnAffinity(i) == CellAffinity.BLOB || this.ColumnAffinity(i) == CellAffinity.STRING)
+                if (this.ColumnAffinity(i) == CellAffinity.BINARY || this.ColumnAffinity(i) == CellAffinity.CSTRING)
                     sb.Append("." + this.ColumnSize(i).ToString());
                 if (this.ColumnNull(i) == true)
                 {
@@ -937,13 +937,13 @@ namespace Pulse.Tables
                 string[] x = TypeArray[i].Split('.');
                 CellAffinity t = CellAffinityHelper.Parse(x[0]);
                 int size = 8;
-                if (t == CellAffinity.STRING && x.Length == 2)
+                if (t == CellAffinity.CSTRING && x.Length == 2)
                     size = int.Parse(x[1]);
-                else if (t == CellAffinity.STRING)
+                else if (t == CellAffinity.CSTRING)
                     size = Schema.DEFAULT_STRING_SIZE;
-                else if (t == CellAffinity.BLOB && x.Length == 2)
+                else if (t == CellAffinity.BINARY && x.Length == 2)
                     size = int.Parse(x[1]);
-                else if (t == CellAffinity.BLOB)
+                else if (t == CellAffinity.BINARY)
                     size = Schema.DEFAULT_BLOB_SIZE;
 
                 columns.Add(NameArray[i], t, size);

@@ -217,7 +217,7 @@ namespace Pulse.Scripting
             if (!this._Host.Libraries.Exists(LibName))
                 throw new Exception(string.Format("Library does not exist '{0}'", LibName));
 
-            if (!this._Host.Libraries[LibName].ScalarFunctionExists(FuncName))
+            if (!this._Host.Libraries[LibName].MatrixFunctionExists(FuncName))
                 throw new Exception(string.Format("Function '{0}' does not exist in '{1}'", FuncName, LibName));
 
             ObjectFactory of = new ObjectFactory(this._Host, this._sFactory);

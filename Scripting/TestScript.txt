@@ -1,17 +1,43 @@
 ﻿
+
+NEW S = "A.B.C.D.E.F.G.H.I.J.K.L.M.N.O.P.Q.R.S.T.U.V.W.X.Y.Z";
+NEW $M = $SPLIT(S, '.');
+NEW $N = ${ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+
+PRINT $M;
+
+PRINT MATCH("H", $M);
+
+
+
+
+
+
+
 /*
-NEW X = 'HELLO WORLD!!!';
-PRINT X;
+NEW TEMP.#U = 
+	# { 0 : JKEY, 'AA' : GKEY } + { 1 : JKEY, 'BB' : GKEY } + { 2 : JKEY, 'CC' : GKEY } + { 3 : JKEY, 'DD' : GKEY } 
+	+ { 4 : JKEY, 'EE' : GKEY } + { 5 : JKEY, 'FF' : GKEY } + { 6 : JKEY, 'GG' : GKEY } + { 7 : JKEY, 'HH' : GKEY } 
+	+ { 8 : JKEY, 'II' : GKEY } + { 9 : JKEY, 'JJ' : GKEY } + { 10 : JKEY, 'KK' : GKEY } + { 11 : JKEY, 'LL' : GKEY } 
+	+ { 12 : JKEY, 'MM' : GKEY } + { 13 : JKEY, 'NN' : GKEY } + { 14 : JKEY, 'OO' : GKEY } + { 15 : JKEY, 'PP' : GKEY } ;
 
-NEW @R = @{ (INT)NULL : KEY, (DOUBLE)100 : VALUE};
-PRINT @R.VALUE;
+NEW TEMP.#v = 
+	# { 0 : JKEY, 'AA' : GKEY } + { 1 : JKEY, 'BB' : GKEY } + { 2 : JKEY, 'CC' : GKEY } + { 3 : JKEY, 'DD' : GKEY } 
+	+ { 4 : JKEY, 'EE' : GKEY } + { 5 : JKEY, 'FF' : GKEY } + { 6 : JKEY, 'GG' : GKEY } + { 7 : JKEY, 'HH' : GKEY } 
+	+ { 8 : JKEY, 'II' : GKEY } + { 9 : JKEY, 'JJ' : GKEY } + { 10 : JKEY, 'KK' : GKEY } + { 11 : JKEY, 'LL' : GKEY } 
+	+ { 12 : JKEY, 'MM' : GKEY } + { 13 : JKEY, 'NN' : GKEY } + { 14 : JKEY, 'OO' : GKEY } + { 15 : JKEY, 'PP' : GKEY } ;
 
-NEW $M = $ { 1d, 2d } + { 1d, 3d };
-PRINT $M; 
+FOR_EACH @A IN #U
+{
+	FOR_EACH @B IN #V
+	{
+		PRINT @{ LOCAL.@A.GKEY, LOCAL.@B.GKEY };
+	};
+};
 */
 
 
-
+/*
 NEW A = 127;
 NEW B = 19;
 NEW C = 2 ^ 16 - 1;
@@ -37,5 +63,8 @@ NEW TEMP.#V = TEMP.#T : T * TEMP.#U : U & T.VALUE4 == U.JKEY { T.KEY, T.VALUE1 :
 
 NEW TEMP.#W = TEMP.#V / { GROUPER } % { MIN(VALUE) : MIN_V, MAX(VALUE) : MAX_V, SUM(VALUE) : SUM_V, COUNT(VALUE) : COUNT_V, AVG(VALUE) : AVG_V, STDEVP(VALUE) : STDEVP_V };
 
-PRINT TEMP.#W;
 
+
+PRINT TEMP.#W TO 'C:\Users\pwdlu_000\Documents\Pulse_Projects\ExportTest.txt';
+
+*/

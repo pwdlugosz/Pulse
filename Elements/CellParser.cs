@@ -26,7 +26,7 @@ namespace Pulse.Elements
             {
                 case CellAffinity.BOOL:
                     return ParseBOOL(Value);
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                     return ParseDATE(Value);
                 case CellAffinity.BYTE:
                     return ParseBYTE(Value);
@@ -36,15 +36,15 @@ namespace Pulse.Elements
                     return ParseINT(Value);
                 case CellAffinity.LONG:
                     return ParseLONG(Value);
-                case CellAffinity.FLOAT:
+                case CellAffinity.SINGLE:
                     return ParseFLOAT(Value);
                 case CellAffinity.DOUBLE:
                     return ParseDOUBLE(Value);
-                case CellAffinity.BLOB:
+                case CellAffinity.BINARY:
                     return ParseBLOB(Value);
-                case CellAffinity.TEXT:
+                case CellAffinity.BSTRING:
                     return ParseTEXT(Value);
-                case CellAffinity.STRING:
+                case CellAffinity.CSTRING:
                     return ParseSTRING(Value);
             }
 
@@ -140,13 +140,13 @@ namespace Pulse.Elements
         public static Cell ParseFLOAT(string Value)
         {
             if (Value == null)
-                return CellValues.NullFLOAT;
+                return CellValues.NullSINGLE;
 
             string t = Remove(Value.ToUpper(), " Ff,$%");
             float x = 0;
             if (float.TryParse(t, out x))
                 return new Cell(x);
-            return CellValues.NullFLOAT;
+            return CellValues.NullSINGLE;
         }
 
         public static Cell ParseDOUBLE(string Value)
@@ -182,7 +182,7 @@ namespace Pulse.Elements
         public static Cell ParseTEXT(string Value)
         {
             if (Value == null)
-                return CellValues.NullTEXT;
+                return CellValues.NullBSTRING;
 
             return new Cell(Clean(Value), true);
         }
@@ -190,7 +190,7 @@ namespace Pulse.Elements
         public static Cell ParseSTRING(string Value)
         {
             if (Value == null)
-                return CellValues.NullSTRING;
+                return CellValues.NullCSTRING;
 
             return new Cell(Clean(Value), false);
         }
@@ -279,7 +279,7 @@ namespace Pulse.Elements
         {
 
             if (Value.Length == 0)
-                return new Cell(CellAffinity.BLOB);
+                return new Cell(CellAffinity.BINARY);
 
             Value = Value.Replace("0x", "").Replace("0X", "");
             byte[] b = new byte[(Value.Length) / 2];

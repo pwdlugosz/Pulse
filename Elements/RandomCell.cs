@@ -61,7 +61,43 @@ namespace Pulse.Elements
             return new Cell(this.BaseDouble() < Likelyhood);
         }
 
-        // Integers //
+        // Bytes //
+        public Cell NextByte()
+        {
+            return new Cell(this.BaseByte());
+        }
+
+        public Cell NextByte(byte Lower, byte Upper)
+        {
+            byte x = (byte)(this.BaseByte() % (Upper - Lower) + Lower);
+            return new Cell(x);
+        }
+
+        // Short //
+        public Cell NextShort()
+        {
+            return new Cell(this.BaseShort());
+        }
+
+        public Cell NextShort(short Lower, short Upper)
+        {
+            short x = (short)(this.BaseShort() % (Upper - Lower) + Lower);
+            return new Cell(x);
+        }
+
+        // Int //
+        public Cell NextInt()
+        {
+            return new Cell(this.BaseInt());
+        }
+
+        public Cell NextInt(int Lower, int Upper)
+        {
+            int x = (int)(this.BaseInt() % (Upper - Lower) + Lower);
+            return new Cell(x);
+        }
+        
+        // Long //
         public Cell NextLong()
         {
             return new Cell(this.BaseLong());
@@ -69,13 +105,8 @@ namespace Pulse.Elements
 
         public Cell NextLong(long Lower, long Upper)
         {
-            int t = this._base.Next((int)Lower, (int)Upper);
-            return new Cell(t);
-        }
-
-        public Cell NextLongPrime()
-        {
-            return new Cell(this.NextPrimeBase());
+            long x = (long)(this.BaseLong() % (Upper - Lower) + Lower);
+            return new Cell(x);
         }
 
         // Dates //
@@ -126,6 +157,26 @@ namespace Pulse.Elements
 
         }
 
+        // Single //
+        public Cell NextSingle()
+        {
+            return new Cell(this.BaseSingle());
+        }
+
+        public Cell NextSingle(Single Lower, Single Upper)
+        {
+            double d = (Upper - Lower) * this.BaseSingle() + Lower;
+            return new Cell(d);
+        }
+
+        public Cell NextSingleGauss()
+        {
+            double u = this.BaseSingle();
+            double v = this.BaseSingle();
+            double x = Math.Sqrt(-Math.Log(u) * 2f) * Math.Cos(2f * v * Math.PI);
+            return new Cell(x);
+        }
+
         // Doubles //
         public Cell NextDouble()
         {
@@ -146,67 +197,106 @@ namespace Pulse.Elements
             return new Cell(x);
         }
 
-        // Strings //
-        public Cell NextUTF16String(int Len)
-        {
-            return this.NextString(Len, char.MaxValue);
-        }
-
-        public Cell NextUTF8String(int Len)
-        {
-            return this.NextString(Len, 255);
-        }
-
-        public Cell NextUTF7String(int Len)
-        {
-            return this.NextString(Len, 127);
-        }
-
-        public Cell NextStringASCIIPrintable(int Len)
-        {
-            return this.NextString(Len, ASCIIPrintable);
-        }
-
-        public Cell NextStringASCIIPrintableNoSpace(int Len)
-        {
-            return this.NextString(Len, ASCIIPrintableNoSpace);
-        }
-
-        public Cell NextStringUpperLowerNumText(int Len)
-        {
-            return this.NextString(Len, UpperLowerNumText);
-        }
-
-        public Cell NextStringUpperNumText(int Len)
-        {
-            return this.NextString(Len, UpperNumText);
-        }
-
-        public Cell NextStringLowerNumText(int Len)
-        {
-            return this.NextString(Len, LowerNumText);
-        }
-
-        public Cell NextStringUpperText(int Len)
-        {
-            return this.NextString(Len, UpperText);
-        }
-
-        public Cell NextStringLowerText(int Len)
-        {
-            return this.NextString(Len, LowerText);
-        }
-
-        public Cell NextStringNum(int Len)
-        {
-            return this.NextString(Len, Num);
-        }
-        
-        public Cell NextString(int Len, string Corpus)
+        // B-Strings //
+        public Cell NextBString(int Len, BString Corpus)
         {
 
             if (Len <= 0)
-                return CellValues.NullSTRING;
+                return CellValues.NullBSTRING;
+
+            Len = Len % Schema.DEFAULT_STRING_SIZE;
+
+            BString.BStringBuilder bb = new BString.BStringBuilder();
+            for (int i = 0; i < Len; i++)
+            {
+                int idx = this.BaseInt() % Corpus.Length;
+                bb.Append(Corpus[idx]);
+            }
+
+            return new Cell(bb.ToBString());
+
+        }
+
+        public Cell NextBString(int Len)
+        {
+
+            if (Len <= 0)
+                return CellValues.NullBSTRING;
+
+            Len = Len % Schema.DEFAULT_STRING_SIZE;
+
+            BString.BStringBuilder bb = new BString.BStringBuilder();
+            for (int i = 0; i < Len; i++)
+            {
+                byte b = this.NextByte();
+                bb.Append(b);
+            }
+
+            return new Cell(bb.ToBString());
+
+        }
+
+        // C-Strings //
+        public Cell NextUTF16CString(int Len)
+        {
+            return this.NextCString(Len, char.MaxValue);
+        }
+
+        public Cell NextUTF8CString(int Len)
+        {
+            return this.NextCString(Len, 255);
+        }
+
+        public Cell NextUTF7CString(int Len)
+        {
+            return this.NextCString(Len, 127);
+        }
+
+        public Cell NextCStringASCIIPrintable(int Len)
+        {
+            return this.NextCString(Len, ASCIIPrintable);
+        }
+
+        public Cell NextCStringASCIIPrintableNoSpace(int Len)
+        {
+            return this.NextCString(Len, ASCIIPrintableNoSpace);
+        }
+
+        public Cell NextCStringUpperLowerNumText(int Len)
+        {
+            return this.NextCString(Len, UpperLowerNumText);
+        }
+
+        public Cell NextCStringUpperNumText(int Len)
+        {
+            return this.NextCString(Len, UpperNumText);
+        }
+
+        public Cell NextCStringLowerNumText(int Len)
+        {
+            return this.NextCString(Len, LowerNumText);
+        }
+
+        public Cell NextCStringUpperText(int Len)
+        {
+            return this.NextCString(Len, UpperText);
+        }
+
+        public Cell NextCStringLowerText(int Len)
+        {
+            return this.NextCString(Len, LowerText);
+        }
+
+        public Cell NextCStringNum(int Len)
+        {
+            return this.NextCString(Len, Num);
+        }
+        
+        public Cell NextCString(int Len, string Corpus)
+        {
+
+            if (Len <= 0)
+                return CellValues.NullCSTRING;
 
             Len = Len % Schema.DEFAULT_STRING_SIZE;
 
@@ -222,11 +312,11 @@ namespace Pulse.Elements
 
         }
 
-        public Cell NextString(int Len, int Max)
+        public Cell NextCString(int Len, int Max)
         {
 
             if (Len <= 0)
-                return CellValues.NullSTRING;
+                return CellValues.NullCSTRING;
 
             Len = Len % Schema.DEFAULT_STRING_SIZE;
 
@@ -241,8 +331,8 @@ namespace Pulse.Elements
 
         }
 
-        // BLOBs //
-        public Cell NextBLOB(int Len)
+        // Binary //
+        public Cell NextBinary(int Len)
         {
 
             if (Len <= 0)
@@ -257,35 +347,79 @@ namespace Pulse.Elements
 
         }
 
+        public Cell NextBinary(int Len, byte[] Corpus)
+        {
+
+            if (Len <= 0)
+                return CellValues.NullBLOB;
+
+            Len = Len % CellSerializer.MAX_BLOB_LEN;
+
+            byte[] b = new byte[Len];
+            for (int i = 0; i < b.Length; i++)
+            {
+                int idx = this.NextInt() % b.Length;
+                b[i] = Corpus[idx];
+            }
+
+            return new Cell(b);
+
+        }
+
         // ### THREAD SAFE ###
+        // ----------------------------------------------------------------- //
+        private short BaseByte()
+        {
+            lock (this._lock)
+            {
+                byte x = (byte)(this._base.Next() & byte.MaxValue);
+                return x;
+            }
+        }
+
+        private short BaseShort()
+        {
+            lock (this._lock)
+            {
+                short a = (short)(this._base.Next() & short.MaxValue);
+                return (short)(a < 0 ? ~a : a);
+            }
+        }
+
         private int BaseInt()
         {
 
             lock (this._lock)
             {
-                return this._base.Next();
+                int a = this._base.Next();
+                return (a < 0 ? ~a : a);
             }
 
         }
 
-        // ### THREAD SAFE ###
         private long BaseLong()
         {
 
             lock (this._lock)
             {
-                return (long)(this._base.Next());
+                long a = (long)this._base.Next();
+                long b = (long)this._base.Next();
+                a = (a << 32) | (b);
+                return (a < 0 ? ~a : a);
             }
             
         }
 
-        // ### THREAD SAFE ###
-        private long BaseLong(long Lower, long Upper)
+        private Single BaseSingle()
         {
-            return (long)(this._base.Next((int)(Lower & int.MaxValue), (int)(Upper & int.MaxValue)));
+
+            lock (this._lock)
+            {
+                return (Single)this._base.NextDouble();
+            }
+
         }
 
-        // ### THREAD SAFE ###
         private double BaseDouble()
         {
 
@@ -296,7 +430,15 @@ namespace Pulse.Elements
 
         }
 
-        // ### THREAD SAFE ###
+        private char BaseChar()
+        {
+            lock (this._lock)
+            {
+                char a = (char)(this._base.Next() & char.MaxValue);
+                return (char)(a < 0 ? ~a : a);
+            }
+        }
+
         private byte[] ByteArrayBase(int Len)
         {
 
@@ -308,8 +450,9 @@ namespace Pulse.Elements
             }
 
         }
-
-        private long NextPrimeBase()
+        
+        // ----------------------------------------------------------------- //
+        public long NextPrimeBase()
         {
 
             long x = this.BaseLong();

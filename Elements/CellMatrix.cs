@@ -254,6 +254,55 @@ namespace Pulse.Elements
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Matrix"></param>
+        /// <param name="SearchValue"></param>
+        /// <returns></returns>
+        public Cell Match(Cell SearchValue)
+        {
+            Cell x = CellValues.NullLONG;
+            for (int i = 0; i < this.RowCount; i++)
+            {
+
+                for (int j = 0; j < this.ColumnCount; j++)
+                {
+                    if (this[i, j] == SearchValue)
+                        return new Cell(i, j);
+                }
+
+            }
+
+            return x;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Matrix"></param>
+        /// <param name="SearchValue"></param>
+        /// <returns></returns>
+        public CellMatrix Match2(Cell SearchValue)
+        {
+
+            List<Cell> x = new List<Cell>();
+            for (int i = 0; i < this.RowCount; i++)
+            {
+
+                for (int j = 0; j < this.ColumnCount; j++)
+                {
+                    if (this[i, j] == SearchValue)
+                        x.Add(new Cell(i, j));
+                }
+
+            }
+
+            return new CellMatrix(new Record(x.ToArray()), this.Affinity, this.Size);
+
+        }
+
         // Methods //
         /// <summary>
         /// Checks to see if the given rows/columns are valid
@@ -270,18 +319,28 @@ namespace Pulse.Elements
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public CellMatrix Shell()
+        {
+            return new CellMatrix(this._Rows, this._Columns, this._Affinity, this._Size);
+        }
+
+        /// <summary>
         /// Gets a string Value of the matrix
         /// </summary>
         /// <returns></returns>
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder(this._Rows * this._Columns);
             for (int i = 0; i < this.RowCount; i++)
             {
 
                 for (int j = 0; j < this.ColumnCount; j++)
                 {
-                    sb.Append(this[i, j].ToString());
+                    string v = this[i, j].valueCSTRING;
+                    sb.Append(v);
                     if (j != this.ColumnCount - 1)
                         sb.Append(",");
                 }
@@ -303,11 +362,19 @@ namespace Pulse.Elements
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return new MatrixEnumerator(this);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         IEnumerator<Cell> IEnumerable<Cell>.GetEnumerator()
         {
             return new MatrixEnumerator(this);
@@ -1313,9 +1380,9 @@ namespace Pulse.Elements
 
             public bool MoveNext()
             {
-                if (this._i >= this._M.RowCount)
+                if (this._i < this._M.RowCount)
                     this._i++;
-                if (this._j >= this._M.ColumnCount)
+                if (this._j < this._M.ColumnCount)
                     this._j++;
                 if (this._i < this._M.RowCount && this._j < this._M.ColumnCount)
                 {

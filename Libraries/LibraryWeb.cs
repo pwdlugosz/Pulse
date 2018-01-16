@@ -81,7 +81,7 @@ namespace Pulse.Libraries
 
     //        public override CellAffinity ReturnAffinity()
     //        {
-    //            return CellAffinity.TEXT;
+    //            return CellAffinity.BSTRING;
     //        }
 
     //        public override ScalarExpression CloneOfMe()
@@ -92,8 +92,8 @@ namespace Pulse.Libraries
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
                 
-    //            string raw_html = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
-    //            string xpath = this._ChildNodes[1].Evaluate(Variants).valueSTRING;
+    //            string raw_html = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
+    //            string xpath = this._ChildNodes[1].Evaluate(Variants).valueCSTRING;
     //            int occurance = (this._ChildNodes.Count >= 3 ? this._ChildNodes[2].Evaluate(Variants).valueINT : 1);
     //            if (occurance < 1) occurance = 1;
 
@@ -122,7 +122,7 @@ namespace Pulse.Libraries
     //            }
 
     //            if (node == null)
-    //                return CellValues.NullTEXT;
+    //                return CellValues.NullBSTRING;
     //            return new Cell(node.InnerText, true);
 
     //        }

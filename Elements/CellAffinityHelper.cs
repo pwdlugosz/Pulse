@@ -14,7 +14,7 @@ namespace Pulse.Elements
     {
 
         public const CellAffinity LOWEST_AFFINITY = CellAffinity.BOOL;
-        public const CellAffinity HIGHEST_AFFINITY = CellAffinity.STRING;
+        public const CellAffinity HIGHEST_AFFINITY = CellAffinity.CSTRING;
         public const int AFFINITY_COUNT = 11;
 
         /// <summary>
@@ -32,8 +32,8 @@ namespace Pulse.Elements
                 case "BOOLEAN":
                     return CellAffinity.BOOL;
 
-                case "DATE":
-                    return CellAffinity.DATE;
+                case "DATE_TIME":
+                    return CellAffinity.DATE_TIME;
 
                 case "BYTE":
                     return CellAffinity.BYTE;
@@ -47,22 +47,22 @@ namespace Pulse.Elements
                 case "LONG":
                     return CellAffinity.LONG;
 
-                case "SINGLE":
                 case "FLOAT":
-                    return CellAffinity.FLOAT;
+                case "SINGLE":
+                    return CellAffinity.SINGLE;
 
                 case "DOUBLE":
                 case "NUM":
                     return CellAffinity.DOUBLE;
 
-                case "BLOB":
-                    return CellAffinity.BLOB;
+                case "BINARY":
+                    return CellAffinity.BINARY;
 
-                case "STRING":
-                    return CellAffinity.STRING;
+                case "CSTRING":
+                    return CellAffinity.CSTRING;
 
-                case "TEXT":
-                    return CellAffinity.TEXT;
+                case "BSTRING":
+                    return CellAffinity.BSTRING;
 
                 default:
                     throw new Exception("BString is not a valid affinity: " + Text);
@@ -90,16 +90,16 @@ namespace Pulse.Elements
         public static CellAffinity Highest(CellAffinity A1, CellAffinity A2)
         {
 
-            if (A1 == CellAffinity.STRING || A2 == CellAffinity.STRING)
-                return CellAffinity.STRING;
-            else if (A1 == CellAffinity.TEXT || A2 == CellAffinity.TEXT)
-                return CellAffinity.TEXT;
-            else if (A1 == CellAffinity.BLOB || A2 == CellAffinity.BLOB)
-                return CellAffinity.BLOB;
+            if (A1 == CellAffinity.CSTRING || A2 == CellAffinity.CSTRING)
+                return CellAffinity.CSTRING;
+            else if (A1 == CellAffinity.BSTRING || A2 == CellAffinity.BSTRING)
+                return CellAffinity.BSTRING;
+            else if (A1 == CellAffinity.BINARY || A2 == CellAffinity.BINARY)
+                return CellAffinity.BINARY;
             else if (A1 == CellAffinity.DOUBLE || A2 == CellAffinity.DOUBLE)
                 return CellAffinity.DOUBLE;
-            else if (A1 == CellAffinity.FLOAT || A2 == CellAffinity.FLOAT)
-                return CellAffinity.FLOAT;
+            else if (A1 == CellAffinity.SINGLE || A2 == CellAffinity.SINGLE)
+                return CellAffinity.SINGLE;
             else if (A1 == CellAffinity.LONG || A2 == CellAffinity.LONG)
                 return CellAffinity.LONG;
             else if (A1 == CellAffinity.INT || A2 == CellAffinity.INT)
@@ -108,8 +108,8 @@ namespace Pulse.Elements
                 return CellAffinity.SHORT;
             else if (A1 == CellAffinity.BYTE || A2 == CellAffinity.BYTE)
                 return CellAffinity.BYTE;
-            else if (A1 == CellAffinity.DATE || A2 == CellAffinity.DATE)
-                return CellAffinity.DATE;
+            else if (A1 == CellAffinity.DATE_TIME || A2 == CellAffinity.DATE_TIME)
+                return CellAffinity.DATE_TIME;
             else
                 return CellAffinity.BOOL;
 
@@ -148,8 +148,8 @@ namespace Pulse.Elements
 
             if (A1 == CellAffinity.BOOL || A2 == CellAffinity.BOOL)
                 return CellAffinity.BOOL;
-            else if (A1 == CellAffinity.DATE || A2 == CellAffinity.DATE)
-                return CellAffinity.DATE;
+            else if (A1 == CellAffinity.DATE_TIME || A2 == CellAffinity.DATE_TIME)
+                return CellAffinity.DATE_TIME;
             else if (A1 == CellAffinity.BYTE || A2 == CellAffinity.BYTE)
                 return CellAffinity.BYTE;
             else if (A1 == CellAffinity.SHORT || A2 == CellAffinity.SHORT)
@@ -158,16 +158,16 @@ namespace Pulse.Elements
                 return CellAffinity.INT;
             else if (A1 == CellAffinity.LONG || A2 == CellAffinity.LONG)
                 return CellAffinity.LONG;
-            else if (A1 == CellAffinity.FLOAT || A2 == CellAffinity.FLOAT)
-                return CellAffinity.FLOAT;
+            else if (A1 == CellAffinity.SINGLE || A2 == CellAffinity.SINGLE)
+                return CellAffinity.SINGLE;
             else if (A1 == CellAffinity.DOUBLE || A2 == CellAffinity.DOUBLE)
                 return CellAffinity.DOUBLE;
-            else if (A1 == CellAffinity.BLOB || A2 == CellAffinity.BLOB)
-                return CellAffinity.BLOB;
-            else if (A1 == CellAffinity.TEXT || A2 == CellAffinity.TEXT)
-                return CellAffinity.TEXT;
+            else if (A1 == CellAffinity.BINARY || A2 == CellAffinity.BINARY)
+                return CellAffinity.BINARY;
+            else if (A1 == CellAffinity.BSTRING || A2 == CellAffinity.BSTRING)
+                return CellAffinity.BSTRING;
             else
-                return CellAffinity.STRING;
+                return CellAffinity.CSTRING;
 
         }
 
@@ -180,11 +180,11 @@ namespace Pulse.Elements
         {
 
             if (Affinity.Count() == 0)
-                return CellAffinity.STRING;
+                return CellAffinity.CSTRING;
             else if (Affinity.Count() == 1)
                 return Affinity.First();
 
-            CellAffinity a = CellAffinity.STRING;
+            CellAffinity a = CellAffinity.CSTRING;
             foreach (CellAffinity b in Affinity)
             {
                 a = CellAffinityHelper.Lowest(a, b);
@@ -237,15 +237,15 @@ namespace Pulse.Elements
             else if (T == typeof(ulong) || T == typeof(long))
                 return CellAffinity.LONG;
             else if (T == typeof(float))
-                return CellAffinity.FLOAT;
+                return CellAffinity.SINGLE;
             else if (T == typeof(double))
                 return CellAffinity.DOUBLE;
             else if (T == typeof(string))
-                return CellAffinity.STRING;
+                return CellAffinity.CSTRING;
             else if (T == typeof(byte[]))
-                return CellAffinity.BLOB;
+                return CellAffinity.BINARY;
             else if (T == typeof(DateTime))
-                return CellAffinity.DATE;
+                return CellAffinity.DATE_TIME;
             else if (T == typeof(bool))
                 return CellAffinity.BOOL;
 
@@ -261,12 +261,12 @@ namespace Pulse.Elements
         public static bool IsNumeric(CellAffinity A)
         {
             return A == CellAffinity.BYTE || A == CellAffinity.SHORT || A == CellAffinity.INT 
-                || A == CellAffinity.LONG || A == CellAffinity.FLOAT || A == CellAffinity.DOUBLE;
+                || A == CellAffinity.LONG || A == CellAffinity.SINGLE || A == CellAffinity.DOUBLE;
         }
 
         public static bool IsFloatingPoint(CellAffinity A)
         {
-            return (A == CellAffinity.DOUBLE) || (A == CellAffinity.FLOAT);
+            return (A == CellAffinity.DOUBLE) || (A == CellAffinity.SINGLE);
         }
 
         public static bool IsIntegral(CellAffinity A)
@@ -281,7 +281,7 @@ namespace Pulse.Elements
         /// <returns></returns>
         public static bool IsVariableLength(CellAffinity A)
         {
-            return (A == CellAffinity.BLOB || A == CellAffinity.STRING || A == CellAffinity.TEXT);
+            return (A == CellAffinity.BINARY || A == CellAffinity.CSTRING || A == CellAffinity.BSTRING);
         }
 
     }

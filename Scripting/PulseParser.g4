@@ -48,7 +48,9 @@ action_expression
 	| LCURL (action_expression SEMI_COLON)+ RCURL																			# ActionSet				
 	| K_DO LCURL (action_expression SEMI_COLON)+ RCURL																		# ActionDo
 	
-	| K_FOR_EACH record_name K_IN table_expression LCURL (action_expression SEMI_COLON)+ RCURL								# ActionForEach
+	| K_FOR_EACH record_name K_IN table_expression LCURL (action_expression SEMI_COLON)+ RCURL								# ActionForEachRecord
+	| K_FOR_EACH scalar_name K_IN matrix_name LCURL (action_expression SEMI_COLON)+ RCURL									# ActionForEachMatrix
+	| K_FOR_EACH scalar_name K_IN matrix_expression LCURL (action_expression SEMI_COLON)+ RCURL								# ActionForEachMatrixExpression
 
 	| K_FOR LPAREN (type)? scalar_name ASSIGN scalar_expression SEMI_COLON 
 		scalar_expression SEMI_COLON action_expression RPAREN LCURL (action_expression SEMI_COLON)+ RCURL 					# ActionFor		
@@ -144,13 +146,14 @@ scalar_expression
 	| scalar_expression op=(EQ | NEQ) scalar_expression													# Equality			// X == Y
 	| scalar_expression AND scalar_expression															# LogicalAnd		// X && Y
 	| scalar_expression op=(OR | XOR) scalar_expression													# LogicalOr			// X || Y
+	| scalar_expression (L_SHIFT | R_SHIFT | L_ROTATE | R_ROTATE) scalar_expression						# BitShiftRotate	// X << Y
 	
 	| scalar_name																						# TableOrScalarMember	// X.Name
 	| record_name DOT IDENTIFIER																		# RecordMember			// @R.Name
 	| matrix_expression LBRAC scalar_expression (COMMA scalar_expression)? RBRAC						# MatrixMember			// $M[]
 
 	| LITERAL_STRING																					# LiteralString
-	| LITERAL_TEXT																						# LiteralText
+	| LITERAL_BSTRING																					# LiteralBString
 	| LITERAL_BLOB																						# LiteralBLOB
 	| LITERAL_DOUBLE																					# LiteralDouble
 	| LITERAL_FLOAT																						# LiteralFloat
@@ -247,7 +250,7 @@ param : scalar_expression | matrix_expression | record_expression | table_expres
 
 
 // Types //
-sliteral : (LITERAL_STRING | LITERAL_TEXT | LITERAL_BLOB | LITERAL_DOUBLE | LITERAL_FLOAT | LITERAL_LONG | LITERAL_INT | LITERAL_SHORT | LITERAL_BYTE | LITERAL_DATE | LITERAL_BOOL | LITERAL_NULL);
+sliteral : (LITERAL_STRING | LITERAL_BSTRING | LITERAL_BLOB | LITERAL_DOUBLE | LITERAL_FLOAT | LITERAL_LONG | LITERAL_INT | LITERAL_SHORT | LITERAL_BYTE | LITERAL_DATE | LITERAL_BOOL | LITERAL_NULL);
 hyper_type : (K_TABLE | K_MATRIX | K_RECORD | K_SCALAR);
 type : (T_BLOB | T_BOOL | T_DATE | T_FLOAT | T_DOUBLE | T_BYTE | T_SHORT | T_INT | T_LONG | T_TEXT | T_STRING) (DOT LITERAL_INT)?;
 

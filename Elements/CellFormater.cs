@@ -60,7 +60,7 @@ namespace Pulse.Elements
             {
 
                 case CellFormat.NoFormat:
-                    return Value.valueSTRING;
+                    return Value.valueCSTRING;
                 case CellFormat.TrueFalse:
                     return (Value.valueBOOL ? "TRUE" : "FALSE");
                 case CellFormat.YesNo:
@@ -95,13 +95,13 @@ namespace Pulse.Elements
                     return ToLongDate(Value.valueDATE);
 
                 case CellFormat.Base2:
-                    return BytesToBase2(Value.valueBLOB);
+                    return BytesToBase2(Value.valueBINARY);
                 case CellFormat.Base16:
-                    return BytesToBase16(Value.valueBLOB);
+                    return BytesToBase16(Value.valueBINARY);
 
             }
 
-            return Value.valueSTRING;
+            return Value.valueCSTRING;
 
         }
 
@@ -112,14 +112,14 @@ namespace Pulse.Elements
             {
 
                 case CellAffinity.BOOL: return Format(Value, CellFormat.TrueFalse);
-                case CellAffinity.DATE: return Format(Value, CellFormat.LongDate);
-                case CellAffinity.BLOB:
+                case CellAffinity.DATE_TIME: return Format(Value, CellFormat.LongDate);
+                case CellAffinity.BINARY:
                     return Format(Value, CellFormat.Base16);
-                case CellAffinity.FLOAT:
+                case CellAffinity.SINGLE:
                 case CellAffinity.DOUBLE:
                     return Format(Value, CellFormat.Round4);
                 default:
-                    return Value.valueSTRING;
+                    return Value.valueCSTRING;
 
             }
 

@@ -173,7 +173,7 @@ namespace Pulse.Libraries
 
     //            this.CheckRequired();
 
-    //            string path = this._Parameters[0].Scalar.Evaluate(Variant).valueSTRING;
+    //            string path = this._Parameters[0].Scalar.Evaluate(Variant).valueCSTRING;
 
     //            if (File.Exists(path))
     //                File.Delete(path);
@@ -196,8 +196,8 @@ namespace Pulse.Libraries
 
     //            this.CheckRequired();
 
-    //            string old_path = this._Parameters[0].Scalar.Evaluate(Variant).valueSTRING;
-    //            string new_path = this._Parameters[1].Scalar.Evaluate(Variant).valueSTRING;
+    //            string old_path = this._Parameters[0].Scalar.Evaluate(Variant).valueCSTRING;
+    //            string new_path = this._Parameters[1].Scalar.Evaluate(Variant).valueCSTRING;
 
     //            if (File.Exists(new_path))
     //                File.Delete(new_path);
@@ -221,8 +221,8 @@ namespace Pulse.Libraries
 
     //            this.CheckRequired();
 
-    //            string old_path = this._Parameters[0].Scalar.Evaluate(Variant).valueSTRING;
-    //            string new_path = this._Parameters[1].Scalar.Evaluate(Variant).valueSTRING;
+    //            string old_path = this._Parameters[0].Scalar.Evaluate(Variant).valueCSTRING;
+    //            string new_path = this._Parameters[1].Scalar.Evaluate(Variant).valueCSTRING;
 
     //            if (File.Exists(new_path))
     //                File.Delete(new_path);
@@ -246,18 +246,18 @@ namespace Pulse.Libraries
 
     //            this.CheckRequired();
 
-    //            string path = this._Parameters[0].Scalar.Evaluate(Variant).valueSTRING;
+    //            string path = this._Parameters[0].Scalar.Evaluate(Variant).valueCSTRING;
     //            Cell value = this._Parameters[1].Scalar.Evaluate(Variant);
 
     //            if (File.Exists(path))
     //            {
-    //                if (value.Affinity == CellAffinity.STRING)
+    //                if (value.Affinity == CellAffinity.CSTRING)
     //                {
-    //                    File.AppendAllText(path, value.valueSTRING);
+    //                    File.AppendAllText(path, value.valueCSTRING);
     //                }
     //                else
     //                {
-    //                    byte[] b = value.valueBLOB;
+    //                    byte[] b = value.valueBINARY;
     //                    using (FileStream fs = File.OpenWrite(path))
     //                    {
     //                        fs.Write(b, 0, b.Length);
@@ -266,13 +266,13 @@ namespace Pulse.Libraries
     //            }
     //            else
     //            {
-    //                if (value.Affinity == CellAffinity.STRING)
+    //                if (value.Affinity == CellAffinity.CSTRING)
     //                {
-    //                    File.WriteAllText(path, value.valueSTRING);
+    //                    File.WriteAllText(path, value.valueCSTRING);
     //                }
     //                else
     //                {
-    //                    File.WriteAllBytes(path, value.valueBLOB);
+    //                    File.WriteAllBytes(path, value.valueBINARY);
     //                }
     //            }
 
@@ -296,8 +296,8 @@ namespace Pulse.Libraries
 
     //            this.CheckRequired();
 
-    //            string path = this._Parameters["PATH"].Scalar.Evaluate(Variant).valueSTRING;
-    //            string alias = this._Parameters["ALIAS"].Scalar.Evaluate(Variant).valueSTRING;
+    //            string path = this._Parameters["PATH"].Scalar.Evaluate(Variant).valueCSTRING;
+    //            string alias = this._Parameters["ALIAS"].Scalar.Evaluate(Variant).valueCSTRING;
 
     //            if (!File.Exists(path))
     //                throw new Exception(string.Format("File '{0}' does not exist", path));
@@ -325,8 +325,8 @@ namespace Pulse.Libraries
 
     //            this.CheckRequired();
 
-    //            string path = this._Parameters["PATH"].Scalar.Evaluate(Variant).valueSTRING;
-    //            string alias = this._Parameters["ALIAS"].Scalar.Evaluate(Variant).valueSTRING;
+    //            string path = this._Parameters["PATH"].Scalar.Evaluate(Variant).valueCSTRING;
+    //            string alias = this._Parameters["ALIAS"].Scalar.Evaluate(Variant).valueCSTRING;
 
     //            if (!File.Exists(path))
     //            {
@@ -360,7 +360,7 @@ namespace Pulse.Libraries
 
     //            this.CheckRequired();
 
-    //            string alias = this._Parameters["ALIAS"].Scalar.Evaluate(Variant).valueSTRING;
+    //            string alias = this._Parameters["ALIAS"].Scalar.Evaluate(Variant).valueCSTRING;
 
     //            if (this._RStreams.Exists(alias))
     //            {
@@ -398,8 +398,8 @@ namespace Pulse.Libraries
 
     //            this.CheckRequired();
 
-    //            string alias = this._Parameters["ALIAS"].Scalar.Evaluate(Variant).valueSTRING;
-    //            string value = this._Parameters["ALIAS"].Scalar.Evaluate(Variant).valueSTRING;
+    //            string alias = this._Parameters["ALIAS"].Scalar.Evaluate(Variant).valueCSTRING;
+    //            string value = this._Parameters["ALIAS"].Scalar.Evaluate(Variant).valueCSTRING;
 
     //            if (this._Streams.Exists(alias))
     //            {
@@ -427,9 +427,9 @@ namespace Pulse.Libraries
 
     //            this.CheckRequired();
 
-    //            string path = this._Parameters[0].Scalar.Evaluate(Variant).valueSTRING;
-    //            string uri = this._Parameters[1].Scalar.Evaluate(Variant).valueSTRING;
-    //            string message = (this._Parameters.Count > 2 ? this._Parameters[2].Scalar.Evaluate(Variant).valueSTRING : null);
+    //            string path = this._Parameters[0].Scalar.Evaluate(Variant).valueCSTRING;
+    //            string uri = this._Parameters[1].Scalar.Evaluate(Variant).valueCSTRING;
+    //            string message = (this._Parameters.Count > 2 ? this._Parameters[2].Scalar.Evaluate(Variant).valueCSTRING : null);
 
     //            // Download the data
     //            try
@@ -498,8 +498,8 @@ namespace Pulse.Libraries
 
     //            this.CheckRequired();
 
-    //            string in_path = this._Parameters[0].Scalar.Evaluate(Variant).valueSTRING;
-    //            string out_path = this._Parameters[1].Scalar.Evaluate(Variant).valueSTRING;
+    //            string in_path = this._Parameters[0].Scalar.Evaluate(Variant).valueCSTRING;
+    //            string out_path = this._Parameters[1].Scalar.Evaluate(Variant).valueCSTRING;
 
     //            System.IO.Compression.ZipFile.CreateFromDirectory(in_path, out_path);
 
@@ -520,8 +520,8 @@ namespace Pulse.Libraries
 
     //            this.CheckRequired();
 
-    //            string in_path = this._Parameters[0].Scalar.Evaluate(Variant).valueSTRING;
-    //            string out_path = this._Parameters[1].Scalar.Evaluate(Variant).valueSTRING;
+    //            string in_path = this._Parameters[0].Scalar.Evaluate(Variant).valueCSTRING;
+    //            string out_path = this._Parameters[1].Scalar.Evaluate(Variant).valueCSTRING;
 
     //            Console.WriteLine(in_path);
     //            Console.WriteLine(out_path);
@@ -553,7 +553,7 @@ namespace Pulse.Libraries
 
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
-    //            string path = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string path = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
     //            if (!File.Exists(path))
     //                return CellValues.NullLONG;
     //            return new Cell(new FileInfo(path).Length);
@@ -581,7 +581,7 @@ namespace Pulse.Libraries
 
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
-    //            string path = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string path = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
     //            if (File.Exists(path))
     //                return CellValues.True;
     //            return CellValues.False;
@@ -614,7 +614,7 @@ namespace Pulse.Libraries
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
 
-    //            string path = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string path = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
     //            if (!this._Reader.Exists(path))
     //                return CellValues.NullBOOL;
     //            return (this._Reader[path].EndOfStream ? CellValues.True : CellValues.False);
@@ -637,7 +637,7 @@ namespace Pulse.Libraries
 
     //        public override CellAffinity ReturnAffinity()
     //        {
-    //            return CellAffinity.STRING;
+    //            return CellAffinity.CSTRING;
     //        }
 
     //        public override ScalarExpression CloneOfMe()
@@ -648,10 +648,10 @@ namespace Pulse.Libraries
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
 
-    //            string path = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string path = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
     //            if (!this._Reader.Exists(path))
-    //                return CellValues.NullSTRING;
-    //            return (!this._Reader[path].EndOfStream ? new Cell(this._Reader[path].ReadLine()) : CellValues.NullSTRING);
+    //                return CellValues.NullCSTRING;
+    //            return (!this._Reader[path].EndOfStream ? new Cell(this._Reader[path].ReadLine()) : CellValues.NullCSTRING);
 
     //        }
 
@@ -671,7 +671,7 @@ namespace Pulse.Libraries
 
     //        public override CellAffinity ReturnAffinity()
     //        {
-    //            return CellAffinity.BLOB;
+    //            return CellAffinity.BINARY;
     //        }
 
     //        public override ScalarExpression CloneOfMe()
@@ -682,7 +682,7 @@ namespace Pulse.Libraries
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
 
-    //            string value = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string value = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
     //            byte[] b;
     //            using (System.IO.Stream river = System.IO.File.Open(value, System.IO.FileMode.Open, System.IO.FileAccess.Read))
     //            {
@@ -710,7 +710,7 @@ namespace Pulse.Libraries
 
     //        public override CellAffinity ReturnAffinity()
     //        {
-    //            return CellAffinity.TEXT;
+    //            return CellAffinity.BSTRING;
     //        }
 
     //        public override ScalarExpression CloneOfMe()
@@ -721,7 +721,7 @@ namespace Pulse.Libraries
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
 
-    //            string path = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string path = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
     //            return new Cell(File.ReadAllText(path), true);
 
     //        }

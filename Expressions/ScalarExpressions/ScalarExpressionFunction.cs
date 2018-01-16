@@ -134,6 +134,47 @@ namespace Pulse.Expressions.ScalarExpressions
 
         }
 
+        public bool AllScalars()
+        {
+            return this._Params.TrueForAll((x) => { return x.Affinity == ParameterAffinity.Scalar; });
+        }
+
+        public bool AllMatrixes()
+        {
+            return this._Params.TrueForAll((x) => { return x.Affinity == ParameterAffinity.Matrix; });
+        }
+
+        public bool AllRecords()
+        {
+            return this._Params.TrueForAll((x) => { return x.Affinity == ParameterAffinity.Record; });
+        }
+
+        public bool AllTables()
+        {
+            return this._Params.TrueForAll((x) => { return x.Affinity == ParameterAffinity.Table; });
+        }
+
+        public bool CheckSigniture(params ParameterAffinity[] Paramters)
+        {
+
+            if (Paramters == null)
+            {
+                return (this._Params == null || this._Params.Count == 0);
+            }
+
+            if (this._Params.Count != Paramters.Length)
+                return false;
+
+            for (int i = 0; i < this._Params.Count; i++)
+            {
+                if (this._Params[i].Affinity != Paramters[i])
+                    return false;
+            }
+
+            return true;
+
+        }
+
         //---------------------------------------------------------------------------------------------
         //---------------------------------------------------------------------------------------------
         //---------------------------------------------------------------------------------------------
@@ -812,8 +853,8 @@ namespace Pulse.Expressions.ScalarExpressions
 
         //        Cell cText = this._ChildNodes[0].Evaluate(Variants);
         //        Cell cPatern = this._ChildNodes[1].Evaluate(Variants);
-        //        string Text = cText.valueSTRING;
-        //        string Patern = cPatern.valueSTRING;
+        //        string Text = cText.valueCSTRING;
+        //        string Patern = cPatern.valueCSTRING;
 
         //        if (cText.IsNull || cPatern.IsNull)
         //            return CellValues.False;
@@ -894,7 +935,7 @@ namespace Pulse.Expressions.ScalarExpressions
         //{
 
         //    public ExpressionGUID(Host Host)
-        //        : base(Host, null, NAME_GUID, 0, CellAffinity.BLOB)
+        //        : base(Host, null, NAME_GUID, 0, CellAffinity.BINARY)
         //    {
         //    }
 
@@ -945,7 +986,7 @@ namespace Pulse.Expressions.ScalarExpressions
         //{
 
         //    public ExpressionDateBuild(Host Host)
-        //        : base(Host, null, NAME_DATE_BUILD, -7, CellAffinity.DATE)
+        //        : base(Host, null, NAME_DATE_BUILD, -7, CellAffinity.DATE_TIME)
         //    {
         //    }
 
@@ -984,7 +1025,7 @@ namespace Pulse.Expressions.ScalarExpressions
         //{
 
         //    public ExpressionNow(Host Host)
-        //        : base(Host, null, NAME_NOW, 0, CellAffinity.DATE)
+        //        : base(Host, null, NAME_NOW, 0, CellAffinity.DATE_TIME)
         //    {
         //    }
 
@@ -1217,7 +1258,7 @@ namespace Pulse.Expressions.ScalarExpressions
         //{
 
         //    public ExpressionTimeSpan(Host Host)
-        //        : base(Host, null, NAME_TIME_SPAN, 1, CellAffinity.STRING)
+        //        : base(Host, null, NAME_TIME_SPAN, 1, CellAffinity.CSTRING)
         //    {
         //    }
 
@@ -1390,7 +1431,7 @@ namespace Pulse.Expressions.ScalarExpressions
         //{
 
         //    public ExpressionToUTF16(Host Host)
-        //        : base(Host, null, NAME_TO_UTF16, 1, CellAffinity.STRING)
+        //        : base(Host, null, NAME_TO_UTF16, 1, CellAffinity.CSTRING)
         //    {
         //    }
 
@@ -1407,10 +1448,10 @@ namespace Pulse.Expressions.ScalarExpressions
 
         //        Cell x = this._ChildNodes[0].Evaluate(Variants);
 
-        //        if (x.AFFINITY != CellAffinity.BLOB)
-        //            return CellValues.NullSTRING;
+        //        if (x.AFFINITY != CellAffinity.BINARY)
+        //            return CellValues.NullCSTRING;
 
-        //        return new Cell(CellFunctions.ByteArrayToUTF16String(x.valueBLOB));
+        //        return new Cell(CellFunctions.ByteArrayToUTF16String(x.valueBINARY));
 
         //    }
 
@@ -1425,7 +1466,7 @@ namespace Pulse.Expressions.ScalarExpressions
         //{
 
         //    public ExpressionToUTF8(Host Host)
-        //        : base(Host, null, NAME_TO_UTF8, 1, CellAffinity.STRING)
+        //        : base(Host, null, NAME_TO_UTF8, 1, CellAffinity.CSTRING)
         //    {
         //    }
 
@@ -1442,10 +1483,10 @@ namespace Pulse.Expressions.ScalarExpressions
 
         //        Cell x = this._ChildNodes[0].Evaluate(Variants);
 
-        //        if (x.AFFINITY != CellAffinity.BLOB)
-        //            return CellValues.NullSTRING;
+        //        if (x.AFFINITY != CellAffinity.BINARY)
+        //            return CellValues.NullCSTRING;
 
-        //        return new Cell(ASCIIEncoding.ASCII.GetString(x.valueBLOB));
+        //        return new Cell(ASCIIEncoding.ASCII.GetString(x.valueBINARY));
 
         //    }
 
@@ -1455,7 +1496,7 @@ namespace Pulse.Expressions.ScalarExpressions
         //{
 
         //    public ExpressionToHex(Host Host)
-        //        : base(Host, null, NAME_TO_HEX, 1, CellAffinity.STRING)
+        //        : base(Host, null, NAME_TO_HEX, 1, CellAffinity.CSTRING)
         //    {
         //    }
 
@@ -1472,10 +1513,10 @@ namespace Pulse.Expressions.ScalarExpressions
 
         //        Cell x = this._ChildNodes[0].Evaluate(Variants);
 
-        //        if (x.AFFINITY != CellAffinity.BLOB)
-        //            return CellValues.NullSTRING;
+        //        if (x.AFFINITY != CellAffinity.BINARY)
+        //            return CellValues.NullCSTRING;
 
-        //        return new Cell(BitConverter.ToString(x.valueBLOB));
+        //        return new Cell(BitConverter.ToString(x.valueBINARY));
 
         //    }
 
@@ -1490,7 +1531,7 @@ namespace Pulse.Expressions.ScalarExpressions
         //{
 
         //    public ExpressionFromUTF16(Host Host)
-        //        : base(Host, null, NAME_FROM_UTF16, 1, CellAffinity.BLOB)
+        //        : base(Host, null, NAME_FROM_UTF16, 1, CellAffinity.BINARY)
         //    {
         //    }
 
@@ -1507,11 +1548,11 @@ namespace Pulse.Expressions.ScalarExpressions
 
         //        Cell x = this._ChildNodes[0].Evaluate(Variants);
 
-        //        if (x.AFFINITY != CellAffinity.STRING || x.NULL == 1)
+        //        if (x.AFFINITY != CellAffinity.CSTRING || x.NULL == 1)
         //            return CellValues.NullBLOB;
 
-        //        x.BLOB = ASCIIEncoding.BigEndianUnicode.GetBytes(x.STRING);
-        //        x.AFFINITY = CellAffinity.BLOB;
+        //        x.BINARY = ASCIIEncoding.BigEndianUnicode.GetBytes(x.CSTRING);
+        //        x.AFFINITY = CellAffinity.BINARY;
 
         //        return x;
 
@@ -1528,7 +1569,7 @@ namespace Pulse.Expressions.ScalarExpressions
         //{
 
         //    public ExpressionFromUTF8(Host Host)
-        //        : base(Host, null, NAME_FROM_UTF8, 1, CellAffinity.BLOB)
+        //        : base(Host, null, NAME_FROM_UTF8, 1, CellAffinity.BINARY)
         //    {
         //    }
 
@@ -1545,11 +1586,11 @@ namespace Pulse.Expressions.ScalarExpressions
 
         //        Cell x = this._ChildNodes[0].Evaluate(Variants);
 
-        //        if (x.AFFINITY != CellAffinity.STRING || x.NULL == 1)
+        //        if (x.AFFINITY != CellAffinity.CSTRING || x.NULL == 1)
         //            return CellValues.NullBLOB;
 
-        //        x.BLOB = ASCIIEncoding.ASCII.GetBytes(x.STRING.ToCharArray());
-        //        x.AFFINITY = CellAffinity.BLOB;
+        //        x.BINARY = ASCIIEncoding.ASCII.GetBytes(x.CSTRING.ToCharArray());
+        //        x.AFFINITY = CellAffinity.BINARY;
 
         //        return x;
 
@@ -1561,7 +1602,7 @@ namespace Pulse.Expressions.ScalarExpressions
         //{
 
         //    public ExpressionFromHex(Host Host)
-        //        : base(Host, null, NAME_FROM_HEX, 1, CellAffinity.BLOB)
+        //        : base(Host, null, NAME_FROM_HEX, 1, CellAffinity.BINARY)
         //    {
         //    }
 
@@ -1578,10 +1619,10 @@ namespace Pulse.Expressions.ScalarExpressions
 
         //        Cell x = this._ChildNodes[0].Evaluate(Variants);
 
-        //        if (x.AFFINITY != CellAffinity.STRING || x.NULL == 1)
+        //        if (x.AFFINITY != CellAffinity.CSTRING || x.NULL == 1)
         //            return CellValues.NullBLOB;
 
-        //        return CellParser.ByteParse(x.STRING);
+        //        return CellParser.ByteParse(x.CSTRING);
 
         //    }
 

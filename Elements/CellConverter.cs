@@ -26,7 +26,7 @@ namespace Pulse.Elements
             {
                 case CellAffinity.BOOL:
                     return ToBOOL(Value);
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                     return ToDATE(Value);
                 case CellAffinity.BYTE:
                     return ToBYTE(Value);
@@ -36,16 +36,16 @@ namespace Pulse.Elements
                     return ToINT(Value);
                 case CellAffinity.LONG:
                     return ToLONG(Value);
-                case CellAffinity.FLOAT:
+                case CellAffinity.SINGLE:
                     return ToFLOAT(Value);
                 case CellAffinity.DOUBLE:
                     return ToDOUBLE(Value);
-                case CellAffinity.BLOB:
+                case CellAffinity.BINARY:
                     return ToBLOB(Value);
-                case CellAffinity.TEXT:
-                    return ToTEXT(Value);
-                case CellAffinity.STRING:
-                    return ToSTRING(Value);
+                case CellAffinity.BSTRING:
+                    return ToBSTRING(Value);
+                case CellAffinity.CSTRING:
+                    return ToCSTRING(Value);
             }
 
             throw new Exception(string.Format("Affinity '{0}' is invalid", Affinity));
@@ -66,10 +66,10 @@ namespace Pulse.Elements
             if (Value.IsNull)
                 return CellValues.NullBOOL;
 
-            if (Value.BLOB == null && Value.AFFINITY == CellAffinity.BLOB)
+            if (Value.BINARY == null && Value.AFFINITY == CellAffinity.BINARY)
                 return CellValues.NullBOOL;
 
-            if ((Value.STRING == null) && (Value.AFFINITY == CellAffinity.STRING || Value.AFFINITY == CellAffinity.TEXT))
+            if ((Value.CSTRING == null) && (Value.AFFINITY == CellAffinity.CSTRING || Value.AFFINITY == CellAffinity.BSTRING))
                 return CellValues.NullBOOL;
     
             switch (Value.AFFINITY)
@@ -95,8 +95,8 @@ namespace Pulse.Elements
                         return CellValues.True;
                     else
                         return CellValues.False;
-                case CellAffinity.FLOAT:
-                    if (Value.FLOAT != 0)
+                case CellAffinity.SINGLE:
+                    if (Value.SINGLE != 0)
                         return CellValues.True;
                     else
                         return CellValues.False;
@@ -105,18 +105,25 @@ namespace Pulse.Elements
                         return CellValues.True;
                     else
                         return CellValues.False;
-                case CellAffinity.BLOB:
-                    if (Value.BLOB.Length == 0)
+                case CellAffinity.BINARY:
+                    if (Value.BINARY.Length == 0)
                         return CellValues.NullBOOL;
-                    if (Value.BLOB[0] != 0)
+                    if (Value.BINARY[0] != 0)
                         return CellValues.True;
                     else
                         return CellValues.False;
-                case CellAffinity.TEXT:
-                case CellAffinity.STRING:
-                    if (StringComparer.OrdinalIgnoreCase.Compare(Value.STRING, Cell.TRUE_STRING) == 0)
+                case CellAffinity.BSTRING:
+                    if (BString.CompareStrictIgnoreCase(Value.BSTRING, Cell.TRUE_BSTRING) == 0)
                         Value.BOOL = true;
-                    else if (StringComparer.OrdinalIgnoreCase.Compare(Value.STRING, Cell.FALSE_STRING) == 0)
+                    else if (BString.CompareStrictIgnoreCase(Value.BSTRING, Cell.FALSE_BSTRING) == 0)
+                        Value.BOOL = false;
+                    else
+                        return CellValues.NullBOOL;
+                    break;
+                case CellAffinity.CSTRING:
+                    if (StringComparer.OrdinalIgnoreCase.Compare(Value.CSTRING, Cell.TRUE_STRING) == 0)
+                        Value.BOOL = true;
+                    else if (StringComparer.OrdinalIgnoreCase.Compare(Value.CSTRING, Cell.FALSE_STRING) == 0)
                         Value.BOOL = false;
                     else
                         return CellValues.NullBOOL;
@@ -142,10 +149,13 @@ namespace Pulse.Elements
             if (Value.IsNull)
                 return CellValues.NullBYTE;
 
-            if (Value.BLOB == null && Value.AFFINITY == CellAffinity.BLOB)
+            if (Value.BINARY == null && Value.AFFINITY == CellAffinity.BINARY)
                 return CellValues.NullBYTE;
 
-            if ((Value.STRING == null) && (Value.AFFINITY == CellAffinity.STRING || Value.AFFINITY == CellAffinity.TEXT))
+            if (Value.BSTRING == null && Value.AFFINITY == CellAffinity.BSTRING)
+                return CellValues.NullBYTE;
+
+            if (Value.CSTRING == null && Value.AFFINITY == CellAffinity.CSTRING)
                 return CellValues.NullBYTE;
 
             switch (Value.AFFINITY)
@@ -157,21 +167,21 @@ namespace Pulse.Elements
                     return new Cell((byte)(Value.SHORT & byte.MaxValue));
                 case CellAffinity.INT:
                     return new Cell((byte)(Value.INT & byte.MaxValue));
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                 case CellAffinity.LONG:
                     return new Cell((byte)(Value.LONG & byte.MaxValue));
-                case CellAffinity.FLOAT:
-                    return new Cell((byte)(Value.FLOAT));
+                case CellAffinity.SINGLE:
+                    return new Cell((byte)(Value.SINGLE));
                 case CellAffinity.DOUBLE:
                     return new Cell((byte)(Value.DOUBLE));
-                case CellAffinity.BLOB:
-                    if (Value.BLOB.Length == 0)
+                case CellAffinity.BINARY:
+                    if (Value.BINARY.Length == 0)
                         return CellValues.NullBYTE;
-                    return new Cell(Value.BLOB[1]);
-                case CellAffinity.TEXT:
-                case CellAffinity.STRING:
+                    return new Cell(Value.BINARY[1]);
+                case CellAffinity.BSTRING:
+                case CellAffinity.CSTRING:
                     byte b = 0;
-                    if (byte.TryParse(Value.STRING, out b))
+                    if (byte.TryParse(Value.valueCSTRING, out b))
                         return new Cell(b);
                     else
                         return CellValues.NullBYTE;
@@ -195,10 +205,13 @@ namespace Pulse.Elements
             if (Value.IsNull)
                 return CellValues.NullSHORT;
 
-            if (Value.BLOB == null && Value.AFFINITY == CellAffinity.BLOB)
+            if (Value.BINARY == null && Value.AFFINITY == CellAffinity.BINARY)
                 return CellValues.NullSHORT;
 
-            if ((Value.STRING == null) && (Value.AFFINITY == CellAffinity.STRING || Value.AFFINITY == CellAffinity.TEXT))
+            if (Value.BSTRING == null && Value.AFFINITY == CellAffinity.BSTRING)
+                return CellValues.NullSHORT;
+
+            if (Value.CSTRING == null && Value.AFFINITY == CellAffinity.CSTRING)
                 return CellValues.NullSHORT;
 
             switch (Value.AFFINITY)
@@ -210,21 +223,21 @@ namespace Pulse.Elements
                     return new Cell((short)(Value.BYTE));
                 case CellAffinity.INT:
                     return new Cell((short)(Value.INT & short.MaxValue));
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                 case CellAffinity.LONG:
                     return new Cell((short)(Value.LONG & short.MaxValue));
-                case CellAffinity.FLOAT:
-                    return new Cell((short)(Value.FLOAT));
+                case CellAffinity.SINGLE:
+                    return new Cell((short)(Value.SINGLE));
                 case CellAffinity.DOUBLE:
                     return new Cell((short)(Value.DOUBLE));
-                case CellAffinity.BLOB:
-                    if (Value.BLOB.Length < 2)
+                case CellAffinity.BINARY:
+                    if (Value.BINARY.Length < 2)
                         return CellValues.NullSHORT;
-                    return new Cell(BitConverter.ToInt16(Value.BLOB, 0));
-                case CellAffinity.TEXT:
-                case CellAffinity.STRING:
+                    return new Cell(BitConverter.ToInt16(Value.BINARY, 0));
+                case CellAffinity.BSTRING:
+                case CellAffinity.CSTRING:
                     short b = 0;
-                    if (short.TryParse(Value.STRING, out b))
+                    if (short.TryParse(Value.valueCSTRING, out b))
                         return new Cell(b);
                     else
                         return CellValues.NullSHORT;
@@ -248,10 +261,13 @@ namespace Pulse.Elements
             if (Value.IsNull)
                 return CellValues.NullINT;
 
-            if (Value.BLOB == null && Value.AFFINITY == CellAffinity.BLOB)
+            if (Value.BINARY == null && Value.AFFINITY == CellAffinity.BINARY)
                 return CellValues.NullINT;
 
-            if ((Value.STRING == null) && (Value.AFFINITY == CellAffinity.STRING || Value.AFFINITY == CellAffinity.TEXT))
+            if (Value.BSTRING == null && Value.AFFINITY == CellAffinity.BSTRING)
+                return CellValues.NullINT;
+
+            if (Value.CSTRING == null && Value.AFFINITY == CellAffinity.CSTRING)
                 return CellValues.NullINT;
 
             switch (Value.AFFINITY)
@@ -263,21 +279,21 @@ namespace Pulse.Elements
                     return new Cell((int)(Value.BYTE));
                 case CellAffinity.SHORT:
                     return new Cell((int)(Value.SHORT));
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                 case CellAffinity.LONG:
                     return new Cell((int)(Value.LONG & int.MaxValue));
-                case CellAffinity.FLOAT:
-                    return new Cell((int)(Value.FLOAT));
+                case CellAffinity.SINGLE:
+                    return new Cell((int)(Value.SINGLE));
                 case CellAffinity.DOUBLE:
                     return new Cell((int)(Value.DOUBLE));
-                case CellAffinity.BLOB:
-                    if (Value.BLOB.Length < 4)
+                case CellAffinity.BINARY:
+                    if (Value.BINARY.Length < 4)
                         return CellValues.NullINT;
-                    return new Cell(BitConverter.ToInt32(Value.BLOB, 0));
-                case CellAffinity.TEXT:
-                case CellAffinity.STRING:
+                    return new Cell(BitConverter.ToInt32(Value.BINARY, 0));
+                case CellAffinity.BSTRING:
+                case CellAffinity.CSTRING:
                     int b = 0;
-                    if (int.TryParse(Value.STRING, out b))
+                    if (int.TryParse(Value.valueCSTRING, out b))
                         return new Cell(b);
                     else
                         return CellValues.NullINT;
@@ -301,10 +317,13 @@ namespace Pulse.Elements
             if (Value.IsNull)
                 return CellValues.NullLONG;
 
-            if (Value.BLOB == null && Value.AFFINITY == CellAffinity.BLOB)
+            if (Value.BINARY == null && Value.AFFINITY == CellAffinity.BINARY)
                 return CellValues.NullLONG;
 
-            if ((Value.STRING == null) && (Value.AFFINITY == CellAffinity.STRING || Value.AFFINITY == CellAffinity.TEXT))
+            if (Value.BSTRING == null && Value.AFFINITY == CellAffinity.BSTRING)
+                return CellValues.NullLONG;
+
+            if (Value.CSTRING == null && Value.AFFINITY == CellAffinity.CSTRING)
                 return CellValues.NullLONG;
 
             switch (Value.AFFINITY)
@@ -318,20 +337,20 @@ namespace Pulse.Elements
                     return new Cell((long)(Value.SHORT));
                 case CellAffinity.INT:
                     return new Cell((long)(Value.INT));
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                     return new Cell((long)(Value.LONG));
-                case CellAffinity.FLOAT:
-                    return new Cell((long)(Value.FLOAT));
+                case CellAffinity.SINGLE:
+                    return new Cell((long)(Value.SINGLE));
                 case CellAffinity.DOUBLE:
                     return new Cell((long)(Value.DOUBLE));
-                case CellAffinity.BLOB:
-                    if (Value.BLOB.Length < 8)
+                case CellAffinity.BINARY:
+                    if (Value.BINARY.Length < 8)
                         return CellValues.NullLONG;
-                    return new Cell(BitConverter.ToInt64(Value.BLOB, 0));
-                case CellAffinity.TEXT:
-                case CellAffinity.STRING:
+                    return new Cell(BitConverter.ToInt64(Value.BINARY, 0));
+                case CellAffinity.BSTRING:
+                case CellAffinity.CSTRING:
                     long b = 0;
-                    if (long.TryParse(Value.STRING, out b))
+                    if (long.TryParse(Value.valueCSTRING, out b))
                         return new Cell(b);
                     else
                         return CellValues.NullLONG;
@@ -349,17 +368,20 @@ namespace Pulse.Elements
         public static Cell ToFLOAT(Cell Value)
         {
 
-            if (Value.Affinity == CellAffinity.FLOAT)
+            if (Value.Affinity == CellAffinity.SINGLE)
                 return Value;
 
             if (Value.IsNull)
-                return CellValues.NullFLOAT;
+                return CellValues.NullSINGLE;
 
-            if (Value.BLOB == null && Value.AFFINITY == CellAffinity.BLOB)
-                return CellValues.NullFLOAT;
+            if (Value.BINARY == null && Value.AFFINITY == CellAffinity.BINARY)
+                return CellValues.NullSINGLE;
 
-            if ((Value.STRING == null) && (Value.AFFINITY == CellAffinity.STRING || Value.AFFINITY == CellAffinity.TEXT))
-                return CellValues.NullFLOAT;
+            if (Value.BSTRING == null && Value.AFFINITY == CellAffinity.BSTRING)
+                return CellValues.NullSINGLE;
+
+            if (Value.CSTRING == null && Value.AFFINITY == CellAffinity.CSTRING)
+                return CellValues.NullSINGLE;
 
             switch (Value.AFFINITY)
             {
@@ -372,27 +394,27 @@ namespace Pulse.Elements
                     return new Cell((float)(Value.SHORT));
                 case CellAffinity.INT:
                     return new Cell((float)(Value.INT));
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                 case CellAffinity.LONG:
                     return new Cell((float)(Value.LONG));
-                case CellAffinity.FLOAT:
-                    return new Cell((float)(Value.FLOAT));
+                case CellAffinity.SINGLE:
+                    return new Cell((float)(Value.SINGLE));
                 case CellAffinity.DOUBLE:
                     return new Cell((float)(Value.DOUBLE));
-                case CellAffinity.BLOB:
-                    if (Value.BLOB.Length < 4)
-                        return CellValues.NullFLOAT;
-                    return new Cell(BitConverter.ToSingle(Value.BLOB, 0));
-                case CellAffinity.TEXT:
-                case CellAffinity.STRING:
+                case CellAffinity.BINARY:
+                    if (Value.BINARY.Length < 4)
+                        return CellValues.NullSINGLE;
+                    return new Cell(BitConverter.ToSingle(Value.BINARY, 0));
+                case CellAffinity.BSTRING:
+                case CellAffinity.CSTRING:
                     float b = 0;
-                    if (float.TryParse(Value.STRING, out b))
+                    if (float.TryParse(Value.valueCSTRING, out b))
                         return new Cell(b);
                     else
-                        return CellValues.NullFLOAT;
+                        return CellValues.NullSINGLE;
             }
 
-            return CellValues.NullFLOAT;
+            return CellValues.NullSINGLE;
 
         }
 
@@ -410,10 +432,13 @@ namespace Pulse.Elements
             if (Value.IsNull)
                 return CellValues.NullDOUBLE;
 
-            if (Value.BLOB == null && Value.AFFINITY == CellAffinity.BLOB)
+            if (Value.BINARY == null && Value.AFFINITY == CellAffinity.BINARY)
                 return CellValues.NullDOUBLE;
 
-            if ((Value.STRING == null) && (Value.AFFINITY == CellAffinity.STRING || Value.AFFINITY == CellAffinity.TEXT))
+            if (Value.BSTRING == null && Value.AFFINITY == CellAffinity.BSTRING)
+                return CellValues.NullDOUBLE;
+
+            if (Value.CSTRING == null && Value.AFFINITY == CellAffinity.CSTRING)
                 return CellValues.NullDOUBLE;
 
             switch (Value.AFFINITY)
@@ -427,19 +452,19 @@ namespace Pulse.Elements
                     return new Cell((double)(Value.SHORT));
                 case CellAffinity.INT:
                     return new Cell((double)(Value.INT));
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                 case CellAffinity.LONG:
                     return new Cell((double)(Value.LONG));
-                case CellAffinity.FLOAT:
-                    return new Cell((double)(Value.FLOAT));
-                case CellAffinity.BLOB:
-                    if (Value.BLOB.Length < 8)
+                case CellAffinity.SINGLE:
+                    return new Cell((double)(Value.SINGLE));
+                case CellAffinity.BINARY:
+                    if (Value.BINARY.Length < 8)
                         return CellValues.NullDOUBLE;
-                    return new Cell(BitConverter.ToDouble(Value.BLOB, 0));
-                case CellAffinity.TEXT:
-                case CellAffinity.STRING:
+                    return new Cell(BitConverter.ToDouble(Value.BINARY, 0));
+                case CellAffinity.BSTRING:
+                case CellAffinity.CSTRING:
                     double b = 0;
-                    if (double.TryParse(Value.STRING, out b))
+                    if (double.TryParse(Value.valueCSTRING, out b))
                         return new Cell(b);
                     else
                         return CellValues.NullDOUBLE;
@@ -457,16 +482,19 @@ namespace Pulse.Elements
         public static Cell ToDATE(Cell Value)
         {
 
-            if (Value.Affinity == CellAffinity.DATE)
+            if (Value.Affinity == CellAffinity.DATE_TIME)
                 return Value;
 
             if (Value.IsNull)
                 return CellValues.NullDATE;
 
-            if (Value.BLOB == null && Value.AFFINITY == CellAffinity.BLOB)
+            if (Value.BINARY == null && Value.AFFINITY == CellAffinity.BINARY)
                 return CellValues.NullDATE;
 
-            if ((Value.STRING == null) && (Value.AFFINITY == CellAffinity.STRING || Value.AFFINITY == CellAffinity.TEXT))
+            if (Value.BSTRING == null && Value.AFFINITY == CellAffinity.BSTRING)
+                return CellValues.NullDATE;
+
+            if (Value.CSTRING == null && Value.AFFINITY == CellAffinity.CSTRING)
                 return CellValues.NullDATE;
 
             switch (Value.AFFINITY)
@@ -482,17 +510,17 @@ namespace Pulse.Elements
                     return new Cell(DateTime.FromBinary((long)Value.INT));
                 case CellAffinity.LONG:
                     return new Cell(DateTime.FromBinary((long)Value.LONG));
-                case CellAffinity.FLOAT:
-                    return new Cell(DateTime.FromBinary((long)Value.FLOAT));
+                case CellAffinity.SINGLE:
+                    return new Cell(DateTime.FromBinary((long)Value.SINGLE));
                 case CellAffinity.DOUBLE:
                     return new Cell(DateTime.FromBinary((long)Value.DOUBLE));
-                case CellAffinity.BLOB:
-                    if (Value.BLOB.Length < 8)
+                case CellAffinity.BINARY:
+                    if (Value.BINARY.Length < 8)
                         return CellValues.NullDATE;
-                    return new Cell(DateTime.FromBinary(BitConverter.ToInt64(Value.BLOB, 0)));
-                case CellAffinity.TEXT:
-                case CellAffinity.STRING:
-                    return CellParser.DateParse(Value.STRING);
+                    return new Cell(DateTime.FromBinary(BitConverter.ToInt64(Value.BINARY, 0)));
+                case CellAffinity.BSTRING:
+                case CellAffinity.CSTRING:
+                    return CellParser.DateParse(Value.valueCSTRING);
             }
 
             return CellValues.NullDATE;
@@ -507,13 +535,19 @@ namespace Pulse.Elements
         public static Cell ToBLOB(Cell Value)
         {
 
-            if (Value.Affinity == CellAffinity.BLOB)
+            if (Value.Affinity == CellAffinity.BINARY)
                 return Value;
 
             if (Value.IsNull)
                 return CellValues.NullBLOB;
 
-            if ((Value.STRING == null) && (Value.AFFINITY == CellAffinity.STRING || Value.AFFINITY == CellAffinity.TEXT))
+            if (Value.BINARY == null && Value.AFFINITY == CellAffinity.BINARY)
+                return CellValues.NullBLOB;
+
+            if (Value.BSTRING == null && Value.AFFINITY == CellAffinity.BSTRING)
+                return CellValues.NullBLOB;
+
+            if (Value.CSTRING == null && Value.AFFINITY == CellAffinity.CSTRING)
                 return CellValues.NullBLOB;
 
             switch (Value.AFFINITY)
@@ -527,17 +561,17 @@ namespace Pulse.Elements
                     return new Cell(BitConverter.GetBytes(Value.SHORT));
                 case CellAffinity.INT:
                     return new Cell(BitConverter.GetBytes(Value.INT));
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                 case CellAffinity.LONG:
                     return new Cell(BitConverter.GetBytes(Value.LONG));
-                case CellAffinity.FLOAT:
-                    return new Cell(BitConverter.GetBytes(Value.FLOAT));
+                case CellAffinity.SINGLE:
+                    return new Cell(BitConverter.GetBytes(Value.SINGLE));
                 case CellAffinity.DOUBLE:
                     return new Cell(BitConverter.GetBytes(Value.DOUBLE));
-                case CellAffinity.TEXT:
-                    return new Cell(System.Text.ASCIIEncoding.UTF8.GetBytes(Value.STRING));
-                case CellAffinity.STRING:
-                    return new Cell(System.Text.ASCIIEncoding.Unicode.GetBytes(Value.STRING));
+                case CellAffinity.BSTRING:
+                    return new Cell(Value.BSTRING.ToByteArray);
+                case CellAffinity.CSTRING:
+                    return new Cell(System.Text.ASCIIEncoding.Unicode.GetBytes(Value.CSTRING));
 
             }
 
@@ -550,20 +584,23 @@ namespace Pulse.Elements
         /// </summary>
         /// <param name="Value"></param>
         /// <returns></returns>
-        public static Cell ToTEXT(Cell Value)
+        public static Cell ToBSTRING(Cell Value)
         {
 
-            if (Value.Affinity == CellAffinity.TEXT)
+            if (Value.Affinity == CellAffinity.BSTRING)
                 return Value;
 
             if (Value.IsNull)
-                return CellValues.NullTEXT;
+                return CellValues.NullBSTRING;
 
-            if (Value.BLOB == null && Value.AFFINITY == CellAffinity.BLOB)
-                return CellValues.NullTEXT;
+            if (Value.BINARY == null && Value.AFFINITY == CellAffinity.BINARY)
+                return CellValues.NullBSTRING;
 
-            if ((Value.STRING == null) && (Value.AFFINITY == CellAffinity.STRING || Value.AFFINITY == CellAffinity.TEXT))
-                return CellValues.NullTEXT;
+            if (Value.BSTRING == null && Value.AFFINITY == CellAffinity.BSTRING)
+                return CellValues.NullBSTRING;
+
+            if (Value.CSTRING == null && Value.AFFINITY == CellAffinity.CSTRING)
+                return CellValues.NullBSTRING;
 
             switch (Value.AFFINITY)
             {
@@ -578,19 +615,19 @@ namespace Pulse.Elements
                     return new Cell(Value.INT.ToString(), true);
                 case CellAffinity.LONG:
                     return new Cell(Value.LONG.ToString(), true);
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                     return new Cell(Value.DATE.ToString(), true);
-                case CellAffinity.FLOAT:
-                    return new Cell(Value.FLOAT.ToString(), true);
+                case CellAffinity.SINGLE:
+                    return new Cell(Value.SINGLE.ToString(), true);
                 case CellAffinity.DOUBLE:
                     return new Cell(Value.DOUBLE.ToString(), true);
-                case CellAffinity.BLOB:
-                    return new Cell(System.Text.ASCIIEncoding.UTF8.GetString(Value.BLOB, 0, Value.BLOB.Length), true);
-                case CellAffinity.STRING:
-                    return new Cell(Value.STRING, true);
+                case CellAffinity.BINARY:
+                    return new Cell(System.Text.ASCIIEncoding.UTF8.GetString(Value.BINARY, 0, Value.BINARY.Length), true);
+                case CellAffinity.CSTRING:
+                    return new Cell(Value.CSTRING, true);
             }
 
-            return CellValues.NullTEXT;
+            return CellValues.NullBSTRING;
 
 
         }
@@ -600,20 +637,23 @@ namespace Pulse.Elements
         /// </summary>
         /// <param name="Value"></param>
         /// <returns></returns>
-        public static Cell ToSTRING(Cell Value)
+        public static Cell ToCSTRING(Cell Value)
         {
 
-            if (Value.Affinity == CellAffinity.STRING)
+            if (Value.Affinity == CellAffinity.CSTRING)
                 return Value;
 
             if (Value.IsNull)
-                return CellValues.NullSTRING;
+                return CellValues.NullCSTRING;
 
-            if (Value.BLOB == null && Value.AFFINITY == CellAffinity.BLOB)
-                return CellValues.NullSTRING;
+            if (Value.BINARY == null && Value.AFFINITY == CellAffinity.BINARY)
+                return CellValues.NullCSTRING;
 
-            if ((Value.STRING == null) && (Value.AFFINITY == CellAffinity.STRING || Value.AFFINITY == CellAffinity.TEXT))
-                return CellValues.NullSTRING;
+            if (Value.BSTRING == null && Value.AFFINITY == CellAffinity.BSTRING)
+                return CellValues.NullCSTRING;
+
+            if (Value.CSTRING == null && Value.AFFINITY == CellAffinity.CSTRING)
+                return CellValues.NullCSTRING;
 
             switch (Value.AFFINITY)
             {
@@ -628,19 +668,19 @@ namespace Pulse.Elements
                     return new Cell(Value.INT.ToString(), false);
                 case CellAffinity.LONG:
                     return new Cell(Value.LONG.ToString(), false);
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                     return new Cell(Value.DATE.ToString(), false);
-                case CellAffinity.FLOAT:
-                    return new Cell(Value.FLOAT.ToString(), false);
+                case CellAffinity.SINGLE:
+                    return new Cell(Value.SINGLE.ToString(), false);
                 case CellAffinity.DOUBLE:
                     return new Cell(Value.DOUBLE.ToString(), false);
-                case CellAffinity.BLOB:
-                    return new Cell(System.Text.ASCIIEncoding.Unicode.GetString(Value.BLOB, 0, Value.BLOB.Length / 2), false);
-                case CellAffinity.TEXT:
-                    return new Cell(Value.STRING, false);
+                case CellAffinity.BINARY:
+                    return new Cell(System.Text.ASCIIEncoding.Unicode.GetString(Value.BINARY, 0, Value.BINARY.Length / 2), false);
+                case CellAffinity.BSTRING:
+                    return new Cell(Value.CSTRING, false);
             }
 
-            return CellValues.NullSTRING;
+            return CellValues.NullCSTRING;
 
 
         }
@@ -659,20 +699,29 @@ namespace Pulse.Elements
             if (New == CellAffinity.BYTE)
             {
 
-                if (Old == CellAffinity.STRING)
+                if (Old == CellAffinity.CSTRING)
                     return PriorSize * 2;
-                else if (Old == CellAffinity.TEXT)
+                else if (Old == CellAffinity.BSTRING)
                     return PriorSize;
                 else
                     return CellSerializer.DefaultLength(New);
 
             }
-            else if (New == CellAffinity.STRING || New == CellAffinity.TEXT)
+            else if (New == CellAffinity.BSTRING)
             {
 
-                if (Old == CellAffinity.TEXT || Old == CellAffinity.STRING)
+                if (Old == CellAffinity.BSTRING || Old == CellAffinity.CSTRING || Old == CellAffinity.BINARY)
                     return PriorSize;
-                else if (Old == CellAffinity.BLOB)
+                else
+                    return CellValues.Max(Old).ToString().Length;
+
+            }
+            else if (New == CellAffinity.CSTRING)
+            {
+
+                if (Old == CellAffinity.BSTRING || Old == CellAffinity.CSTRING)
+                    return PriorSize;
+                else if (Old == CellAffinity.BINARY)
                     return PriorSize / 2;
                 else
                     return CellValues.Max(Old).ToString().Length;

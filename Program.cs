@@ -23,8 +23,10 @@ namespace Pulse
 
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
 
+            
             Host Enviro = new Host();
-            Enviro.Libraries.Allocate("DATE", new Libraries.DateLibrary(Enviro));
+            Enviro.Libraries.Allocate("CHRONO", new Libraries.ChronoLibrary(Enviro));
+            Enviro.Libraries.Allocate("RANDOM", new Libraries.RandomLibrary(Enviro));
             //Enviro.Libraries.Allocate("TABLE", new Libraries.TableLibrary(Enviro));
             //Enviro.Libraries.Allocate("FILE", new Libraries.LibraryFile(Enviro));
             //Enviro.Libraries.Allocate("WEB", new Libraries.LibraryWeb(Enviro));
@@ -33,9 +35,6 @@ namespace Pulse
             string script = System.IO.File.ReadAllText(@"C:\Users\pwdlu_000\Documents\Pulse\Pulse\Scripting\TestScript.txt");
             sp.RenderAction(script);
             Enviro.ShutDown();
-
-            //Deck d = Deck.ShuffledDeck(1000, 127);
-            //Console.WriteLine(d.ToString());
 
             
             Console.WriteLine("::::::::::::::::::::::::::::::::: Complete :::::::::::::::::::::::::::::::::");
@@ -56,6 +55,9 @@ namespace Pulse
             Console.WriteLine(b.Length);
             Console.WriteLine(b.Trim().Length);
             Console.WriteLine(b.Remove("!"));
+
+            byte[] c = BString.Empty.ToByteArray;
+            Console.WriteLine(c.Length);
 
 
         }
@@ -117,12 +119,12 @@ namespace Pulse
 
             Host Enviro = new Host();
             Schema s = new Schema("Key int, Value double, xyz int");
-            DictionaryTable t = Enviro.CreateTable("TEMP", "TEST1", new Schema("KEY1 LONG, KEY2 STRING.3"), new Schema("VALUE1 DOUBLE, VALUE2 LONG"));
+            DictionaryTable t = Enviro.CreateTable("TEMP", "TEST1", new Schema("KEY1 LONG, KEY2 CSTRING.3"), new Schema("VALUE1 DOUBLE, VALUE2 LONG"));
 
             for (int i = 0; i < 10000; i++)
             {
 
-                Record k = Record.Stitch(new Cell(i), Enviro.BaseRNG.NextString(3, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
+                Record k = Record.Stitch(new Cell(i), Enviro.BaseRNG.NextCString(3, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
                 Record v = Record.Stitch(Enviro.BaseRNG.NextDoubleGauss(), Enviro.BaseRNG.NextLong());
                 t.Add(k, v);
 

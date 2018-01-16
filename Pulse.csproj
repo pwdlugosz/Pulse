@@ -84,7 +84,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Alpha\BString.cs" />
+    <Compile Include="Alpha\Date.cs" />
+    <Compile Include="Elements\BitHelper.cs" />
+    <Compile Include="Elements\Types\BString.cs" />
     <Compile Include="Alpha\Cards.cs" />
     <Compile Include="Elements\ObjectStore.cs" />
     <Compile Include="Expressions\ActionExpressions\ActionExpression.cs" />

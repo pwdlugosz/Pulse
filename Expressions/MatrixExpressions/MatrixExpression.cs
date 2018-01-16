@@ -191,7 +191,7 @@ namespace Pulse.Expressions.MatrixExpressions
             {
                 throw new Exception(string.Format("Function '{0}' can have at most '{1}' parameter(s) but was passed '{2}'", this._Name, -this._ParamCount, this._Parameters.Count));
             }
-            else if (this._Parameters.Count != this._ParamCount)
+            else if (this._Parameters.Count != this._ParamCount && this._ParamCount > 0)
             {
                 throw new Exception(string.Format("Function '{0}' can have exactly '{1}' parameter(s) but was passed '{2}'", this._Name, -this._ParamCount, this._Parameters.Count));
             }

@@ -476,7 +476,7 @@ namespace Pulse.Expressions.ScalarExpressions
 
         public static ScalarExpression NullString
         {
-            get { return new ScalarExpressionConstant(null, CellValues.NullSTRING); }
+            get { return new ScalarExpressionConstant(null, CellValues.NullCSTRING); }
         }
 
         public static ScalarExpression NullBLOB
@@ -815,7 +815,7 @@ namespace Pulse.Expressions.ScalarExpressions
 
             public override Cell Evaluate(FieldResolver Variants)
             {
-                return this._Left.Evaluate(Variants) && this._Right.Evaluate(Variants);
+                return this._Left.Evaluate(Variants) & this._Right.Evaluate(Variants);
             }
 
         }
@@ -830,7 +830,7 @@ namespace Pulse.Expressions.ScalarExpressions
 
             public override Cell Evaluate(FieldResolver Variants)
             {
-                return this._Left.Evaluate(Variants) || this._Right.Evaluate(Variants);
+                return this._Left.Evaluate(Variants) | this._Right.Evaluate(Variants);
             }
 
         }
@@ -850,8 +850,93 @@ namespace Pulse.Expressions.ScalarExpressions
 
         }
 
+        public sealed class ScalarExpressionLeftShift : ScalarExpressionBinary
+        {
 
+            public ScalarExpressionLeftShift(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "<<", "LShift", Left, Right)
+            {
+            }
 
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                Cell x = this._Left.Evaluate(Variants);
+                Cell y = this._Right.Evaluate(Variants);
+                if (x.IsNull || y.IsNull)
+                {
+                    x.NULL = 1;
+                    return x;
+                }
+                return Cell.LeftShift(x, y.valueINT);
+            }
+
+        }
+
+        public sealed class ScalarExpressionRightShift : ScalarExpressionBinary
+        {
+
+            public ScalarExpressionRightShift(ScalarExpression Left, ScalarExpression Right)
+                : base(null, ">>", "RShift", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                Cell x = this._Left.Evaluate(Variants);
+                Cell y = this._Right.Evaluate(Variants);
+                if (x.IsNull || y.IsNull)
+                {
+                    x.NULL = 1;
+                    return x;
+                }
+                return Cell.RightShift(x, y.valueINT);
+            }
+
+        }
+
+        public sealed class ScalarExpressionLeftRotate : ScalarExpressionBinary
+        {
+
+            public ScalarExpressionLeftRotate(ScalarExpression Left, ScalarExpression Right)
+                : base(null, "<<<", "LRotate", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                Cell x = this._Left.Evaluate(Variants);
+                Cell y = this._Right.Evaluate(Variants);
+                if (x.IsNull || y.IsNull)
+                {
+                    x.NULL = 1;
+                    return x;
+                }
+                return Cell.LeftRotate(x, y.valueINT);
+            }
+
+        }
+
+        public sealed class ScalarExpressionRightRotate : ScalarExpressionBinary
+        {
+
+            public ScalarExpressionRightRotate(ScalarExpression Left, ScalarExpression Right)
+                : base(null, ">>>", "RRotate", Left, Right)
+            {
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+                Cell x = this._Left.Evaluate(Variants);
+                Cell y = this._Right.Evaluate(Variants);
+                if (x.IsNull || y.IsNull)
+                {
+                    x.NULL = 1;
+                    return x;
+                }
+                return Cell.RightRotate(x, y.valueINT);
+            }
+
+        }
 
 
     }

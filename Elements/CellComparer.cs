@@ -27,7 +27,7 @@ namespace Pulse.Elements
 
                 if (A.AFFINITY == CellAffinity.BOOL)
                     return A.BOOL == B.BOOL;
-                else if (A.AFFINITY == CellAffinity.DATE)
+                else if (A.AFFINITY == CellAffinity.DATE_TIME)
                     return A.DATE == B.DATE;
                 else if (A.AFFINITY == CellAffinity.BYTE)
                     return A.BYTE == B.BYTE;
@@ -37,29 +37,29 @@ namespace Pulse.Elements
                     return A.INT == B.INT;
                 else if (A.AFFINITY == CellAffinity.LONG)
                     return A.LONG == B.LONG;
-                else if (A.AFFINITY == CellAffinity.FLOAT)
-                    return A.FLOAT == B.FLOAT;
+                else if (A.AFFINITY == CellAffinity.SINGLE)
+                    return A.SINGLE == B.SINGLE;
                 else if (A.AFFINITY == CellAffinity.DOUBLE)
                     return A.DOUBLE == B.DOUBLE;
-                else if (A.AFFINITY == CellAffinity.BLOB)
-                    return ByteArrayCompare(A.BLOB, B.BLOB) == 0;
-                else if (A.AFFINITY == CellAffinity.TEXT || A.Affinity == CellAffinity.STRING)
-                    return StringComparer.OrdinalIgnoreCase.Compare(A.STRING, B.STRING) == 0;
+                else if (A.AFFINITY == CellAffinity.BINARY)
+                    return ByteArrayCompare(A.BINARY, B.BINARY) == 0;
+                else if (A.AFFINITY == CellAffinity.BSTRING || A.Affinity == CellAffinity.CSTRING)
+                    return StringComparer.OrdinalIgnoreCase.Compare(A.CSTRING, B.CSTRING) == 0;
 
             }
             else
             {
 
-                if (A.AFFINITY == CellAffinity.STRING || B.AFFINITY == CellAffinity.STRING)
-                    return StringComparer.OrdinalIgnoreCase.Compare(A.valueSTRING, B.valueSTRING) == 0;
-                else if (A.AFFINITY == CellAffinity.TEXT || B.AFFINITY == CellAffinity.TEXT)
-                    return StringComparer.OrdinalIgnoreCase.Compare(A.valueTEXT, B.valueTEXT) == 0;
-                else if (A.AFFINITY == CellAffinity.BLOB || B.AFFINITY == CellAffinity.BLOB)
-                    return ByteArrayCompare(A.BLOB, B.BLOB) == 0;
+                if (A.AFFINITY == CellAffinity.CSTRING || B.AFFINITY == CellAffinity.CSTRING)
+                    return StringComparer.OrdinalIgnoreCase.Compare(A.valueCSTRING, B.valueCSTRING) == 0;
+                else if (A.AFFINITY == CellAffinity.BSTRING || B.AFFINITY == CellAffinity.BSTRING)
+                    return StringComparer.OrdinalIgnoreCase.Compare(A.valueBSTRING, B.valueBSTRING) == 0;
+                else if (A.AFFINITY == CellAffinity.BINARY || B.AFFINITY == CellAffinity.BINARY)
+                    return ByteArrayCompare(A.BINARY, B.BINARY) == 0;
                 else if (A.AFFINITY == CellAffinity.DOUBLE || B.AFFINITY == CellAffinity.DOUBLE)
                     return A.valueDOUBLE == B.valueDOUBLE;
-                else if (A.AFFINITY == CellAffinity.FLOAT || B.AFFINITY == CellAffinity.FLOAT)
-                    return A.valueFLOAT == B.valueFLOAT;
+                else if (A.AFFINITY == CellAffinity.SINGLE || B.AFFINITY == CellAffinity.SINGLE)
+                    return A.valueSINGLE == B.valueSINGLE;
                 else if (A.AFFINITY == CellAffinity.LONG || B.AFFINITY == CellAffinity.LONG)
                     return A.valueLONG == B.valueLONG;
                 else if (A.AFFINITY == CellAffinity.INT || B.AFFINITY == CellAffinity.INT)
@@ -68,7 +68,7 @@ namespace Pulse.Elements
                     return A.valueSHORT == B.valueSHORT;
                 else if (A.AFFINITY == CellAffinity.BYTE || B.AFFINITY == CellAffinity.BYTE)
                     return A.valueBYTE == B.valueBYTE;
-                else if (A.AFFINITY == CellAffinity.DATE || B.AFFINITY == CellAffinity.DATE)
+                else if (A.AFFINITY == CellAffinity.DATE_TIME || B.AFFINITY == CellAffinity.DATE_TIME)
                     return A.valueDATE == B.valueDATE;
                 else if (A.valueBOOL == B.valueBOOL)
                     return A.valueBOOL == B.valueBOOL;
@@ -92,7 +92,7 @@ namespace Pulse.Elements
 
             if (A.AFFINITY == CellAffinity.BOOL)
                 return A.BOOL == B.BOOL;
-            else if (A.AFFINITY == CellAffinity.DATE)
+            else if (A.AFFINITY == CellAffinity.DATE_TIME)
                 return A.DATE == B.DATE;
             else if (A.AFFINITY == CellAffinity.BYTE)
                 return A.BYTE == B.BYTE;
@@ -102,14 +102,14 @@ namespace Pulse.Elements
                 return A.INT == B.INT;
             else if (A.AFFINITY == CellAffinity.LONG)
                 return A.LONG == B.LONG;
-            else if (A.AFFINITY == CellAffinity.FLOAT)
-                return A.FLOAT == B.FLOAT;
+            else if (A.AFFINITY == CellAffinity.SINGLE)
+                return A.SINGLE == B.SINGLE;
             else if (A.AFFINITY == CellAffinity.DOUBLE)
                 return A.DOUBLE == B.DOUBLE;
-            else if (A.AFFINITY == CellAffinity.BLOB)
-                return ByteArrayCompare(A.BLOB, B.BLOB) == 0;
-            else if (A.AFFINITY == CellAffinity.TEXT || A.Affinity == CellAffinity.STRING)
-                return StringComparer.OrdinalIgnoreCase.Compare(A.STRING, B.STRING) == 0;
+            else if (A.AFFINITY == CellAffinity.BINARY)
+                return ByteArrayCompare(A.BINARY, B.BINARY) == 0;
+            else if (A.AFFINITY == CellAffinity.BSTRING || A.Affinity == CellAffinity.CSTRING)
+                return StringComparer.OrdinalIgnoreCase.Compare(A.CSTRING, B.CSTRING) == 0;
 
             return false;
 
@@ -130,7 +130,7 @@ namespace Pulse.Elements
 
                 if (A.AFFINITY == CellAffinity.BOOL)
                     return (A.BOOL == B.BOOL ? 0 : (A.BOOL ? 1 : -1));
-                else if (A.AFFINITY == CellAffinity.DATE)
+                else if (A.AFFINITY == CellAffinity.DATE_TIME)
                     return DateTime.Compare(A.DATE, B.DATE);
                 else if (A.AFFINITY == CellAffinity.BYTE)
                     return (int)(A.BYTE - B.BYTE);
@@ -140,29 +140,29 @@ namespace Pulse.Elements
                     return (int)(A.INT - B.INT);
                 else if (A.AFFINITY == CellAffinity.LONG)
                     return (int)(A.LONG - B.LONG);
-                else if (A.AFFINITY == CellAffinity.FLOAT)
-                    return (A.FLOAT == B.FLOAT ? 0 : (A.FLOAT < B.FLOAT ? -1 : 1));
+                else if (A.AFFINITY == CellAffinity.SINGLE)
+                    return (A.SINGLE == B.SINGLE ? 0 : (A.SINGLE < B.SINGLE ? -1 : 1));
                 else if (A.AFFINITY == CellAffinity.DOUBLE)
                     return (A.DOUBLE == B.DOUBLE ? 0 : (A.DOUBLE < B.DOUBLE ? -1 : 1));
-                else if (A.AFFINITY == CellAffinity.BLOB)
-                    return ByteArrayCompare(A.BLOB, B.BLOB);
-                else if (A.AFFINITY == CellAffinity.TEXT || A.Affinity == CellAffinity.STRING)
-                    return StringComparer.OrdinalIgnoreCase.Compare(A.STRING, B.STRING);
+                else if (A.AFFINITY == CellAffinity.BINARY)
+                    return ByteArrayCompare(A.BINARY, B.BINARY);
+                else if (A.AFFINITY == CellAffinity.BSTRING || A.Affinity == CellAffinity.CSTRING)
+                    return StringComparer.OrdinalIgnoreCase.Compare(A.CSTRING, B.CSTRING);
 
             }
             else
             {
 
-                if (A.AFFINITY == CellAffinity.STRING || B.AFFINITY == CellAffinity.STRING)
-                    return StringComparer.OrdinalIgnoreCase.Compare(A.valueSTRING, B.valueSTRING);
-                else if (A.AFFINITY == CellAffinity.TEXT || B.AFFINITY == CellAffinity.TEXT)
-                    return StringComparer.OrdinalIgnoreCase.Compare(A.valueTEXT, B.valueTEXT);
-                else if (A.AFFINITY == CellAffinity.BLOB || B.AFFINITY == CellAffinity.BLOB)
-                    return ByteArrayCompare(A.BLOB, B.BLOB);
+                if (A.AFFINITY == CellAffinity.CSTRING || B.AFFINITY == CellAffinity.CSTRING)
+                    return StringComparer.OrdinalIgnoreCase.Compare(A.valueCSTRING, B.valueCSTRING);
+                else if (A.AFFINITY == CellAffinity.BSTRING || B.AFFINITY == CellAffinity.BSTRING)
+                    return StringComparer.OrdinalIgnoreCase.Compare(A.valueBSTRING, B.valueBSTRING);
+                else if (A.AFFINITY == CellAffinity.BINARY || B.AFFINITY == CellAffinity.BINARY)
+                    return ByteArrayCompare(A.BINARY, B.BINARY);
                 else if (A.AFFINITY == CellAffinity.DOUBLE || B.AFFINITY == CellAffinity.DOUBLE)
                     return (A.DOUBLE == B.DOUBLE ? 0 : (A.DOUBLE < B.DOUBLE ? -1 : 1));
-                else if (A.AFFINITY == CellAffinity.FLOAT || B.AFFINITY == CellAffinity.FLOAT)
-                    return (A.FLOAT == B.FLOAT ? 0 : (A.FLOAT < B.FLOAT ? -1 : 1));
+                else if (A.AFFINITY == CellAffinity.SINGLE || B.AFFINITY == CellAffinity.SINGLE)
+                    return (A.SINGLE == B.SINGLE ? 0 : (A.SINGLE < B.SINGLE ? -1 : 1));
                 else if (A.AFFINITY == CellAffinity.LONG || B.AFFINITY == CellAffinity.LONG)
                     return (int)(A.valueLONG - B.valueLONG);
                 else if (A.AFFINITY == CellAffinity.INT || B.AFFINITY == CellAffinity.INT)
@@ -171,7 +171,7 @@ namespace Pulse.Elements
                     return A.valueSHORT - B.valueSHORT;
                 else if (A.AFFINITY == CellAffinity.BYTE || B.AFFINITY == CellAffinity.BYTE)
                     return A.valueBYTE - B.valueBYTE;
-                else if (A.AFFINITY == CellAffinity.DATE || B.AFFINITY == CellAffinity.DATE)
+                else if (A.AFFINITY == CellAffinity.DATE_TIME || B.AFFINITY == CellAffinity.DATE_TIME)
                     return DateTime.Compare(A.DATE, B.DATE);
                 else if (A.valueBOOL == B.valueBOOL)
                     return (A.BOOL == B.BOOL ? 0 : (A.BOOL ? 1 : -1));

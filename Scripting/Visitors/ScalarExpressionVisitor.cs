@@ -265,6 +265,41 @@ namespace Pulse.Scripting
 
         }
 
+        public override ScalarExpression VisitBitShiftRotate(PulseParser.BitShiftRotateContext context)
+        {
+
+            ScalarExpression l = this.Visit(context.scalar_expression()[0]);
+            ScalarExpression r = this.Visit(context.scalar_expression()[1]);
+
+            ScalarExpression e = null;
+            if (context.L_SHIFT() != null)
+            {
+                e = new ScalarExpressionBinary.ScalarExpressionLeftShift(l, r);
+            }
+            else if (context.L_ROTATE() != null)
+            {
+                e = new ScalarExpressionBinary.ScalarExpressionLeftRotate(l, r);
+            }
+            else if (context.R_SHIFT() != null)
+            {
+                e = new ScalarExpressionBinary.ScalarExpressionRightShift(l, r);
+            }
+            else if (context.R_ROTATE() != null)
+            {
+                e = new ScalarExpressionBinary.ScalarExpressionRightRotate(l, r);
+            }
+            else
+            {
+                throw new Exception();
+            }
+
+            this._Master = e;
+
+            return e;
+
+
+        }
+
         public override ScalarExpression VisitTableOrScalarMember(PulseParser.TableOrScalarMemberContext context)
         {
 
@@ -312,6 +347,12 @@ namespace Pulse.Scripting
                     return new ScalarExpressionStoreRef(this._Host, this._Master, FieldResolver.GLOBAL, Minor, this._Map.Global.Scalars[Minor].Affinity, this._Map.Global.Scalars[Minor].Length);
                 }
 
+                // Check local //
+                if (this._Map.Local.ExistsScalar(Minor))
+                {
+                    return new ScalarExpressionStoreRef(this._Host, this._Master, FieldResolver.LOCAL, Minor, this._Map.Local.Scalars[Minor].Affinity, this._Map.Local.Scalars[Minor].Length);
+                }
+
                 // Otherwise, check if the primary context exists in local and the value is in the primary context
                 if (this._PrimaryContext != null && this._Map.Local.ExistsRecord(this._PrimaryContext) && this._Map.Local.Records[this._PrimaryContext].Columns.ColumnIndex(Minor) != -1)
                 {
@@ -329,7 +370,7 @@ namespace Pulse.Scripting
             string Major = ScriptingHelper.GetLibName(context.record_name());
             string Medium = ScriptingHelper.GetVarName(context.record_name());
             string Minor = context.IDENTIFIER().GetText();
-            return new ScalarExpressionRecordRef(this._Host, this._Master, Major, Medium, Minor, this._Map[Major].GetRecord(Medium)[Minor].Affinity, this._Map[Major].GetRecord(Medium)[Minor].Length);
+            return new ScalarExpressionRecordRef(this._Host, this._Master, Major, Medium, Minor, this._Map[Major].GetRecord(Medium)[Minor].Affinity, this._Map[Major].GetColumns(Medium).ColumnSize(Minor));
         }
 
         public override ScalarExpression VisitMatrixMember(PulseParser.MatrixMemberContext context)
@@ -355,7 +396,7 @@ namespace Pulse.Scripting
             string s = context.GetText();
             s = s.Replace("T", "").Replace("t", "");
             s = CleanString(s);
-            return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.DATE));
+            return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.DATE_TIME));
         }
 
         public override ScalarExpression VisitLiteralByte(PulseParser.LiteralByteContext context)
@@ -386,7 +427,7 @@ namespace Pulse.Scripting
         {
             string s = context.GetText();
             s = s.Replace("F", "").Replace("f", "");
-            return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.FLOAT));
+            return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.SINGLE));
         }
 
         public override ScalarExpression VisitLiteralDouble(PulseParser.LiteralDoubleContext context)
@@ -399,21 +440,23 @@ namespace Pulse.Scripting
         public override ScalarExpression VisitLiteralBLOB(PulseParser.LiteralBLOBContext context)
         {
             string s = context.GetText();
-            return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.BLOB));
+            return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.BINARY));
         }
 
-        public override ScalarExpression VisitLiteralText(PulseParser.LiteralTextContext context)
+        public override ScalarExpression VisitLiteralBString(PulseParser.LiteralBStringContext context)
         {
             string s = context.GetText();
+            if (s.First() == 'b' || s.First() == 'B')
+                s = s.Substring(0, s.Length - 1);
             s = CleanString(s);
-            return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.TEXT));
+            return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.BSTRING));
         }
 
         public override ScalarExpression VisitLiteralString(PulseParser.LiteralStringContext context)
         {
             string s = context.GetText();
             s = CleanString(s);
-            return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.STRING));
+            return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.CSTRING));
         }
 
         public override ScalarExpression VisitLiteralNull(PulseParser.LiteralNullContext context)

@@ -69,7 +69,7 @@ namespace Pulse.Expressions
         
         public void DeclareScalar(string Major, string Minor, Cell Value)
         {
-            this._Stores[Major].Scalars.Allocate(Minor, Value);
+            this._Stores[Major].DeclareScalar(Minor, Value);
         }
 
         public void SetScalar(string Major, string Minor, Cell Value)
@@ -95,7 +95,7 @@ namespace Pulse.Expressions
         
         public void DeclareMatrix(string Major, string Minor, CellMatrix Value)
         {
-            this._Stores[Major].Matrixes.Allocate(Minor, Value);
+            this._Stores[Major].DeclareMatrix(Minor, Value);
         }
 
         public void SetMatrix(string Major, string Minor, CellMatrix Value)
@@ -136,12 +136,12 @@ namespace Pulse.Expressions
         
         public void DeclareRecord(string Major, string Minor, AssociativeRecord Value)
         {
-            this._Stores[Major].Records.Allocate(Minor, Value);
+            this._Stores[Major].DeclareRecord(Minor, Value);
         }
 
         public void DeclareRecord(string Major, string Minor, Schema Value)
         {
-            this._Stores[Major].Records.Allocate(Minor, new AssociativeRecord(Value, Value.NullRecord));
+            this._Stores[Major].DeclareRecord(Minor, new AssociativeRecord(Value, Value.NullRecord));
         }
 
         public void SetRecord(string Major, string Minor, AssociativeRecord Value)

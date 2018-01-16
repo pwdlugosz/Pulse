@@ -73,7 +73,7 @@ namespace Pulse.Scripting
     //        }
     //        else if (context.sliteral().LITERAL_DATE() != null)
     //        {
-    //            c = CellParser.Parse(context.sliteral().LITERAL_DATE().GetText(), CellAffinity.DATE);
+    //            c = CellParser.Parse(context.sliteral().LITERAL_DATE().GetText(), CellAffinity.DATE_TIME);
     //        }
     //        else if (context.sliteral().LITERAL_BYTE() != null)
     //        {
@@ -93,7 +93,7 @@ namespace Pulse.Scripting
     //        }
     //        else if (context.sliteral().LITERAL_FLOAT() != null)
     //        {
-    //            c = CellParser.Parse(context.sliteral().LITERAL_FLOAT().GetText(), CellAffinity.FLOAT);
+    //            c = CellParser.Parse(context.sliteral().LITERAL_FLOAT().GetText(), CellAffinity.SINGLE);
     //        }
     //        else if (context.sliteral().LITERAL_DOUBLE() != null)
     //        {
@@ -101,15 +101,15 @@ namespace Pulse.Scripting
     //        }
     //        else if (context.sliteral().LITERAL_BLOB() != null)
     //        {
-    //            c = CellParser.Parse(context.sliteral().LITERAL_BLOB().GetText(), CellAffinity.BLOB);
+    //            c = CellParser.Parse(context.sliteral().LITERAL_BLOB().GetText(), CellAffinity.BINARY);
     //        }
     //        else if (context.sliteral().LITERAL_TEXT() != null)
     //        {
-    //            c = CellParser.Parse(context.sliteral().LITERAL_TEXT().GetText(), CellAffinity.TEXT);
+    //            c = CellParser.Parse(context.sliteral().LITERAL_TEXT().GetText(), CellAffinity.BSTRING);
     //        }
     //        else if (context.sliteral().LITERAL_STRING() != null)
     //        {
-    //            c = CellParser.Parse(context.sliteral().LITERAL_STRING().GetText(), CellAffinity.STRING);
+    //            c = CellParser.Parse(context.sliteral().LITERAL_STRING().GetText(), CellAffinity.CSTRING);
     //        }
             
     //        return new ScalarExpressionConstant(null, c);

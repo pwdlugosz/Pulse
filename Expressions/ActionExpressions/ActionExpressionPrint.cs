@@ -84,7 +84,8 @@ namespace Pulse.Expressions.ActionExpressions
             }
             else if (this._m != null)
             {
-                this._Host.IO.WriteLine(this._m.Evaluate(Variant).ToString());
+                CellMatrix m = this._m.Evaluate(Variant);
+                this._Host.IO.WriteLine(m.ToString());
             }
             else if (this._s != null)
             {

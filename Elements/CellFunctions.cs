@@ -33,7 +33,7 @@ namespace Pulse.Elements
             }
 
             if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
-            else if (C.AFFINITY == CellAffinity.FLOAT) C.FLOAT = (float)d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
             else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
             else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
             else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
@@ -63,7 +63,7 @@ namespace Pulse.Elements
             }
 
             if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
-            else if (C.AFFINITY == CellAffinity.FLOAT) C.FLOAT = (float)d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
             else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
             else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
             else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
@@ -93,7 +93,7 @@ namespace Pulse.Elements
             }
 
             if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
-            else if (C.AFFINITY == CellAffinity.FLOAT) C.FLOAT = (float)d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
             else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
             else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
             else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
@@ -123,7 +123,7 @@ namespace Pulse.Elements
             }
 
             if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
-            else if (C.AFFINITY == CellAffinity.FLOAT) C.FLOAT = (float)d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
             else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
             else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
             else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
@@ -153,7 +153,7 @@ namespace Pulse.Elements
             }
 
             if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
-            else if (C.AFFINITY == CellAffinity.FLOAT) C.FLOAT = (float)d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
             else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
             else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
             else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
@@ -183,187 +183,7 @@ namespace Pulse.Elements
             }
 
             if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
-            else if (C.AFFINITY == CellAffinity.FLOAT) C.FLOAT = (float)d;
-            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
-            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
-            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
-            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
-            else C.NULL = 1;
-
-            return C;
-
-        }
-
-        /// <summary>
-        /// Performs the trigonomic sine; the resulting Value will be null if the result is either nan or infinity; casts the result back to original affinity passed
-        /// </summary>
-        /// <param name="C">Cell Value</param>
-        /// <returns>Cell Value</returns>
-        public static Cell Sin(Cell C)
-        {
-
-            if (C.NULL == 1)
-                return C;
-
-            double d = Math.Sin(C.valueDOUBLE);
-            if (double.IsInfinity(d) || double.IsNaN(d))
-            {
-                C.NULL = 1;
-                return C;
-            }
-
-            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
-            else if (C.AFFINITY == CellAffinity.FLOAT) C.FLOAT = (float)d;
-            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
-            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
-            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
-            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
-            else C.NULL = 1;
-
-            return C;
-
-        }
-
-        /// <summary>
-        /// Performs the trigonomic cosine; the resulting Value will be null if the result is either nan or infinity; casts the result back to original affinity passed
-        /// </summary>
-        /// <param name="C">Cell Value</param>
-        /// <returns>Cell Value</returns>
-        public static Cell Cos(Cell C)
-        {
-
-            if (C.NULL == 1)
-                return C;
-
-            double d = Math.Cos(C.valueDOUBLE);
-            if (double.IsInfinity(d) || double.IsNaN(d))
-            {
-                C.NULL = 1;
-                return C;
-            }
-
-            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
-            else if (C.AFFINITY == CellAffinity.FLOAT) C.FLOAT = (float)d;
-            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
-            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
-            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
-            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
-            else C.NULL = 1;
-
-            return C;
-
-        }
-
-        /// <summary>
-        /// Performs the trigonomic tangent; the resulting Value will be null if the result is either nan or infinity; casts the result back to original affinity passed
-        /// </summary>
-        /// <param name="C">Cell Value</param>
-        /// <returns>Cell Value</returns>
-        public static Cell Tan(Cell C)
-        {
-
-            if (C.NULL == 1)
-                return C;
-
-            double d = Math.Tan(C.valueDOUBLE);
-            if (double.IsInfinity(d) || double.IsNaN(d))
-            {
-                C.NULL = 1;
-                return C;
-            }
-
-            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
-            else if (C.AFFINITY == CellAffinity.FLOAT) C.FLOAT = (float)d;
-            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
-            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
-            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
-            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
-            else C.NULL = 1;
-
-            return C;
-
-        }
-
-        /// <summary>
-        /// Performs the hyperbolic sine; the resulting Value will be null if the result is either nan or infinity; casts the result back to original affinity passed
-        /// </summary>
-        /// <param name="C">Cell Value</param>
-        /// <returns>Cell Value</returns>
-        public static Cell Sinh(Cell C)
-        {
-
-            if (C.NULL == 1)
-                return C;
-
-            double d = Math.Sinh(C.valueDOUBLE);
-            if (double.IsInfinity(d) || double.IsNaN(d))
-            {
-                C.NULL = 1;
-                return C;
-            }
-
-            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
-            else if (C.AFFINITY == CellAffinity.FLOAT) C.FLOAT = (float)d;
-            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
-            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
-            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
-            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
-            else C.NULL = 1;
-
-            return C;
-
-        }
-
-        /// <summary>
-        /// Performs the hyperbolic cosine; the resulting Value will be null if the result is either nan or infinity; casts the result back to original affinity passed
-        /// </summary>
-        /// <param name="C">Cell Value</param>
-        /// <returns>Cell Value</returns>
-        public static Cell Cosh(Cell C)
-        {
-
-            if (C.NULL == 1)
-                return C;
-
-            double d = Math.Cosh(C.valueDOUBLE);
-            if (double.IsInfinity(d) || double.IsNaN(d))
-            {
-                C.NULL = 1;
-                return C;
-            }
-
-            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
-            else if (C.AFFINITY == CellAffinity.FLOAT) C.FLOAT = (float)d;
-            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
-            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
-            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
-            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
-            else C.NULL = 1;
-
-            return C;
-
-        }
-
-        /// <summary>
-        /// Performs the hyperbolic tangent; the resulting Value will be null if the result is either nan or infinity; casts the result back to original affinity passed
-        /// </summary>
-        /// <param name="C">Cell Value</param>
-        /// <returns>Cell Value</returns>
-        public static Cell Tanh(Cell C)
-        {
-
-            if (C.NULL == 1)
-                return C;
-
-            double d = Math.Tanh(C.valueDOUBLE);
-            if (double.IsInfinity(d) || double.IsNaN(d))
-            {
-                C.NULL = 1;
-                return C;
-            }
-
-            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
-            else if (C.AFFINITY == CellAffinity.FLOAT) C.FLOAT = (float)d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
             else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
             else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
             else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
@@ -407,7 +227,7 @@ namespace Pulse.Elements
             }
 
             if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
-            else if (C.AFFINITY == CellAffinity.FLOAT) C.FLOAT = (float)d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
             else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
             else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
             else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
@@ -446,7 +266,7 @@ namespace Pulse.Elements
             }
 
             if (C1.AFFINITY == CellAffinity.DOUBLE) C1.DOUBLE = d;
-            else if (C1.AFFINITY == CellAffinity.FLOAT) C1.FLOAT = (float)d;
+            else if (C1.AFFINITY == CellAffinity.SINGLE) C1.SINGLE = (float)d;
             else if (C1.AFFINITY == CellAffinity.LONG) C1.LONG = (long)d;
             else if (C1.AFFINITY == CellAffinity.INT) C1.INT = (int)d;
             else if (C1.AFFINITY == CellAffinity.SHORT) C1.SHORT = (short)d;
@@ -457,6 +277,738 @@ namespace Pulse.Elements
 
         }
 
+        // Basic Trig Functions //
+        /// <summary>
+        /// Performs the trigonomic sine; the resulting Value will be null if the result is either nan or infinity; casts the result back to original affinity passed
+        /// </summary>
+        /// <param name="C">Cell Value</param>
+        /// <returns>Cell Value</returns>
+        public static Cell Sin(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = Math.Sin(C.valueDOUBLE);
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// Performs the trigonomic cosine; the resulting Value will be null if the result is either nan or infinity; casts the result back to original affinity passed
+        /// </summary>
+        /// <param name="C">Cell Value</param>
+        /// <returns>Cell Value</returns>
+        public static Cell Cos(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = Math.Cos(C.valueDOUBLE);
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// Performs the trigonomic tangent; the resulting Value will be null if the result is either nan or infinity; casts the result back to original affinity passed
+        /// </summary>
+        /// <param name="C">Cell Value</param>
+        /// <returns>Cell Value</returns>
+        public static Cell Tan(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = Math.Tan(C.valueDOUBLE);
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell Csc(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = 1D / Math.Sin(C.valueDOUBLE);
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell Sec(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = 1D / Math.Cos(C.valueDOUBLE);
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell Cot(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = 1D / Math.Tan(C.valueDOUBLE);
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+        
+        // Inverse trig functions //
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell ArcSin(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = Math.Asin(C.valueDOUBLE);
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell ArcCos(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = Math.Acos(C.valueDOUBLE);
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell ArcTan(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = Math.Atan(C.valueDOUBLE);
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell ArcCsc(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = Math.Asin(1D / C.valueDOUBLE);
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell ArcSec(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+
+            double d = Math.Acos(1D / C.valueDOUBLE); 
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell ArcCot(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = Math.Atan(1D / C.valueDOUBLE);
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        // Hyperbolic functions //
+        /// <summary>
+        /// Performs the hyperbolic sine; the resulting Value will be null if the result is either nan or infinity; casts the result back to original affinity passed
+        /// </summary>
+        /// <param name="C">Cell Value</param>
+        /// <returns>Cell Value</returns>
+        public static Cell Sinh(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = Math.Sinh(C.valueDOUBLE);
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// Performs the hyperbolic cosine; the resulting Value will be null if the result is either nan or infinity; casts the result back to original affinity passed
+        /// </summary>
+        /// <param name="C">Cell Value</param>
+        /// <returns>Cell Value</returns>
+        public static Cell Cosh(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = Math.Cosh(C.valueDOUBLE);
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// Performs the hyperbolic tangent; the resulting Value will be null if the result is either nan or infinity; casts the result back to original affinity passed
+        /// </summary>
+        /// <param name="C">Cell Value</param>
+        /// <returns>Cell Value</returns>
+        public static Cell Tanh(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = Math.Tanh(C.valueDOUBLE);
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell Csch(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = 1D / Math.Sinh(C.valueDOUBLE);
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell Sech(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = 1D / Math.Cosh(C.valueDOUBLE);
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell Coth(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = 1D / Math.Tanh(C.valueDOUBLE);
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        // Inverse hyperbolic
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell ArcSinh(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = C.valueDOUBLE;
+            d = Math.Log(d + Math.Sqrt(d * d + 1));
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell ArcCosh(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = C.valueDOUBLE;
+            d = Math.Log(d + Math.Sqrt(d * d - 1));
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell ArcTanh(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = C.valueDOUBLE;
+            d = Math.Log((1+d)/(1-d)) * 0.5;
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell ArcCsch(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = 1D / C.valueDOUBLE;
+            d = Math.Log(d + Math.Sqrt(d * d + 1));
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell ArcSech(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = 1D / C.valueDOUBLE; 
+            d = Math.Log(d + Math.Sqrt(d * d + 1));
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell ArcCoth(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = 1D / C.valueDOUBLE; 
+            d = Math.Log(d + Math.Sqrt(d * d + 1));
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        // Other //
         /// <summary>
         /// Returns the absolute Value of a cell's numeric Value; the resulting Value will be null if the result is either nan or infinity; casts the result back to original affinity passed
         /// </summary>
@@ -469,7 +1021,7 @@ namespace Pulse.Elements
                 return C;
 
             if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = Math.Abs(C.DOUBLE);
-            else if (C.AFFINITY == CellAffinity.FLOAT) C.FLOAT = Math.Abs(C.FLOAT);
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = Math.Abs(C.SINGLE);
             else if (C.AFFINITY == CellAffinity.LONG) C.LONG = Math.Abs(C.LONG);
             else if (C.AFFINITY == CellAffinity.INT) C.INT = Math.Abs(C.INT);
             else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = Math.Abs(C.SHORT);
@@ -492,7 +1044,7 @@ namespace Pulse.Elements
                 return C;
 
             if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = Math.Sign(C.DOUBLE);
-            else if (C.AFFINITY == CellAffinity.FLOAT) C.FLOAT = Math.Sign(C.FLOAT);
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = Math.Sign(C.SINGLE);
             else if (C.AFFINITY == CellAffinity.LONG) C.LONG = Math.Sign(C.LONG);
             else if (C.AFFINITY == CellAffinity.INT) C.INT = Math.Sign(C.INT);
             else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)Math.Sign(C.SHORT);
@@ -597,7 +1149,7 @@ namespace Pulse.Elements
             CellAffinity t = Data[0].AFFINITY;
 
             // Handle invalid types //
-            if (t == CellAffinity.BLOB || t == CellAffinity.BOOL || t == CellAffinity.STRING)
+            if (t == CellAffinity.BINARY || t == CellAffinity.BOOL || t == CellAffinity.CSTRING)
                 return new Cell(t);
 
             // Handle arrays too small //
@@ -735,7 +1287,7 @@ namespace Pulse.Elements
         /// <returns>An integer cell</returns>
         public static Cell Year(Cell C)
         {
-            if (C.Affinity != CellAffinity.DATE)
+            if (C.Affinity != CellAffinity.DATE_TIME)
                 return new Cell(CellAffinity.INT);
             return new Cell(C.valueDATE.Year);
         }
@@ -747,7 +1299,7 @@ namespace Pulse.Elements
         /// <returns>An integer cell</returns>
         public static Cell Month(Cell C)
         {
-            if (C.Affinity != CellAffinity.DATE) return new Cell(CellAffinity.INT);
+            if (C.Affinity != CellAffinity.DATE_TIME) return new Cell(CellAffinity.INT);
             return new Cell(C.valueDATE.Month);
         }
 
@@ -758,7 +1310,7 @@ namespace Pulse.Elements
         /// <returns>An integer cell</returns>
         public static Cell Day(Cell C)
         {
-            if (C.Affinity != CellAffinity.DATE) return new Cell(CellAffinity.INT);
+            if (C.Affinity != CellAffinity.DATE_TIME) return new Cell(CellAffinity.INT);
             return new Cell(C.valueDATE.Day);
         }
 
@@ -769,7 +1321,7 @@ namespace Pulse.Elements
         /// <returns>An integer cell</returns>
         public static Cell Hour(Cell C)
         {
-            if (C.Affinity != CellAffinity.DATE) return new Cell(CellAffinity.INT);
+            if (C.Affinity != CellAffinity.DATE_TIME) return new Cell(CellAffinity.INT);
             return new Cell(C.valueDATE.Hour);
         }
 
@@ -780,7 +1332,7 @@ namespace Pulse.Elements
         /// <returns>An integer cell</returns>
         public static Cell Minute(Cell C)
         {
-            if (C.Affinity != CellAffinity.DATE) return new Cell(CellAffinity.INT);
+            if (C.Affinity != CellAffinity.DATE_TIME) return new Cell(CellAffinity.INT);
             return new Cell(C.valueDATE.Minute);
         }
 
@@ -791,7 +1343,7 @@ namespace Pulse.Elements
         /// <returns>An integer cell</returns>
         public static Cell Second(Cell C)
         {
-            if (C.Affinity != CellAffinity.DATE) return new Cell(CellAffinity.INT);
+            if (C.Affinity != CellAffinity.DATE_TIME) return new Cell(CellAffinity.INT);
             return new Cell(C.valueDATE.Second);
         }
 
@@ -802,7 +1354,7 @@ namespace Pulse.Elements
         /// <returns>An integer cell</returns>
         public static Cell Millisecond(Cell C)
         {
-            if (C.Affinity != CellAffinity.DATE) return new Cell(CellAffinity.INT);
+            if (C.Affinity != CellAffinity.DATE_TIME) return new Cell(CellAffinity.INT);
             return new Cell(C.valueDATE.Millisecond);
         }
 
@@ -815,7 +1367,7 @@ namespace Pulse.Elements
         public static Cell AddTicks(Cell C, Cell Ticks)
         {
 
-            if (C.AFFINITY != CellAffinity.DATE)
+            if (C.AFFINITY != CellAffinity.DATE_TIME)
                 return CellValues.NullDATE;
 
             C.LONG += Ticks.LONG;
@@ -831,7 +1383,8 @@ namespace Pulse.Elements
         /// <returns>Cell with a stirng affinity</returns>
         public static Cell Trim(Cell C)
         {
-            return new Cell(C.valueSTRING.Trim());
+            if (C.IsNull) return C;
+            return (C.Affinity == CellAffinity.BSTRING ? new Cell(C.valueBSTRING.Trim()) : new Cell(C.valueCSTRING.Trim()));
         }
 
         /// <summary>
@@ -841,7 +1394,8 @@ namespace Pulse.Elements
         /// <returns>Cell with a stirng affinity</returns>
         public static Cell ToUpper(Cell C)
         {
-            return new Cell(C.valueSTRING.ToUpper());
+            if (C.IsNull) return C;
+            return (C.Affinity == CellAffinity.BSTRING ? new Cell(C.valueBSTRING.ToUpper()) : new Cell(C.valueCSTRING.ToUpper()));
         }
 
         /// <summary>
@@ -851,30 +1405,31 @@ namespace Pulse.Elements
         /// <returns>Cell with a stirng affinity</returns>
         public static Cell ToLower(Cell C)
         {
-            return new Cell(C.valueSTRING.ToLower());
+            if (C.IsNull) return C;
+            return (C.Affinity == CellAffinity.BSTRING ? new Cell(C.valueBSTRING.ToLower()) : new Cell(C.valueCSTRING.ToLower()));
         }
 
         /// <summary>
         /// Returns all characters/bytes left of given point
         /// </summary>
-        /// <param name="C">The string or BLOB Value</param>
+        /// <param name="C">The string or BINARY Value</param>
         /// <param name="Length">The maximum number of chars/bytes</param>
         /// <returns>A string or blob cell</returns>
         public static Cell Left(Cell C, long Length)
         {
-            int len = Math.Min(C.AFFINITY == CellAffinity.BLOB ? C.BLOB.Length : C.valueSTRING.Length, (int)Length);
+            int len = Math.Min(C.AFFINITY == CellAffinity.BINARY ? C.BINARY.Length : C.valueCSTRING.Length, (int)Length);
             return CellFunctions.Substring(C, 0, len);
         }
 
         /// <summary>
         /// Returns all characters/bytes right of given point
         /// </summary>
-        /// <param name="C">The string or BLOB Value</param>
+        /// <param name="C">The string or BINARY Value</param>
         /// <param name="Length">The maximum number of chars/bytes</param>
         /// <returns>A string or blob cell</returns>
         public static Cell Right(Cell C, long Length)
         {
-            int l = C.AFFINITY == CellAffinity.BLOB ? C.BLOB.Length : C.valueSTRING.Length;
+            int l = C.AFFINITY == CellAffinity.BINARY ? C.BINARY.Length : C.valueCSTRING.Length;
             int begin = Math.Max(l - (int)Length, 0);
             int len = (int)Length;
             if (begin + Length > l) len = l - begin;
@@ -889,7 +1444,7 @@ namespace Pulse.Elements
         /// <returns>Cell with boolean type</returns>
         public static Cell Contains(Cell Source, Cell Check)
         {
-            return new Cell(Source.valueSTRING.Contains(Check.valueSTRING));
+            return new Cell(Source.valueCSTRING.Contains(Check.valueCSTRING));
         }
 
         /// <summary>
@@ -902,32 +1457,32 @@ namespace Pulse.Elements
         public static Cell Substring(Cell C, long Position, long Length)
         {
 
-            if (C.AFFINITY == CellAffinity.BLOB)
+            if (C.AFFINITY == CellAffinity.BINARY)
             {
-                if (Position + Length > C.BLOB.Length || Position < 0 || Length < 0)
+                if (Position + Length > C.BINARY.Length || Position < 0 || Length < 0)
                     return CellValues.NullBLOB;
                 byte[] b = new byte[Length];
-                Array.Copy(C.BLOB, Position, b, 0, Length);
-                C.BLOB = b;
+                Array.Copy(C.BINARY, Position, b, 0, Length);
+                C.BINARY = b;
                 return C;
             }
-            else if (C.AFFINITY == CellAffinity.TEXT)
+            else if (C.AFFINITY == CellAffinity.BSTRING)
             {
-                if (Position + Length > C.valueSTRING.Length || Position < 0 || Length < 0)
-                    return CellValues.NullTEXT;
-                return new Cell(C.valueSTRING.Substring((int)Position, (int)Length), true);
+                if (Position + Length > C.valueBSTRING.Length || Position < 0 || Length < 0)
+                    return CellValues.NullBSTRING;
+                return new Cell(C.valueBSTRING.Substring((int)Position, (int)Length));
             }
             else
             {
-                if (Position + Length > C.valueSTRING.Length || Position < 0 || Length < 0)
-                    return CellValues.NullSTRING;
-                return new Cell(C.valueSTRING.Substring((int)Position, (int)Length), false);
+                if (Position + Length > C.valueCSTRING.Length || Position < 0 || Length < 0)
+                    return CellValues.NullCSTRING;
+                return new Cell(C.valueCSTRING.Substring((int)Position, (int)Length), false);
             }
 
         }
 
         /// <summary>
-        /// Replaces all occurances of a string/BLOB Value with another string/BLOB Value
+        /// Replaces all occurances of a string/BINARY Value with another string/BINARY Value
         /// </summary>
         /// <param name="Source">The string to be searched</param>
         /// <param name="LookFor">The string being searched for</param>
@@ -936,23 +1491,33 @@ namespace Pulse.Elements
         public static Cell Replace(Cell Source, Cell LookFor, Cell ReplaceWith)
         {
 
-            if (Source.AFFINITY == CellAffinity.BOOL || Source.AFFINITY == CellAffinity.DATE
-                || Source.AFFINITY == CellAffinity.DOUBLE || Source.AFFINITY == CellAffinity.LONG)
-                return new Cell(Source.AFFINITY);
+            if (CellAffinityHelper.IsVariableLength(Source.Affinity)) return new Cell(Source.AFFINITY);
 
-            if (!(Source.AFFINITY == CellAffinity.BLOB && LookFor.AFFINITY == CellAffinity.BLOB && ReplaceWith.AFFINITY == CellAffinity.BLOB))
+            if (!(Source.AFFINITY == CellAffinity.BINARY && LookFor.AFFINITY == CellAffinity.BINARY && ReplaceWith.AFFINITY == CellAffinity.BINARY))
             {
-                Source.STRING = Source.valueSTRING.Replace(LookFor.valueSTRING, ReplaceWith.valueSTRING);
-                Source.AFFINITY = CellAffinity.STRING;
-                Source.ULONG = 0;
-                return Source;
+
+                if (Source.Affinity == CellAffinity.BSTRING)
+                {
+                    Source.BSTRING = Source.valueBSTRING.Replace(LookFor.valueBSTRING, ReplaceWith.valueBSTRING);
+                    Source.AFFINITY = CellAffinity.BSTRING;
+                    Source.ULONG = 0;
+                    return Source;
+                }
+                else
+                {
+                    Source.CSTRING = Source.valueCSTRING.Replace(LookFor.valueCSTRING, ReplaceWith.valueCSTRING);
+                    Source.AFFINITY = CellAffinity.CSTRING;
+                    Source.ULONG = 0;
+                    return Source;
+                }
+
             }
 
-            string t = BitConverter.ToString(Source.BLOB);
-            string u = BitConverter.ToString(LookFor.BLOB);
-            string v = BitConverter.ToString(ReplaceWith.BLOB);
+            string t = BitConverter.ToString(Source.BINARY);
+            string u = BitConverter.ToString(LookFor.BINARY);
+            string v = BitConverter.ToString(ReplaceWith.BINARY);
             t = t.Replace(u, v).Replace("-", "");
-            Source.BLOB = CellParser.Parse(t, CellAffinity.BLOB).BLOB;
+            Source.BINARY = CellParser.Parse(t, CellAffinity.BINARY).BINARY;
             return Source;
 
         }
@@ -973,19 +1538,27 @@ namespace Pulse.Elements
             if (StartAt > CellSerializer.Length(Source))
                 return CellValues.NullINT;
 
-            if (Source.AFFINITY == CellAffinity.STRING)
+            if (Source.AFFINITY == CellAffinity.CSTRING)
             {
-                int idx = Source.STRING.IndexOf(Pattern.valueSTRING, StartAt);
+                int idx = Source.CSTRING.IndexOf(Pattern.valueCSTRING, StartAt);
                 if (idx == -1)
                     return CellValues.NullINT;
-                return new Cell(Source.STRING.IndexOf(Pattern.valueSTRING, StartAt));
+                return new Cell(Source.CSTRING.IndexOf(Pattern.valueCSTRING, StartAt));
             }
 
-            if (Source.AFFINITY == CellAffinity.BLOB)
+            if (Source.AFFINITY == CellAffinity.BSTRING)
+            {
+                int idx = Source.BSTRING.Find(Pattern.valueBSTRING, StartAt);
+                if (idx == -1)
+                    return CellValues.NullINT;
+                return new Cell(Source.BSTRING.Find(Pattern.valueBSTRING, StartAt));
+            }
+
+            if (Source.AFFINITY == CellAffinity.BINARY)
             {
 
-                byte[] data = Source.BLOB;
-                byte[] pattern = Pattern.valueBLOB;
+                byte[] data = Source.BINARY;
+                byte[] pattern = Pattern.valueBINARY;
                 bool match = false;
                 for (int i = StartAt; i < data.Length; i++)
                 {
@@ -1018,8 +1591,6 @@ namespace Pulse.Elements
             return CellValues.NullINT;
 
         }
-
-
 
         /// <summary>
         /// Converts a byte array to a string using UTF16 encoding
@@ -1108,8 +1679,25 @@ namespace Pulse.Elements
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="M"></param>
+        /// <param name="F"></param>
+        /// <returns></returns>
+        public static CellMatrix Shadow(CellMatrix M, Func<Cell, Cell> F)
+        {
+            CellMatrix X = M.Shell();
+            for (int i = 0; i < M.RowCount; i++)
+            {
+                for (int j = 0; j < M.ColumnCount; j++)
+                {
+                    X[i, j] = F(M[i, j]);
+                }
+            }
+            return X;
+        }
 
     }
-
 
 }

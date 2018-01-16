@@ -31,7 +31,7 @@ namespace Pulse.Expressions.ScalarExpressions
         // Overrides //
         public override string Unparse(FieldResolver Variants)
         {
-            return this._Value.valueSTRING;
+            return this._Value.valueCSTRING;
         }
 
         public override ScalarExpression CloneOfMe()

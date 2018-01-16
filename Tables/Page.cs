@@ -928,8 +928,8 @@ namespace Pulse.Tables
                             Location++;
                         }
 
-                        // BLOB //
-                        else if (a == CellAffinity.BLOB)
+                        // BINARY //
+                        else if (a == CellAffinity.BINARY)
                         {
 
                             C.B4 = Buffer[Location];
@@ -947,8 +947,8 @@ namespace Pulse.Tables
 
                         }
 
-                        // STRING //
-                        else if (a == CellAffinity.STRING)
+                        // CSTRING //
+                        else if (a == CellAffinity.CSTRING)
                         {
 
                             C.B4 = Buffer[Location];
@@ -1108,41 +1108,41 @@ namespace Pulse.Tables
                             Location++;
                         }
 
-                        // BLOB //
-                        else if (C.AFFINITY == CellAffinity.BLOB)
+                        // BINARY //
+                        else if (C.AFFINITY == CellAffinity.BINARY)
                         {
 
-                            C.INT_B = C.BLOB.Length;
+                            C.INT_B = C.BINARY.Length;
                             Buffer[Location] = (C.B4);
                             Buffer[Location + 1] = (C.B5);
                             Buffer[Location + 2] = (C.B6);
                             Buffer[Location + 3] = (C.B7);
                             Location += 4;
 
-                            for (int i = 0; i < C.BLOB.Length; i++)
+                            for (int i = 0; i < C.BINARY.Length; i++)
                             {
-                                Buffer[Location + i] = C.BLOB[i];
+                                Buffer[Location + i] = C.BINARY[i];
                             }
 
-                            Location += C.BLOB.Length;
+                            Location += C.BINARY.Length;
 
                         }
 
-                        // STRING //
-                        else if (C.AFFINITY == CellAffinity.STRING)
+                        // CSTRING //
+                        else if (C.AFFINITY == CellAffinity.CSTRING)
                         {
 
-                            C.INT_B = C.STRING.Length;
+                            C.INT_B = C.CSTRING.Length;
                             Buffer[Location] = (C.B4);
                             Buffer[Location + 1] = (C.B5);
                             Buffer[Location + 2] = (C.B6);
                             Buffer[Location + 3] = (C.B7);
                             Location += 4;
 
-                            for (int i = 0; i < C.STRING.Length; i++)
+                            for (int i = 0; i < C.CSTRING.Length; i++)
                             {
-                                byte c1 = (byte)(C.STRING[i] >> 8);
-                                byte c2 = (byte)(C.STRING[i] & 255);
+                                byte c1 = (byte)(C.CSTRING[i] >> 8);
+                                byte c2 = (byte)(C.CSTRING[i] & 255);
                                 Buffer[Location] = c1;
                                 Location++;
                                 Buffer[Location] = c2;

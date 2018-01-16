@@ -27,18 +27,18 @@ namespace Pulse.Elements
                     return NullINT;
                 case CellAffinity.LONG:
                     return NullLONG;
-                case CellAffinity.FLOAT:
-                    return NullFLOAT;
+                case CellAffinity.SINGLE:
+                    return NullSINGLE;
                 case CellAffinity.DOUBLE:
                     return NullDOUBLE;
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                     return NullDATE;
-                case CellAffinity.BLOB:
+                case CellAffinity.BINARY:
                     return NullBLOB;
-                case CellAffinity.TEXT:
-                    return NullTEXT;
-                case CellAffinity.STRING:
-                    return NullSTRING;
+                case CellAffinity.BSTRING:
+                    return NullBSTRING;
+                case CellAffinity.CSTRING:
+                    return NullCSTRING;
 
             }
 
@@ -60,18 +60,18 @@ namespace Pulse.Elements
                     return ZeroINT;
                 case CellAffinity.LONG:
                     return ZeroLONG;
-                case CellAffinity.FLOAT:
-                    return ZeroFLOAT;
+                case CellAffinity.SINGLE:
+                    return ZeroSINGLE;
                 case CellAffinity.DOUBLE:
                     return ZeroDOUBLE;
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                     return ZeroDATE;
-                case CellAffinity.BLOB:
+                case CellAffinity.BINARY:
                     return ZeroBLOB;
-                case CellAffinity.TEXT:
-                    return ZeroTEXT;
-                case CellAffinity.STRING:
-                    return ZeroSTRING;
+                case CellAffinity.BSTRING:
+                    return ZeroBSTRING;
+                case CellAffinity.CSTRING:
+                    return ZeroCSTRING;
 
             }
 
@@ -93,18 +93,18 @@ namespace Pulse.Elements
                     return OneINT;
                 case CellAffinity.LONG:
                     return OneLONG;
-                case CellAffinity.FLOAT:
-                    return OneFLOAT;
+                case CellAffinity.SINGLE:
+                    return OneSINGLE;
                 case CellAffinity.DOUBLE:
                     return OneDOUBLE;
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                     return OneDATE;
-                case CellAffinity.BLOB:
+                case CellAffinity.BINARY:
                     return OneBLOB;
-                case CellAffinity.TEXT:
-                    return OneTEXT;
-                case CellAffinity.STRING:
-                    return OneSTRING;
+                case CellAffinity.BSTRING:
+                    return OneBSTRING;
+                case CellAffinity.CSTRING:
+                    return OneCSTRING;
 
             }
 
@@ -126,18 +126,18 @@ namespace Pulse.Elements
                     return MinINT;
                 case CellAffinity.LONG:
                     return MinLONG;
-                case CellAffinity.FLOAT:
-                    return MinFLOAT;
+                case CellAffinity.SINGLE:
+                    return MinSINGLE;
                 case CellAffinity.DOUBLE:
                     return MinDOUBLE;
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                     return MinDATE;
-                case CellAffinity.BLOB:
+                case CellAffinity.BINARY:
                     return MinBLOB;
-                case CellAffinity.TEXT:
-                    return MinTEXT;
-                case CellAffinity.STRING:
-                    return MinSTRING;
+                case CellAffinity.BSTRING:
+                    return MinBSTRING;
+                case CellAffinity.CSTRING:
+                    return MinCSTRING;
 
             }
 
@@ -159,18 +159,18 @@ namespace Pulse.Elements
                     return MaxINT;
                 case CellAffinity.LONG:
                     return MaxLONG;
-                case CellAffinity.FLOAT:
-                    return MaxFLOAT;
+                case CellAffinity.SINGLE:
+                    return MaxSINGLE;
                 case CellAffinity.DOUBLE:
                     return MaxDOUBLE;
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                     return MaxDATE;
-                case CellAffinity.BLOB:
+                case CellAffinity.BINARY:
                     return MaxBLOB;
-                case CellAffinity.TEXT:
-                    return MaxTEXT;
-                case CellAffinity.STRING:
-                    return MaxSTRING;
+                case CellAffinity.BSTRING:
+                    return MaxBSTRING;
+                case CellAffinity.CSTRING:
+                    return MaxCSTRING;
 
             }
 
@@ -192,18 +192,18 @@ namespace Pulse.Elements
                     return EmptyINT;
                 case CellAffinity.LONG:
                     return EmptyLONG;
-                case CellAffinity.FLOAT:
-                    return EmptyFLOAT;
+                case CellAffinity.SINGLE:
+                    return EmptySINGLE;
                 case CellAffinity.DOUBLE:
                     return EmptyDOUBLE;
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                     return EmptyDATE;
-                case CellAffinity.BLOB:
+                case CellAffinity.BINARY:
                     return EmptyBLOB;
-                case CellAffinity.TEXT:
-                    return EmptyTEXT;
-                case CellAffinity.STRING:
-                    return EmptySTRING;
+                case CellAffinity.BSTRING:
+                    return EmptyBSTRING;
+                case CellAffinity.CSTRING:
+                    return EmptyCSTRING;
 
             }
 
@@ -251,13 +251,13 @@ namespace Pulse.Elements
         public static Cell MaxLONG = new Cell(long.MaxValue);
         public static Cell EmptyLONG = new Cell((long)0);
 
-        // FLOAT
-        public static Cell NullFLOAT = new Cell(CellAffinity.FLOAT);
-        public static Cell ZeroFLOAT = new Cell((float)0);
-        public static Cell OneFLOAT = new Cell((float)1);
-        public static Cell MinFLOAT = new Cell(float.MinValue);
-        public static Cell MaxFLOAT = new Cell(float.MaxValue);
-        public static Cell EmptyFLOAT = new Cell((float)0);
+        // SINGLE
+        public static Cell NullSINGLE = new Cell(CellAffinity.SINGLE);
+        public static Cell ZeroSINGLE = new Cell((float)0);
+        public static Cell OneSINGLE = new Cell((float)1);
+        public static Cell MinSINGLE = new Cell(float.MinValue);
+        public static Cell MaxSINGLE = new Cell(float.MaxValue);
+        public static Cell EmptySINGLE = new Cell((float)0);
 
         // DOUBLE
         public static Cell NullDOUBLE = new Cell(CellAffinity.DOUBLE);
@@ -267,37 +267,37 @@ namespace Pulse.Elements
         public static Cell MaxDOUBLE = new Cell(double.MaxValue);
         public static Cell EmptyDOUBLE = new Cell((double)0);
 
-        // DATE
-        public static Cell NullDATE = new Cell(CellAffinity.DATE);
+        // DATE_TIME
+        public static Cell NullDATE = new Cell(CellAffinity.DATE_TIME);
         public static Cell ZeroDATE = new Cell(DateTime.MinValue);
         public static Cell OneDATE = new Cell(DateTime.MaxValue);
         public static Cell MinDATE = new Cell(DateTime.MinValue);
         public static Cell MaxDATE = new Cell(DateTime.MaxValue);
         public static Cell EmptyDATE = new Cell(DateTime.MinValue);
 
-        // BLOB
-        public static Cell NullBLOB = new Cell(CellAffinity.BLOB);
+        // BINARY
+        public static Cell NullBLOB = new Cell(CellAffinity.BINARY);
         public static Cell ZeroBLOB = new Cell(new byte[1] { 0 });
         public static Cell OneBLOB = new Cell(new byte[1] { 1 });
         public static Cell MinBLOB = new Cell(new byte[0] { });
         public static Cell MaxBLOB = new Cell(System.Text.ASCIIEncoding.UTF8.GetBytes(new string(char.MaxValue, 2048)));
         public static Cell EmptyBLOB = new Cell(new byte[0] { });
 
-        // STRING
-        public static Cell NullSTRING = new Cell(CellAffinity.STRING);
-        public static Cell ZeroSTRING = new Cell("ZERO");
-        public static Cell OneSTRING = new Cell("ONE");
-        public static Cell MinSTRING = new Cell("");
-        public static Cell MaxSTRING = new Cell(new string(char.MaxValue, 4096));
-        public static Cell EmptySTRING = new Cell("");
+        // CSTRING
+        public static Cell NullCSTRING = new Cell(CellAffinity.CSTRING);
+        public static Cell ZeroCSTRING = new Cell("ZERO");
+        public static Cell OneCSTRING = new Cell("ONE");
+        public static Cell MinCSTRING = new Cell("");
+        public static Cell MaxCSTRING = new Cell(new string(char.MaxValue, 4096));
+        public static Cell EmptyCSTRING = new Cell("");
 
-        // TEXT
-        public static Cell NullTEXT = new Cell(CellAffinity.TEXT);
-        public static Cell ZeroTEXT = new Cell(("ZERO"));
-        public static Cell OneTEXT = new Cell("ONE");
-        public static Cell MinTEXT = new Cell("");
-        public static Cell MaxTEXT = new Cell(new string((char)byte.MaxValue, 4096));
-        public static Cell EmptyTEXT = new Cell("");
+        // BSTRING
+        public static Cell NullBSTRING = new Cell(CellAffinity.BSTRING);
+        public static Cell ZeroBSTRING = new Cell(new BString("ZERO"));
+        public static Cell OneBSTRING = new Cell(new BString("ONE"));
+        public static Cell MinBSTRING = new Cell(BString.Empty);
+        public static Cell MaxBSTRING = new Cell(new BString(255, 4096));
+        public static Cell EmptyBSTRING = new Cell(BString.Empty);
 
         // Special Values //
         public static Cell Pi = new Cell(Math.PI);

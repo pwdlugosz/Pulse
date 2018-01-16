@@ -181,7 +181,11 @@ namespace Pulse.Libraries
         public const string SMIN = "SMIN";
         public const string SMAX = "SMAX";
         public const string COALESCE = "COALESCE";
-        private static readonly string[] ScalarFunctionNames = { SUBSTR, REPLACE, FIND, TRIM, LENGTHOF, TYPEOF, SIZEOF, NAMEOF, ROW_COUNT, COLUMN_COUNT, GUID, SSUM, SMIN, SMAX, COALESCE };
+        public const string DENSEA = "DENSEA";
+        public const string DENSEB = "DENSEB";
+        public const string DENSE = "DENSE";
+        public const string MATCH = "MATCH";
+        private static readonly string[] ScalarFunctionNames = { SUBSTR, REPLACE, FIND, TRIM, LENGTHOF, TYPEOF, SIZEOF, NAMEOF, ROW_COUNT, COLUMN_COUNT, GUID, SSUM, SMIN, SMAX, COALESCE, DENSEA, DENSEB, DENSE, MATCH };
 
         public const string SPLIT = "SPLIT";
         public const string SPLICE = "SPLICE";
@@ -246,6 +250,10 @@ namespace Pulse.Libraries
                 case SMIN: return new sfSMIN(this._Host);
                 case SMAX: return new sfSMAX(this._Host);
                 case COALESCE: return new sfCOALESCE(this._Host);
+                case DENSEA: return new sfDENSEA(this._Host);
+                case DENSEB: return new sfDENSEB(this._Host);
+                case DENSE: return new sfDENSE(this._Host);
+                case MATCH: return new sfMATCH(this._Host);
             }
 
             throw new Exception(string.Format("Scalar function '{0}' does not exist", Name));
@@ -253,7 +261,20 @@ namespace Pulse.Libraries
 
         public override MatrixExpressionFunction MatrixFunctionLookup(string Name)
         {
+
+            switch (Name.ToUpper())
+            {
+                case SPLIT:
+                    return new mfSPLIT();
+                case SPLICE:
+                    return new mfSPLICE();
+                case BYTES:
+                    return new mfBYTES();
+                case CHARS:
+                    return new mfCHARS();
+            }
             throw new Exception(string.Format("Matrix function '{0}' does not exist", Name));
+
         }
 
         public override RecordExpressionFunction RecordFunctionLookup(string Name)
@@ -283,7 +304,7 @@ namespace Pulse.Libraries
             private int _Size = 0;
 
             public mfSPLIT()
-                : base(null, SPLIT, -3, CellAffinity.STRING)
+                : base(null, SPLIT, -2, CellAffinity.CSTRING)
             {
 
             }
@@ -307,16 +328,16 @@ namespace Pulse.Libraries
                 if (!x)
                     throw new Exception("This function requires all scalars");
 
-                string val = this._Parameters[0].Scalar.Evaluate(Variant).valueSTRING;
-                string delims = this._Parameters[1].Scalar.Evaluate(Variant).valueSTRING;
-                char escape = (this._Parameters.Count > 2 ? this._Parameters[2].Scalar.Evaluate(Variant).valueSTRING.FirstOrDefault() : char.MaxValue);
+                string val = this._Parameters[0].Scalar.Evaluate(Variant).valueCSTRING;
+                string delims = this._Parameters[1].Scalar.Evaluate(Variant).valueCSTRING;
+                char escape = (this._Parameters.Count > 2 ? this._Parameters[2].Scalar.Evaluate(Variant).valueCSTRING.FirstOrDefault() : char.MaxValue);
 
                 string[] s = Util.StringUtil.Split(val, delims.ToCharArray(), escape);
-                this._Size = s.Length;
-                CellMatrix c = new CellMatrix(s.Length, 1, CellAffinity.STRING, s.Max((t) => { return t.Length;}));
+                this._Size = val.Length;
+                CellMatrix c = new CellMatrix(s.Length, 1, CellAffinity.CSTRING, s.Max((t) => { return t.Length;}));
                 for (int i = 0; i < s.Length; i++)
                 {
-                    c[i, 0] = new Cell(s[i]);
+                    c[i, 0] = new Cell(s[i], false);
                 }
 
                 return c;
@@ -331,7 +352,7 @@ namespace Pulse.Libraries
             private int _Size = 0;
 
             public mfSPLICE()
-                : base(null, SPLICE, 2, CellAffinity.STRING)
+                : base(null, SPLICE, 2, CellAffinity.CSTRING)
             {
 
             }
@@ -354,7 +375,7 @@ namespace Pulse.Libraries
                 if (this._Parameters[0].Affinity != ParameterAffinity.Scalar || this._Parameters[1].Affinity != ParameterAffinity.Matrix)
                     throw new Exception("This functions requires a scalar and a matrix");
 
-                string s = this._Parameters[0].Scalar.Evaluate(Variant).valueSTRING;
+                string s = this._Parameters[0].Scalar.Evaluate(Variant).valueCSTRING;
                 CellMatrix m = this._Parameters[1].Matrix.Evaluate(Variant);
                 List<int> indexes = new List<int>();
                 foreach (Cell c in m)
@@ -365,7 +386,7 @@ namespace Pulse.Libraries
 
                 string[] q = Util.StringUtil.Splice(s, indexes.ToArray());
                 this._Size = s.Length;
-                CellMatrix v = new CellMatrix(q.Length, 1, CellAffinity.STRING, q.Max((t) => { return t.Length; }));
+                CellMatrix v = new CellMatrix(q.Length, 1, CellAffinity.CSTRING, q.Max((t) => { return t.Length; }));
                 for (int i = 0; i < s.Length; i++)
                 {
                     v[i, 0] = new Cell(s[i]);
@@ -406,7 +427,7 @@ namespace Pulse.Libraries
                 if (this._Parameters[0].Affinity != ParameterAffinity.Scalar)
                     throw new Exception("This functions requires a scalar");
 
-                byte[] b = this._Parameters[0].Scalar.Evaluate(Variant).valueBLOB;
+                byte[] b = this._Parameters[0].Scalar.Evaluate(Variant).valueBINARY;
                 CellMatrix m = new CellMatrix(b.Length, 1, CellAffinity.BYTE, CellSerializer.BYTE_SIZE);
                 for (int i = 0; i < b.Length; i++)
                 {
@@ -425,7 +446,7 @@ namespace Pulse.Libraries
             private int _Size = 0;
 
             public mfCHARS()
-                : base(null, CHARS, 1, CellAffinity.STRING)
+                : base(null, CHARS, 1, CellAffinity.CSTRING)
             {
 
             }
@@ -448,8 +469,8 @@ namespace Pulse.Libraries
                 if (this._Parameters[0].Affinity != ParameterAffinity.Scalar)
                     throw new Exception("This functions requires a scalar");
 
-                char[] c = this._Parameters[0].Scalar.Evaluate(Variant).valueSTRING.ToCharArray();
-                CellMatrix m = new CellMatrix(c.Length, 1, CellAffinity.STRING, 1);
+                char[] c = this._Parameters[0].Scalar.Evaluate(Variant).valueCSTRING.ToCharArray();
+                CellMatrix m = new CellMatrix(c.Length, 1, CellAffinity.CSTRING, 1);
                 for (int i = 0; i < c.Length; i++)
                 {
                     m[i, 0] = new Cell(c[i].ToString());
@@ -740,7 +761,7 @@ namespace Pulse.Libraries
         {
 
             public sfNAMEOF(Host Host)
-                : base(Host, null, NAMEOF, 1, CellAffinity.TEXT)
+                : base(Host, null, NAMEOF, 1, CellAffinity.BSTRING)
             {
             }
 
@@ -878,7 +899,7 @@ namespace Pulse.Libraries
         {
 
             public sfGUID(Host Host)
-                : base(Host, null, GUID, 0, CellAffinity.BLOB)
+                : base(Host, null, GUID, 0, CellAffinity.BINARY)
             {
             }
 
@@ -1291,10 +1312,240 @@ namespace Pulse.Libraries
 
         }
 
+        public sealed class sfDENSEA : ScalarExpressionFunction
+        {
+
+            private int _size = 0;
+            private bool _IsRun = false;
+            private bool _IsVolitile = false;
+
+            public sfDENSEA(Host Host)
+                : base(Host, null, DENSEA, 1, CellAffinity.INT)
+            {
+            }
+
+            public override int ReturnSize()
+            {
+                return CellSerializer.INT_SIZE;
+            }
+
+            public override CellAffinity ReturnAffinity()
+            {
+                return CellAffinity.INT;
+            }
+
+            public override ScalarExpression CloneOfMe()
+            {
+                return new sfDENSEA(this._Host);
+            }
+
+            public override bool IsVolatile
+            {
+                get
+                {
+                    bool iv = false;
+                    foreach (Parameter p in this._Params)
+                    {
+                        if (p.Affinity == ParameterAffinity.Scalar)
+                        {
+                            iv = iv | p.Scalar.IsVolatile;
+                            if (iv) return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+
+            public override Cell Evaluate(Expressions.FieldResolver Variants)
+            {
+
+                if (this._Params.Count != 1 || this._Params[0].Affinity != ParameterAffinity.Scalar)
+                    throw new Exception();
+
+                Cell x = this._Params[0].Scalar.Evaluate(Variants);
+
+                return new Cell(x.INT_A);
+
+            }
+
+        }
+
+        public sealed class sfDENSEB : ScalarExpressionFunction
+        {
+
+            private int _size = 0;
+            private bool _IsRun = false;
+            private bool _IsVolitile = false;
+
+            public sfDENSEB(Host Host)
+                : base(Host, null, DENSEB, 1, CellAffinity.INT)
+            {
+            }
+
+            public override int ReturnSize()
+            {
+                return CellSerializer.INT_SIZE;
+            }
+
+            public override CellAffinity ReturnAffinity()
+            {
+                return CellAffinity.INT;
+            }
+
+            public override ScalarExpression CloneOfMe()
+            {
+                return new sfDENSEB(this._Host);
+            }
+
+            public override bool IsVolatile
+            {
+                get
+                {
+                    bool iv = false;
+                    foreach (Parameter p in this._Params)
+                    {
+                        if (p.Affinity == ParameterAffinity.Scalar)
+                        {
+                            iv = iv | p.Scalar.IsVolatile;
+                            if (iv) return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+
+            public override Cell Evaluate(Expressions.FieldResolver Variants)
+            {
+
+                if (this._Params.Count != 1 || this._Params[0].Affinity != ParameterAffinity.Scalar)
+                    throw new Exception();
+
+                Cell x = this._Params[0].Scalar.Evaluate(Variants);
+
+                return new Cell(x.INT_B);
+
+            }
+
+        }
+
+        public sealed class sfDENSE : ScalarExpressionFunction
+        {
+
+            private int _size = 0;
+            private bool _IsRun = false;
+            private bool _IsVolitile = false;
+
+            public sfDENSE(Host Host)
+                : base(Host, null, DENSE, 2, CellAffinity.LONG)
+            {
+            }
+
+            public override int ReturnSize()
+            {
+                return CellSerializer.LONG_SIZE;
+            }
+
+            public override CellAffinity ReturnAffinity()
+            {
+                return CellAffinity.LONG;
+            }
+
+            public override ScalarExpression CloneOfMe()
+            {
+                return new sfDENSEB(this._Host);
+            }
+
+            public override bool IsVolatile
+            {
+                get
+                {
+                    bool iv = false;
+                    foreach (Parameter p in this._Params)
+                    {
+                        if (p.Affinity == ParameterAffinity.Scalar)
+                        {
+                            iv = iv | p.Scalar.IsVolatile;
+                            if (iv) return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+
+            public override Cell Evaluate(Expressions.FieldResolver Variants)
+            {
+
+                if (this._Params.Count != 2 || this._Params[0].Affinity != ParameterAffinity.Scalar || this._Params[1].Affinity != ParameterAffinity.Scalar)
+                    throw new Exception();
+
+                Cell x = this._Params[0].Scalar.Evaluate(Variants);
+                Cell y = this._Params[1].Scalar.Evaluate(Variants);
+
+                return new Cell(x.valueINT, y.valueINT);
+
+            }
+
+        }
+
+        public sealed class sfMATCH : ScalarExpressionFunction
+        {
+
+            public sfMATCH(Host Host)
+                : base(Host, null, MATCH, 2, CellAffinity.LONG)
+            {
+            }
+
+            public override int ReturnSize()
+            {
+                return CellSerializer.LONG_SIZE;
+            }
+
+            public override CellAffinity ReturnAffinity()
+            {
+                return CellAffinity.LONG;
+            }
+
+            public override ScalarExpression CloneOfMe()
+            {
+                return new sfDENSEB(this._Host);
+            }
+
+            public override bool IsVolatile
+            {
+                get
+                {
+                    bool iv = false;
+                    foreach (Parameter p in this._Params)
+                    {
+                        if (p.Affinity == ParameterAffinity.Scalar)
+                        {
+                            iv = iv | p.Scalar.IsVolatile;
+                            if (iv) return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+
+            public override Cell Evaluate(Expressions.FieldResolver Variants)
+            {
+
+                if (this._Params.Count != 2 || this._Params[0].Affinity != ParameterAffinity.Scalar || this._Params[1].Affinity != ParameterAffinity.Matrix)
+                    throw new Exception();
+
+                Cell x = this._Params[0].Scalar.Evaluate(Variants);
+                CellMatrix y = this._Params[1].Matrix.Evaluate(Variants);
+
+                return y.Match(x);
+
+            }
+
+
+        }
 
     }
 
-    public sealed class DateLibrary : Library
+    public sealed class ChronoLibrary : Library
     {
 
         public enum DatePart : byte
@@ -1332,11 +1583,10 @@ namespace Pulse.Libraries
         public readonly string[] RecordNames = { NOW, NOWD, NOWT };
         public readonly string[] TableNames = { };
 
-        public DateLibrary(Host Host)
-            : base(Host, "DATE")
+        public ChronoLibrary(Host Host)
+            : base(Host, "CHRONO")
         {
         }
-
 
         public override bool ActionExists(string Name)
         {
@@ -1434,7 +1684,7 @@ namespace Pulse.Libraries
         {
 
             public sfNOW(Host Host)
-                : base(Host, null, NOW, 0, CellAffinity.DATE)
+                : base(Host, null, NOW, 0, CellAffinity.DATE_TIME)
             {
             }
 
@@ -1457,7 +1707,7 @@ namespace Pulse.Libraries
         {
 
             public sfNOWD(Host Host)
-                : base(Host, null, NOWD, 0, CellAffinity.DATE)
+                : base(Host, null, NOWD, 0, CellAffinity.DATE_TIME)
             {
             }
 
@@ -1510,7 +1760,7 @@ namespace Pulse.Libraries
             public override Cell Evaluate(FieldResolver Variants)
             {
                 Cell c = this._ChildNodes[0].Evaluate(Variants);
-                if (c.IsNull || c.Affinity != CellAffinity.DATE)
+                if (c.IsNull || c.Affinity != CellAffinity.DATE_TIME)
                     return CellValues.NullINT;
                 return new Cell(c.valueDATE.Year);
             }
@@ -1528,7 +1778,7 @@ namespace Pulse.Libraries
             public override Cell Evaluate(FieldResolver Variants)
             {
                 Cell c = this._ChildNodes[0].Evaluate(Variants);
-                if (c.IsNull || c.Affinity != CellAffinity.DATE)
+                if (c.IsNull || c.Affinity != CellAffinity.DATE_TIME)
                     return CellValues.NullINT;
                 return new Cell(c.valueDATE.Month);
             }
@@ -1546,7 +1796,7 @@ namespace Pulse.Libraries
             public override Cell Evaluate(FieldResolver Variants)
             {
                 Cell c = this._ChildNodes[0].Evaluate(Variants);
-                if (c.IsNull || c.Affinity != CellAffinity.DATE)
+                if (c.IsNull || c.Affinity != CellAffinity.DATE_TIME)
                     return CellValues.NullINT;
                 return new Cell(c.valueDATE.Day);
             }
@@ -1564,7 +1814,7 @@ namespace Pulse.Libraries
             public override Cell Evaluate(FieldResolver Variants)
             {
                 Cell c = this._ChildNodes[0].Evaluate(Variants);
-                if (c.IsNull || c.Affinity != CellAffinity.DATE)
+                if (c.IsNull || c.Affinity != CellAffinity.DATE_TIME)
                     return CellValues.NullINT;
                 return new Cell(c.valueDATE.Hour);
             }
@@ -1582,7 +1832,7 @@ namespace Pulse.Libraries
             public override Cell Evaluate(FieldResolver Variants)
             {
                 Cell c = this._ChildNodes[0].Evaluate(Variants);
-                if (c.IsNull || c.Affinity != CellAffinity.DATE)
+                if (c.IsNull || c.Affinity != CellAffinity.DATE_TIME)
                     return CellValues.NullINT;
                 return new Cell(c.valueDATE.Minute);
             }
@@ -1600,7 +1850,7 @@ namespace Pulse.Libraries
             public override Cell Evaluate(FieldResolver Variants)
             {
                 Cell c = this._ChildNodes[0].Evaluate(Variants);
-                if (c.IsNull || c.Affinity != CellAffinity.DATE)
+                if (c.IsNull || c.Affinity != CellAffinity.DATE_TIME)
                     return CellValues.NullINT;
                 return new Cell(c.valueDATE.Second);
             }
@@ -1618,7 +1868,7 @@ namespace Pulse.Libraries
             public override Cell Evaluate(FieldResolver Variants)
             {
                 Cell c = this._ChildNodes[0].Evaluate(Variants);
-                if (c.IsNull || c.Affinity != CellAffinity.DATE)
+                if (c.IsNull || c.Affinity != CellAffinity.DATE_TIME)
                     return CellValues.NullINT;
                 return new Cell(c.valueDATE.Millisecond);
             }
@@ -1629,7 +1879,7 @@ namespace Pulse.Libraries
         {
 
             public sfBUILD(Host Host)
-                : base(Host, null, BUILD, -7, CellAffinity.DATE)
+                : base(Host, null, BUILD, -7, CellAffinity.DATE_TIME)
             {
             }
 
@@ -1661,7 +1911,7 @@ namespace Pulse.Libraries
         {
 
             public sfADD(Host Host)
-                : base(Host, null, ADD, 3, CellAffinity.DATE)
+                : base(Host, null, ADD, 3, CellAffinity.DATE_TIME)
             {
                 
             }
@@ -1676,7 +1926,7 @@ namespace Pulse.Libraries
 
                 DateTime dt = this._Params[0].Scalar.Evaluate(Variants).valueDATE;
                 int val = this._Params[1].Scalar.Evaluate(Variants).valueINT;
-                DatePart dp = DateLibrary.ImputeDatePart(this._Params[2].Scalar.Evaluate(Variants));
+                DatePart dp = ChronoLibrary.ImputeDatePart(this._Params[2].Scalar.Evaluate(Variants));
 
                 switch (dp)
                 {
@@ -1722,7 +1972,7 @@ namespace Pulse.Libraries
 
                 Cell a = this._Params[0].Scalar.Evaluate(Variants);
                 Cell b = this._Params[1].Scalar.Evaluate(Variants);
-                if (a.IsNull || b.IsNull || a.Affinity != CellAffinity.DATE || b.Affinity != CellAffinity.DATE)
+                if (a.IsNull || b.IsNull || a.Affinity != CellAffinity.DATE_TIME || b.Affinity != CellAffinity.DATE_TIME)
                     return CellValues.NullLONG;
                 return new Cell((a.valueDATE - b.valueDATE).Ticks);
 
@@ -1789,7 +2039,7 @@ namespace Pulse.Libraries
         {
 
             public sfDATE_STRING(Host Host)
-                : base(Host, null, DATE_STRING, 1, CellAffinity.TEXT)
+                : base(Host, null, DATE_STRING, 1, CellAffinity.BSTRING)
             {
 
             }
@@ -1804,7 +2054,7 @@ namespace Pulse.Libraries
 
                 Cell a = this._Params[0].Scalar.Evaluate(Variants);
                 if (a.IsNull)
-                    return CellValues.NullTEXT;
+                    return CellValues.NullBSTRING;
                 DateTime dt = a.valueDATE;
 
                 return new Cell(string.Format("{0}-{1}-{2}", dt.Year, dt.Month, dt.Day));
@@ -1817,7 +2067,7 @@ namespace Pulse.Libraries
         {
 
             public sfTIME_STRING(Host Host)
-                : base(Host, null, TIME_STRING, 1, CellAffinity.TEXT)
+                : base(Host, null, TIME_STRING, 1, CellAffinity.BSTRING)
             {
 
             }
@@ -1832,9 +2082,9 @@ namespace Pulse.Libraries
 
                 Cell a = this._Params[0].Scalar.Evaluate(Variants);
                 if (a.IsNull)
-                    return CellValues.NullTEXT;
+                    return CellValues.NullBSTRING;
                 TimeSpan ts = new TimeSpan();
-                if (a.Affinity == CellAffinity.DATE)
+                if (a.Affinity == CellAffinity.DATE_TIME)
                     ts = a.valueDATE.TimeOfDay;
                 else if (CellAffinityHelper.IsIntegral(a.Affinity))
                     ts = new TimeSpan(a.valueLONG);
@@ -1851,7 +2101,7 @@ namespace Pulse.Libraries
 
             if (Parameter.IsNull)
                 return DatePart.Milisecond;
-            if (Parameter.Affinity == CellAffinity.STRING || Parameter.Affinity == CellAffinity.TEXT)
+            if (Parameter.Affinity == CellAffinity.CSTRING || Parameter.Affinity == CellAffinity.BSTRING)
             {
 
                 switch (Parameter.ToString().ToUpper())
@@ -1915,5 +2165,579 @@ namespace Pulse.Libraries
 
 
     }
+
+    public sealed class RandomLibrary : Library
+    {
+
+        public const string NEXT_BOOL = "NEXT_BOOL";
+        public const string NEXT_DATE_TIME = "NEXT_DATE_TIME";
+        public const string NEXT_BYTE = "NEXT_BYTE";
+        public const string NEXT_SHORT = "NEXT_SHORT";
+        public const string NEXT_INT = "NEXT_INT";
+        public const string NEXT_LONG = "NEXT_LONG";
+        public const string NEXT_SINGLE = "NEXT_SINGLE";
+        public const string NEXT_DOUBLE = "NEXT_DOUBLE";
+        public const string NEXT_BINARY = "NEXT_BINARY";
+        public const string NEXT_BSTRING = "NEXT_BSTRING";
+        public const string NEXT_CSTRING = "NEXT_CSTRING";
+
+        public static readonly string[] Scalar_Names = new string[] { NEXT_BOOL, NEXT_DATE_TIME, NEXT_BYTE, NEXT_SHORT, NEXT_INT, NEXT_LONG, NEXT_SINGLE, NEXT_DOUBLE, NEXT_BINARY, NEXT_BSTRING, NEXT_CSTRING };
+
+        public const string SET_SEED = "SET_SEED";
+
+        private RandomCell _Gen;
+
+        public RandomLibrary(Host Host)
+            :base(Host, "RANDOM")
+        {
+            this._Gen = new RandomCell(RandomCell.TruelyRandomSeed());
+        }
+
+        public override bool ActionExists(string Name)
+        {
+            throw new Exception(string.Format("Action does not exist '{0}'", Name));
+        }
+
+        public override ActionExpressionParameterized ActionLookup(string Name)
+        {
+            throw new Exception(string.Format("Action does not exist '{0}'", Name));
+        }
+
+        public override bool ScalarFunctionExists(string Name)
+        {
+            return Scalar_Names.Contains(Name.ToUpper());
+        }
+
+        public override ScalarExpressionFunction ScalarFunctionLookup(string Name)
+        {
+
+            switch (Name.ToUpper())
+            {
+                case NEXT_BOOL: return new sfNextBool(this._Host, this._Gen);
+                case NEXT_DATE_TIME: return new sfNextDate(this._Host, this._Gen);
+                case NEXT_BYTE: return new sfNextByte(this._Host, this._Gen);
+                case NEXT_SHORT: return new sfNextShort(this._Host, this._Gen);
+                case NEXT_INT: return new sfNextInt(this._Host, this._Gen);
+                case NEXT_LONG: return new sfNextLong(this._Host, this._Gen);
+                case NEXT_SINGLE: return new sfNextSingle(this._Host, this._Gen);
+                case NEXT_DOUBLE: return new sfNextDouble(this._Host, this._Gen);
+                case NEXT_BINARY: return new sfNextBinary(this._Host, this._Gen);
+                case NEXT_BSTRING: return new sfNextBString(this._Host, this._Gen);
+                case NEXT_CSTRING: return new sfNextCString(this._Host, this._Gen);
+            }
+
+            throw new Exception(string.Format("Scalar function does not exist '{0}'", Name));
+
+        }
+
+        public override bool MatrixFunctionExists(string Name)
+        {
+            throw new Exception(string.Format("Matrix does not exist '{0}'", Name));
+        }
+
+        public override MatrixExpressionFunction MatrixFunctionLookup(string Name)
+        {
+            throw new Exception(string.Format("Matrix does not exist '{0}'", Name));
+        }
+
+        public override bool RecordFunctionExists(string Name)
+        {
+            throw new Exception(string.Format("Record does not exist '{0}'", Name));
+        }
+
+        public override RecordExpressionFunction RecordFunctionLookup(string Name)
+        {
+            throw new Exception(string.Format("Record does not exist '{0}'", Name));
+        }
+
+        public override bool TableFunctionExists(string Name)
+        {
+            throw new Exception(string.Format("Table does not exist '{0}'", Name));
+        }
+
+        public override TableExpressionFunction TableFunctionLookup(string Name)
+        {
+            throw new Exception(string.Format("Table does not exist '{0}'", Name));
+        }
+
+        public sealed class sfNextBool : ScalarExpressionFunction
+        {
+
+            private RandomCell _Gen;
+
+            public sfNextBool(Host Host, RandomCell Gen)
+                : base(Host, null, NEXT_BOOL, -1, CellAffinity.BOOL)
+            {
+                this._Gen = Gen;
+            }
+
+            public override bool IsVolatile
+            {
+                get
+                {
+                    return true;
+                }
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+
+                if (this.CheckSigniture())
+                {
+                    return this._Gen.NextBool(0.5);
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar))
+                {
+                    return this._Gen.NextBool(this._Params[0].Scalar.Evaluate(Variants).valueSINGLE);
+                }
+                throw new Exception("Invalid parameters passed");
+
+            }
+
+        }
+
+        public sealed class sfNextDate : ScalarExpressionFunction
+        {
+
+            private RandomCell _Gen;
+
+            public sfNextDate(Host Host, RandomCell Gen)
+                : base(Host, null, NEXT_DATE_TIME, -2, CellAffinity.DATE_TIME)
+            {
+                this._Gen = Gen;
+            }
+
+            public override bool IsVolatile
+            {
+                get
+                {
+                    return true;
+                }
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+
+                if (this.CheckSigniture())
+                {
+                    return this._Gen.NextDate();
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar))
+                {
+                    return this._Gen.NextDate(DateTime.MinValue, this._Params[0].Scalar.Evaluate(Variants).valueDATE);
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar, ParameterAffinity.Scalar))
+                {
+                    return this._Gen.NextDate(this._Params[0].Scalar.Evaluate(Variants).valueDATE, this._Params[0].Scalar.Evaluate(Variants).valueDATE);
+                }
+                throw new Exception("Invalid parameters passed");
+
+            }
+
+        }
+
+        public sealed class sfNextByte : ScalarExpressionFunction
+        {
+
+            private RandomCell _Gen;
+
+            public sfNextByte(Host Host, RandomCell Gen)
+                : base(Host, null, NEXT_BYTE, -2, CellAffinity.BYTE)
+            {
+                this._Gen = Gen;
+            }
+
+            public override bool IsVolatile
+            {
+                get
+                {
+                    return true;
+                }
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+
+                if (this.CheckSigniture())
+                {
+                    return this._Gen.NextByte();
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar))
+                {
+                    return this._Gen.NextByte(0, this._Params[0].Scalar.Evaluate(Variants).valueBYTE);
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar, ParameterAffinity.Scalar))
+                {
+                    return this._Gen.NextByte(this._Params[0].Scalar.Evaluate(Variants).valueBYTE, this._Params[0].Scalar.Evaluate(Variants).valueBYTE);
+                }
+                throw new Exception("Invalid parameters passed");
+                
+            }
+
+        }
+
+        public sealed class sfNextShort : ScalarExpressionFunction
+        {
+
+            private RandomCell _Gen;
+
+            public sfNextShort(Host Host, RandomCell Gen)
+                : base(Host, null, NEXT_SHORT, -2, CellAffinity.SHORT)
+            {
+                this._Gen = Gen;
+            }
+
+            public override bool IsVolatile
+            {
+                get
+                {
+                    return true;
+                }
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+
+                if (this.CheckSigniture())
+                {
+                    return this._Gen.NextShort();
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar))
+                {
+                    return this._Gen.NextShort(0, this._Params[0].Scalar.Evaluate(Variants).valueSHORT);
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar, ParameterAffinity.Scalar))
+                {
+                    return this._Gen.NextShort(this._Params[0].Scalar.Evaluate(Variants).valueSHORT, this._Params[0].Scalar.Evaluate(Variants).valueSHORT);
+                }
+                throw new Exception("Invalid parameters passed");
+
+            }
+
+        }
+
+        public sealed class sfNextInt : ScalarExpressionFunction
+        {
+
+            private RandomCell _Gen;
+
+            public sfNextInt(Host Host, RandomCell Gen)
+                : base(Host, null, NEXT_INT, -2, CellAffinity.INT)
+            {
+                this._Gen = Gen;
+            }
+
+            public override bool IsVolatile
+            {
+                get
+                {
+                    return true;
+                }
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+
+                if (this.CheckSigniture())
+                {
+                    return this._Gen.NextInt();
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar))
+                {
+                    return this._Gen.NextInt(0, this._Params[0].Scalar.Evaluate(Variants).valueINT);
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar, ParameterAffinity.Scalar))
+                {
+                    return this._Gen.NextInt(this._Params[0].Scalar.Evaluate(Variants).valueINT, this._Params[0].Scalar.Evaluate(Variants).valueINT);
+                }
+                throw new Exception("Invalid parameters passed");
+
+            }
+
+        }
+
+        public sealed class sfNextLong : ScalarExpressionFunction
+        {
+
+            private RandomCell _Gen;
+
+            public sfNextLong(Host Host, RandomCell Gen)
+                : base(Host, null, NEXT_LONG, -2, CellAffinity.LONG)
+            {
+                this._Gen = Gen;
+            }
+
+            public override bool IsVolatile
+            {
+                get
+                {
+                    return true;
+                }
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+
+                if (this.CheckSigniture())
+                {
+                    return this._Gen.NextLong();
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar))
+                {
+                    return this._Gen.NextLong(0, this._Params[0].Scalar.Evaluate(Variants).valueLONG);
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar, ParameterAffinity.Scalar))
+                {
+                    return this._Gen.NextLong(this._Params[0].Scalar.Evaluate(Variants).valueLONG, this._Params[0].Scalar.Evaluate(Variants).valueLONG);
+                }
+                throw new Exception("Invalid parameters passed");
+
+            }
+
+        }
+
+        public sealed class sfNextSingle : ScalarExpressionFunction
+        {
+
+            private RandomCell _Gen;
+
+            public sfNextSingle(Host Host, RandomCell Gen)
+                : base(Host, null, NEXT_SINGLE, -2, CellAffinity.SINGLE)
+            {
+                this._Gen = Gen;
+            }
+
+            public override bool IsVolatile
+            {
+                get
+                {
+                    return true;
+                }
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+
+                if (this.CheckSigniture())
+                {
+                    return this._Gen.NextSingle();
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar))
+                {
+                    return this._Gen.NextSingle(0, this._Params[0].Scalar.Evaluate(Variants).valueSINGLE);
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar, ParameterAffinity.Scalar))
+                {
+                    return this._Gen.NextSingle(this._Params[0].Scalar.Evaluate(Variants).valueSINGLE, this._Params[0].Scalar.Evaluate(Variants).valueSINGLE);
+                }
+                throw new Exception("Invalid parameters passed");
+
+            }
+
+        }
+
+        public sealed class sfNextDouble : ScalarExpressionFunction
+        {
+
+            private RandomCell _Gen;
+
+            public sfNextDouble(Host Host, RandomCell Gen)
+                : base(Host, null, NEXT_DOUBLE, -2, CellAffinity.DOUBLE)
+            {
+                this._Gen = Gen;
+            }
+
+            public override bool IsVolatile
+            {
+                get
+                {
+                    return true;
+                }
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+
+                if (this.CheckSigniture())
+                {
+                    return this._Gen.NextDouble();
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar))
+                {
+                    return this._Gen.NextDouble(0, this._Params[0].Scalar.Evaluate(Variants).valueDOUBLE);
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar, ParameterAffinity.Scalar))
+                {
+                    return this._Gen.NextDouble(this._Params[0].Scalar.Evaluate(Variants).valueDOUBLE, this._Params[0].Scalar.Evaluate(Variants).valueDOUBLE);
+                }
+                throw new Exception("Invalid parameters passed");
+
+            }
+
+        }
+
+        public sealed class sfNextBinary : ScalarExpressionFunction
+        {
+
+            private RandomCell _Gen;
+            private int _Size = Schema.DEFAULT_BLOB_SIZE;
+
+            public sfNextBinary(Host Host, RandomCell Gen)
+                : base(Host, null, NEXT_BINARY, -2, CellAffinity.BINARY)
+            {
+                this._Gen = Gen;
+            }
+
+            public override bool IsVolatile
+            {
+                get
+                {
+                    return true;
+                }
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+
+                if (this.CheckSigniture())
+                {
+                    return this._Gen.NextBinary(this._Size);
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar))
+                {
+                    this._Size = this._Params[0].Scalar.Evaluate(Variants).valueINT;
+                    return this._Gen.NextBinary(this._Size);
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar, ParameterAffinity.Scalar))
+                {
+                    this._Size = this._Params[0].Scalar.Evaluate(Variants).valueINT;
+                    byte[] corpus = this._Params[1].Scalar.Evaluate(Variants).valueBINARY;
+                    return this._Gen.NextBinary(this._Size, corpus);
+                }
+                throw new Exception("Invalid parameters passed");
+
+            }
+
+        }
+
+        public sealed class sfNextBString : ScalarExpressionFunction
+        {
+
+            private RandomCell _Gen;
+            private int _Size = Schema.DEFAULT_STRING_SIZE;
+
+            public sfNextBString(Host Host, RandomCell Gen)
+                : base(Host, null, NEXT_BSTRING, -2, CellAffinity.BSTRING)
+            {
+                this._Gen = Gen;
+            }
+
+            public override bool IsVolatile
+            {
+                get
+                {
+                    return true;
+                }
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+
+                if (this.CheckSigniture())
+                {
+                    return this._Gen.NextBString(this._Size);
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar))
+                {
+                    this._Size = this._Params[0].Scalar.Evaluate(Variants).valueINT;
+                    return this._Gen.NextBString(this._Size);
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar, ParameterAffinity.Scalar))
+                {
+                    this._Size = this._Params[0].Scalar.Evaluate(Variants).valueINT;
+                    BString b = this._Params[1].Scalar.Evaluate(Variants).valueBSTRING;
+                    return this._Gen.NextBString(this._Size, b);
+                }
+                throw new Exception("Invalid parameters passed");
+
+            }
+
+        }
+
+        public sealed class sfNextCString : ScalarExpressionFunction
+        {
+
+            private RandomCell _Gen;
+            private int _Size = Schema.DEFAULT_STRING_SIZE;
+
+            public sfNextCString(Host Host, RandomCell Gen)
+                : base(Host, null, NEXT_CSTRING, -2, CellAffinity.CSTRING)
+            {
+                this._Gen = Gen;
+            }
+
+            public override bool IsVolatile
+            {
+                get
+                {
+                    return true;
+                }
+            }
+
+            public override Cell Evaluate(FieldResolver Variants)
+            {
+
+                if (this.CheckSigniture())
+                {
+                    return this._Gen.NextCString(this._Size, (int)char.MaxValue);
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar))
+                {
+                    this._Size = this._Params[0].Scalar.Evaluate(Variants).valueINT;
+                    return this._Gen.NextCString(this._Size, (int)char.MaxValue);
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar, ParameterAffinity.Scalar))
+                {
+                    this._Size = this._Params[0].Scalar.Evaluate(Variants).valueINT;
+                    string b = this._Params[1].Scalar.Evaluate(Variants).valueCSTRING;
+                    return this._Gen.NextBString(this._Size, b);
+                }
+                throw new Exception("Invalid parameters passed");
+
+            }
+
+        }
+
+    }
+
+    //public sealed class MathLibrary : Library
+    //{
+
+    //    public const string LOG = "LOG";
+    //    public const string LOG2 = "LOG2";
+    //    public const string LOG10 = "LOG10";
+    //    public const string EXP = "EXP";
+    //    public const string EXP2 = "EXP2";
+    //    public const string EXP10 = "EXP10";
+    //    public const string SIN = "SIN";
+    //    public const string COS = "COS";
+    //    public const string TAN = "TAN";
+    //    public const string ASIN = "ASIN";
+    //    public const string ACOS = "ACOS";
+    //    public const string ATAN = "ATAN";
+    //    public const string SINH = "SINH";
+    //    public const string COSH = "COSH";
+    //    public const string TANH = "TANH";
+    //    public const string ASINH = "ASINH";
+    //    public const string ACOSH = "ACOSH";
+    //    public const string ATANH = "ATANH";
+    //    public const string ABS = "ABS";
+    //    public const string SIGN = "SIGN";
+    //    public const string ROUND = "ROUND";
+    //    public const string SQR = "SQR";
+    //    public const string SQRT = "SQRT";
+    //    public const string LOGIT = "LOGIT";
+
+    //}
 
 }

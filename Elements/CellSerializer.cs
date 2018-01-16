@@ -15,8 +15,8 @@ namespace Pulse.Elements
     {
 
         public const int DEFAULT_VARIABLE_LEN = 64;
-        public const int MAX_STRING_LEN = (int)short.MaxValue;
-        public const int MAX_TEXT_LEN = (int)ushort.MaxValue;
+        public const int MAX_CSTRING_LEN = (int)short.MaxValue;
+        public const int MAX_BSTRING_LEN = (int)ushort.MaxValue;
         public const int MAX_BLOB_LEN = (int)ushort.MaxValue;
 
         public const int META_SIZE = 1;
@@ -73,7 +73,7 @@ namespace Pulse.Elements
                 C.B1 = Buffer[Location + 1];
                 Location += 2;
             }
-            else if (a == CellAffinity.INT || a == CellAffinity.FLOAT)
+            else if (a == CellAffinity.INT || a == CellAffinity.SINGLE)
             {
                 C.B0 = Buffer[Location];
                 C.B1 = Buffer[Location + 1];
@@ -81,7 +81,7 @@ namespace Pulse.Elements
                 C.B3 = Buffer[Location + 3];
                 Location += 4;
             }
-            else if (a == CellAffinity.LONG || a == CellAffinity.DOUBLE || a == CellAffinity.DATE)
+            else if (a == CellAffinity.LONG || a == CellAffinity.DOUBLE || a == CellAffinity.DATE_TIME)
             {
                 C.B0 = Buffer[Location];
                 C.B1 = Buffer[Location + 1];
@@ -93,7 +93,7 @@ namespace Pulse.Elements
                 C.B7 = Buffer[Location + 7];
                 Location += 8;
             }
-            else if (a == CellAffinity.TEXT || a == CellAffinity.BLOB)
+            else if (a == CellAffinity.BSTRING || a == CellAffinity.BINARY)
             {
                 C.B0 = Buffer[Location];
                 C.B1 = Buffer[Location + 1];
@@ -106,12 +106,12 @@ namespace Pulse.Elements
                 }
                 Location += C.SHORT;
 
-                if (a == CellAffinity.BLOB)
-                    C.BLOB = b;
+                if (a == CellAffinity.BINARY)
+                    C.BINARY = b;
                 else
-                    C.STRING = System.Text.ASCIIEncoding.UTF8.GetString(b);
+                    C.BSTRING = new BString(b);
             }
-            else if (a == CellAffinity.STRING)
+            else if (a == CellAffinity.CSTRING)
             {
 
                 C.B0 = Buffer[Location];
@@ -124,7 +124,7 @@ namespace Pulse.Elements
                     b[i] = Buffer[Location + i];
                 }
                 Location += (int)C.SHORT * 2;
-                C.STRING = System.Text.ASCIIEncoding.Unicode.GetString(b);
+                C.CSTRING = System.Text.ASCIIEncoding.Unicode.GetString(b);
 
             }
 
@@ -194,14 +194,14 @@ namespace Pulse.Elements
                     Location += 2;
                     break;
                 case CellAffinity.INT:
-                case CellAffinity.FLOAT:
+                case CellAffinity.SINGLE:
                     Buffer[Location] = Value.B0;
                     Buffer[Location + 1] = Value.B1;
                     Buffer[Location + 2] = Value.B2;
                     Buffer[Location + 3] = Value.B3;
                     Location += 4;
                     break;
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                 case CellAffinity.DOUBLE:
                 case CellAffinity.LONG:
                     Buffer[Location] = Value.B0;
@@ -214,28 +214,28 @@ namespace Pulse.Elements
                     Buffer[Location + 7] = Value.B7;
                     Location += 8;
                     break;
-                case CellAffinity.BLOB:
-                    Value.SHORT = (short)Value.BLOB.Length;
+                case CellAffinity.BINARY:
+                    Value.SHORT = (short)Value.BINARY.Length;
                     Buffer[Location] = Value.B0;
                     Buffer[Location + 1] = Value.B1;
                     Location += 2;
-                    Array.Copy(Value.BLOB, 0, Buffer, Location, Value.BLOB.Length);
+                    Array.Copy(Value.BINARY, 0, Buffer, Location, Value.BINARY.Length);
                     Location += (int)Value.SHORT;
                     break;
-                case CellAffinity.TEXT:
-                    Value.SHORT = (short)Value.STRING.Length;
+                case CellAffinity.BSTRING:
+                    Value.SHORT = (short)Value.BSTRING.Length;
                     Buffer[Location] = Value.B0;
                     Buffer[Location + 1] = Value.B1;
                     Location += 2;
-                    Array.Copy(System.Text.ASCIIEncoding.UTF8.GetBytes(Value.STRING), 0, Buffer, Location, Value.STRING.Length);
+                    Array.Copy(Value.BSTRING.ToByteArray, 0, Buffer, Location, Value.BSTRING.Length);
                     Location += (int)Value.SHORT;
                     break;
-                case CellAffinity.STRING:
-                    Value.SHORT = (short)Value.STRING.Length;
+                case CellAffinity.CSTRING:
+                    Value.SHORT = (short)Value.CSTRING.Length;
                     Buffer[Location] = Value.B0;
                     Buffer[Location + 1] = Value.B1;
                     Location += 2;
-                    Array.Copy(System.Text.ASCIIEncoding.Unicode.GetBytes(Value.STRING), 0, Buffer, Location, Value.STRING.Length * 2);
+                    Array.Copy(System.Text.ASCIIEncoding.Unicode.GetBytes(Value.CSTRING), 0, Buffer, Location, Value.CSTRING.Length * 2);
                     Location += (int)Value.SHORT * 2;
                     break;
             }
@@ -278,16 +278,17 @@ namespace Pulse.Elements
                 case CellAffinity.BYTE:
                 case CellAffinity.SHORT:
                 case CellAffinity.INT:
-                case CellAffinity.FLOAT:
+                case CellAffinity.SINGLE:
                 case CellAffinity.LONG:
                 case CellAffinity.DOUBLE:
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                     return MEM_SIZE;
-                case CellAffinity.BLOB:
+                case CellAffinity.BINARY:
                     return Length + MEM_SIZE;
-                case CellAffinity.STRING:
-                case CellAffinity.TEXT:
+                case CellAffinity.CSTRING:
                     return Length * CHAR_SIZE + MEM_SIZE;
+                case CellAffinity.BSTRING:
+                    return Length + MEM_SIZE;
                 default:
                     throw new Exception();
             }
@@ -323,19 +324,19 @@ namespace Pulse.Elements
                     return SHORT_SIZE + META_SIZE;
                 case CellAffinity.INT:
                     return INT_SIZE + META_SIZE;
-                case CellAffinity.FLOAT:
+                case CellAffinity.SINGLE:
                     return FLOAT_SIZE + META_SIZE;
                 case CellAffinity.LONG:
                     return LONG_SIZE + META_SIZE;
                 case CellAffinity.DOUBLE:
                     return DOUBLE_SIZE + META_SIZE;
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                     return DATE_SIZE + META_SIZE;
-                case CellAffinity.BLOB:
+                case CellAffinity.BINARY:
                     return Length + META_SIZE + LEN_SIZE;
-                case CellAffinity.TEXT:
+                case CellAffinity.BSTRING:
                     return Length + META_SIZE + LEN_SIZE;
-                case CellAffinity.STRING:
+                case CellAffinity.CSTRING:
                     return Length * CHAR_SIZE + META_SIZE + LEN_SIZE;
                 default:
                     throw new Exception();
@@ -372,17 +373,17 @@ namespace Pulse.Elements
                     return SHORT_SIZE;
                 case CellAffinity.INT:
                     return INT_SIZE;
-                case CellAffinity.FLOAT:
+                case CellAffinity.SINGLE:
                     return FLOAT_SIZE;
                 case CellAffinity.LONG:
                     return LONG_SIZE;
                 case CellAffinity.DOUBLE:
                     return DOUBLE_SIZE;
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                     return DATE_SIZE;
-                case CellAffinity.BLOB:
-                case CellAffinity.TEXT:
-                case CellAffinity.STRING:
+                case CellAffinity.BINARY:
+                case CellAffinity.BSTRING:
+                case CellAffinity.CSTRING:
                     return Length;
                 default:
                     throw new Exception();
@@ -443,20 +444,20 @@ namespace Pulse.Elements
                     return SHORT_SIZE;
                 case CellAffinity.INT:
                     return INT_SIZE;
-                case CellAffinity.FLOAT:
+                case CellAffinity.SINGLE:
                     return FLOAT_SIZE;
                 case CellAffinity.LONG:
                     return LONG_SIZE;
                 case CellAffinity.DOUBLE:
                     return DOUBLE_SIZE;
-                case CellAffinity.DATE:
+                case CellAffinity.DATE_TIME:
                     return DATE_SIZE;
-                case CellAffinity.BLOB:
+                case CellAffinity.BINARY:
                     return Math.Min(Length, MAX_BLOB_LEN);
-                case CellAffinity.TEXT:
-                    return Math.Min(Length, MAX_TEXT_LEN);
-                case CellAffinity.STRING:
-                    return Math.Min(Length, MAX_STRING_LEN);
+                case CellAffinity.BSTRING:
+                    return Math.Min(Length, MAX_BSTRING_LEN);
+                case CellAffinity.CSTRING:
+                    return Math.Min(Length, MAX_CSTRING_LEN);
                 default:
                     throw new Exception();
 

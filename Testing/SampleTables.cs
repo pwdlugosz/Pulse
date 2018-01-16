@@ -14,7 +14,7 @@ namespace Pulse.Testing
 
         public static Schema KeyValueColumns()
         {
-            return new Schema("KEY LONG, GAUSS_VAL NUM, GROUP10 LONG, GROUP100 LONG, GROUP1000 LONG, TXT STRING.9");
+            return new Schema("KEY LONG, GAUSS_VAL NUM, GROUP10 LONG, GROUP100 LONG, GROUP1000 LONG, TXT CSTRING.9");
         }
 
         public static HeapTable SampleHeapTable(Host Host, string Name, int Count, int Offset)
@@ -52,7 +52,7 @@ namespace Pulse.Testing
                 rb.Add(rc.NextLong(0, 10));
                 rb.Add(rc.NextLong(0, 100));
                 rb.Add(rc.NextLong(0, 1000));
-                rb.Add(rc.NextStringUpperText(9));
+                rb.Add(rc.NextCStringUpperText(9));
                 Writer.Insert(rb.ToRecord());
             }
 

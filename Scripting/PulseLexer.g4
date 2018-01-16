@@ -72,10 +72,8 @@ EQ : '==';
 NEQ : '!=';
 LT : '<';
 LTE : '<=';
-LSHIFT : '<<';
 GT : '>';
 GTE : '>=';
-RSHIFT : '>>';
 NULL_OP : '??';
 QUESTION : '?';
 LPAREN : '(';
@@ -94,6 +92,11 @@ TILDA : '~';
 PIPE : '|';
 AMPER : '&';
 COLON : ':';
+L_SHIFT : '<<';
+L_ROTATE : '<<<';
+R_SHIFT : '>>';
+R_ROTATE : '>>>';
+
 
 MATRIX_TOK : '$';
 RECORD_TOK : '@';
@@ -147,8 +150,8 @@ LITERAL_INT
 LITERAL_LONG
 	: DIGIT+ L 
 	;
-LITERAL_TEXT
-	: LITERAL_STRING U;
+LITERAL_BSTRING
+	: B LITERAL_STRING;
 LITERAL_STRING 
 	: '\'' ( ~'\'' | '\'\'' )* '\'' // NORMAL STRING -> 'abcdef'
 	| '"' ( ~'"' | '""')* '"'		// NORMAL STRING -> "ABCDEF"

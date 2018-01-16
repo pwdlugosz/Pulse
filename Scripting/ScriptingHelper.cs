@@ -28,7 +28,7 @@ namespace Pulse.Scripting
                 return CellAffinity.BOOL;
 
             else if (context.T_DATE() != null)
-                return CellAffinity.DATE;
+                return CellAffinity.DATE_TIME;
 
             else if (context.T_BYTE() != null)
                 return CellAffinity.BYTE;
@@ -43,19 +43,19 @@ namespace Pulse.Scripting
                 return CellAffinity.LONG;
 
             else if (context.T_FLOAT() != null)
-                return CellAffinity.FLOAT;
+                return CellAffinity.SINGLE;
 
             else if (context.T_DOUBLE() != null)
                 return CellAffinity.DOUBLE;
 
             else if (context.T_BLOB() != null)
-                return CellAffinity.BLOB;
+                return CellAffinity.BINARY;
 
             else if (context.T_TEXT() != null)
-                return CellAffinity.TEXT;
+                return CellAffinity.BSTRING;
 
             else if (context.T_STRING() != null)
-                return CellAffinity.STRING;
+                return CellAffinity.CSTRING;
 
             throw new Exception(string.Format("Invalid type '{0}'", context.GetText()));
 

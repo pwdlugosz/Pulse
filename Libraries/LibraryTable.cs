@@ -125,10 +125,10 @@ namespace Pulse.Libraries
                 
     //            this.CheckRequired();
 
-    //            string old_db = this._Parameters[0].Scalar.Evaluate(Variant).valueSTRING;
-    //            string old_name = this._Parameters[1].Scalar.Evaluate(Variant).valueSTRING;
-    //            string new_db = this._Parameters[2].Scalar.Evaluate(Variant).valueSTRING;
-    //            string new_name = this._Parameters[3].Scalar.Evaluate(Variant).valueSTRING;
+    //            string old_db = this._Parameters[0].Scalar.Evaluate(Variant).valueCSTRING;
+    //            string old_name = this._Parameters[1].Scalar.Evaluate(Variant).valueCSTRING;
+    //            string new_db = this._Parameters[2].Scalar.Evaluate(Variant).valueCSTRING;
+    //            string new_name = this._Parameters[3].Scalar.Evaluate(Variant).valueCSTRING;
 
     //            string path = TableHeader.DeriveV1Path(this._Host.Connections[old_db], old_name);
     //            TableUtil.Rename(this._Host.OpenTable(path), new_db, new_name);
@@ -156,11 +156,11 @@ namespace Pulse.Libraries
     //            Cell Escape = this._Parameters[3].Scalar.Evaluate(Variant);
     //            Cell Skip = this._Parameters[4].Scalar.Evaluate(Variant);
 
-    //            char[] del = (Delim.IsNull ? (Path.valueSTRING.Split('.').Last().ToUpper() == "CSV" ? new char[] {','} : new char[]{'\t'}) : Delim.valueSTRING.ToCharArray());
-    //            char esc = (Escape.IsNull ? char.MaxValue : Escape.valueSTRING.ToCharArray().First());
+    //            char[] del = (Delim.IsNull ? (Path.valueCSTRING.Split('.').Last().ToUpper() == "CSV" ? new char[] {','} : new char[]{'\t'}) : Delim.valueCSTRING.ToCharArray());
+    //            char esc = (Escape.IsNull ? char.MaxValue : Escape.valueCSTRING.ToCharArray().First());
     //            int sk = (Skip.IsNull ? 0 : (int)Skip.valueLONG);
 
-    //            using (System.IO.StreamReader sr = new System.IO.StreamReader(Path.valueSTRING))
+    //            using (System.IO.StreamReader sr = new System.IO.StreamReader(Path.valueCSTRING))
     //            {
 
     //                int i = 0;
@@ -205,13 +205,13 @@ namespace Pulse.Libraries
 
     //            Table t = this._Parameters[0].Table.Select(Variant);
     //            Cell Path = this._Parameters[1].Scalar.Evaluate(Variant);
-    //            Cell Delim = (this._Parameters[2].Scalar == null ? CellValues.NullSTRING : this._Parameters[2].Scalar.Evaluate(Variant));
-    //            Cell Escape = (this._Parameters[3].Scalar == null ? CellValues.NullSTRING : this._Parameters[3].Scalar.Evaluate(Variant));
+    //            Cell Delim = (this._Parameters[2].Scalar == null ? CellValues.NullCSTRING : this._Parameters[2].Scalar.Evaluate(Variant));
+    //            Cell Escape = (this._Parameters[3].Scalar == null ? CellValues.NullCSTRING : this._Parameters[3].Scalar.Evaluate(Variant));
                 
-    //            string del = (Delim.IsNull ? (Path.valueSTRING.Split('.').Last().ToUpper() == "CSV" ? "," : "\t" ) : Delim.valueSTRING);
-    //            string esc = (Escape.IsNull ? "" : Escape.valueSTRING);
+    //            string del = (Delim.IsNull ? (Path.valueCSTRING.Split('.').Last().ToUpper() == "CSV" ? "," : "\t" ) : Delim.valueCSTRING);
+    //            string esc = (Escape.IsNull ? "" : Escape.valueCSTRING);
 
-    //            using (System.IO.StreamWriter sw = new System.IO.StreamWriter(Path.valueSTRING))
+    //            using (System.IO.StreamWriter sw = new System.IO.StreamWriter(Path.valueCSTRING))
     //            {
     //                sw.WriteLine(Util.StringUtil.ToString(t.Columns, del, esc));
     //                RecordReader rr = t.OpenReader();
@@ -238,8 +238,8 @@ namespace Pulse.Libraries
 
     //            this.CheckRequired();
 
-    //            string lib = this._Parameters[0].Scalar.Evaluate(Variant).valueSTRING;
-    //            string name = this._Parameters[1].Scalar.Evaluate(Variant).valueSTRING;
+    //            string lib = this._Parameters[0].Scalar.Evaluate(Variant).valueCSTRING;
+    //            string name = this._Parameters[1].Scalar.Evaluate(Variant).valueCSTRING;
     //            string dir = this._Host.Connections[lib];
     //            string path = TableHeader.DeriveV1Path(dir, name);
 
@@ -273,7 +273,7 @@ namespace Pulse.Libraries
 
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
-    //            string value = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string value = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
     //            Table t = this._Host.OpenTable(value.Split('.')[0].Trim(), value.Split('.')[1].Trim());
     //            return new Cell(t.PageCount);
     //        }
@@ -303,7 +303,7 @@ namespace Pulse.Libraries
 
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
-    //            string value = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string value = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
     //            Table t = this._Host.OpenTable(value.Split('.')[0].Trim(), value.Split('.')[1].Trim());
     //            return new Cell(t.RecordCount);
     //        }
@@ -333,7 +333,7 @@ namespace Pulse.Libraries
 
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
-    //            string value = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string value = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
     //            Table t = this._Host.OpenTable(value.Split('.')[0].Trim(), value.Split('.')[1].Trim());
     //            return new Cell(t.OriginPageID);
     //        }
@@ -363,7 +363,7 @@ namespace Pulse.Libraries
 
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
-    //            string value = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string value = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
     //            Table t = this._Host.OpenTable(value.Split('.')[0].Trim(), value.Split('.')[1].Trim());
     //            return new Cell(t.TerminalPageID);
     //        }
@@ -393,7 +393,7 @@ namespace Pulse.Libraries
 
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
-    //            string value = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string value = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
     //            Table t = this._Host.OpenTable(value.Split('.')[0].Trim(), value.Split('.')[1].Trim());
     //            return new Cell(t.Header.RootPageID);
     //        }
@@ -413,7 +413,7 @@ namespace Pulse.Libraries
 
     //        public override CellAffinity ReturnAffinity()
     //        {
-    //            return CellAffinity.STRING;
+    //            return CellAffinity.CSTRING;
     //        }
 
     //        public override ScalarExpression CloneOfMe()
@@ -423,7 +423,7 @@ namespace Pulse.Libraries
 
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
-    //            string value = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string value = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
     //            Table t = this._Host.OpenTable(value.Split('.')[0].Trim(), value.Split('.')[1].Trim());
     //            return new Cell(t.Header.Path);
     //        }
@@ -443,7 +443,7 @@ namespace Pulse.Libraries
 
     //        public override CellAffinity ReturnAffinity()
     //        {
-    //            return CellAffinity.STRING;
+    //            return CellAffinity.CSTRING;
     //        }
 
     //        public override ScalarExpression CloneOfMe()
@@ -453,7 +453,7 @@ namespace Pulse.Libraries
 
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
-    //            string value = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string value = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
     //            Table t = this._Host.OpenTable(value.Split('.')[0].Trim(), value.Split('.')[1].Trim());
     //            return new Cell(t.Header.Directory);
     //        }
@@ -473,7 +473,7 @@ namespace Pulse.Libraries
 
     //        public override CellAffinity ReturnAffinity()
     //        {
-    //            return CellAffinity.STRING;
+    //            return CellAffinity.CSTRING;
     //        }
 
     //        public override ScalarExpression CloneOfMe()
@@ -483,7 +483,7 @@ namespace Pulse.Libraries
 
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
-    //            string value = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string value = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
     //            Table t = this._Host.OpenTable(value.Split('.')[0].Trim(), value.Split('.')[1].Trim());
     //            return new Cell(t.MetaData());
     //        }
@@ -503,7 +503,7 @@ namespace Pulse.Libraries
 
     //        public override CellAffinity ReturnAffinity()
     //        {
-    //            return CellAffinity.BLOB;
+    //            return CellAffinity.BINARY;
     //        }
 
     //        public override ScalarExpression CloneOfMe()
@@ -513,7 +513,7 @@ namespace Pulse.Libraries
 
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
-    //            string value = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string value = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
     //            int id = (int)this._ChildNodes[1].Evaluate(Variants).valueLONG;
     //            Table t = this._Host.OpenTable(value.Split('.')[0].Trim(), value.Split('.')[1].Trim());
     //            byte[] b = new byte[t.PageSize];
@@ -546,7 +546,7 @@ namespace Pulse.Libraries
 
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
-    //            string value = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string value = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
     //            string db = value.Split('.')[0].Trim();
     //            string name = value.Split('.')[0].Trim();
     //            if (!this._Host.Connections.Exists(db))
@@ -571,7 +571,7 @@ namespace Pulse.Libraries
 
     //        public override CellAffinity ReturnAffinity()
     //        {
-    //            return CellAffinity.TEXT;
+    //            return CellAffinity.BSTRING;
     //        }
 
     //        public override ScalarExpression CloneOfMe()
@@ -581,7 +581,7 @@ namespace Pulse.Libraries
 
     //        public override Cell Evaluate(FieldResolver Variants)
     //        {
-    //            string value = this._ChildNodes[0].Evaluate(Variants).valueSTRING;
+    //            string value = this._ChildNodes[0].Evaluate(Variants).valueCSTRING;
     //            Table t = this._Host.OpenTable(value.Split('.')[0].Trim(), value.Split('.')[1].Trim());
     //            return new Cell(t.Header.DebugPrint(), true);
     //        }

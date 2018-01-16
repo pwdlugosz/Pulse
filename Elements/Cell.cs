@@ -25,6 +25,8 @@ namespace Pulse.Elements
         internal static int DATE_FORMAT = 1; // 0 = full date time, 1 = date only, 2 = time only
         internal static string TRUE_STRING = "TRUE";
         internal static string FALSE_STRING = "FALSE";
+        internal static BString TRUE_BSTRING = "TRUE";
+        internal static BString FALSE_BSTRING = "FALSE";
 
         // Static common cells //
 
@@ -35,11 +37,11 @@ namespace Pulse.Elements
          * NullFlag     OriginalPage
          * Affinity         OriginalPage
          * INT64                OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage
-         * DATE                 OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage
+         * DATE_TIME                 OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage
          * DOUBLE               OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage
          * BOOL                 OriginalPage
-         * STRING                                                       OriginalPage   OriginalPage   OriginalPage   OriginalPage
-         * BLOB                                                         OriginalPage   OriginalPage   OriginalPage   OriginalPage
+         * CSTRING                                                       OriginalPage   OriginalPage   OriginalPage   OriginalPage
+         * BINARY                                                         OriginalPage   OriginalPage   OriginalPage   OriginalPage
          * INT32A               OriginalPage   OriginalPage   OriginalPage   OriginalPage   
          * INT32B                               OriginalPage   OriginalPage   OriginalPage   OriginalPage
          * ULONG                OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage   OriginalPage
@@ -94,7 +96,7 @@ namespace Pulse.Elements
         /// The .Net float Value, offset 0
         /// </summary>
         [System.Runtime.InteropServices.FieldOffset(0)]
-        internal float FLOAT;
+        internal float SINGLE;
 
         /// <summary>
         /// The .Net double Value, offset 0
@@ -109,16 +111,22 @@ namespace Pulse.Elements
         internal DateTime DATE;
 
         /// <summary>
+        /// Represents an immutable 8-bit string
+        /// </summary>
+        [System.Runtime.InteropServices.FieldOffset(12)]
+        internal BString BSTRING;
+
+        /// <summary>
         /// The .Net string variable, offset 12
         /// </summary>
         [System.Runtime.InteropServices.FieldOffset(12)]
-        internal string STRING;
+        internal string CSTRING;
 
         /// <summary>
         /// The .Net byte[] variable, offset 12
         /// </summary>
         [System.Runtime.InteropServices.FieldOffset(12)]
-        internal byte[] BLOB;
+        internal byte[] BINARY;
 
         // Extended elements //
         /// <summary>
@@ -250,8 +258,8 @@ namespace Pulse.Elements
         public Cell(float Value)
             : this()
         {
-            this.FLOAT = Value;
-            this.AFFINITY = CellAffinity.FLOAT;
+            this.SINGLE = Value;
+            this.AFFINITY = CellAffinity.SINGLE;
             this.NULL = 0;
         }
 
@@ -275,8 +283,38 @@ namespace Pulse.Elements
             : this()
         {
             this.DATE = Value;
-            this.AFFINITY = CellAffinity.DATE;
+            this.AFFINITY = CellAffinity.DATE_TIME;
             this.NULL = 0;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Value"></param>
+        public Cell(BString Value)
+            : this()
+        {
+
+            // Handle null strings //
+            if (Value == null)
+            {
+                this.BSTRING = BString.Empty;
+                this.NULL = 1;
+                return;
+            }
+
+            // Fix the values
+            if (Value.Length == 0) // fix instances that are zero length
+                Value = BString.Empty;
+            else if (Value.Length >= MAX_STRING_LENGTH) // Fix strings that are too long
+                Value = Value.Substring(0, MAX_STRING_LENGTH);
+
+            this.BSTRING = Value;
+            this.NULL = 0;
+
+            this.INT_A = Value.GetHashCode();
+            this.INT_B = Value.Length;
+
         }
 
         /// <summary>
@@ -289,12 +327,12 @@ namespace Pulse.Elements
         {
 
             // Set the affinity //
-            this.AFFINITY = (UTF8 ? CellAffinity.TEXT : CellAffinity.STRING);
+            this.AFFINITY = (UTF8 ? CellAffinity.BSTRING : CellAffinity.CSTRING);
 
             // Handle null strings //
             if (Value == null)
             {
-                this.STRING = "\0";
+                this.CSTRING = "\0";
                 this.NULL = 1;
                 return;
             }
@@ -305,7 +343,14 @@ namespace Pulse.Elements
             else if (Value.Length >= MAX_STRING_LENGTH) // Fix strings that are too long
                 Value = Value.Substring(0, MAX_STRING_LENGTH);
 
-            this.STRING = Value;
+            if (UTF8)
+            {
+                this.BSTRING = new BString(Value);
+            }
+            else
+            {
+                this.CSTRING = Value;
+            }
             this.NULL = 0;
 
             this.INT_A = Value.GetHashCode();
@@ -323,15 +368,15 @@ namespace Pulse.Elements
         }
 
         /// <summary>
-        /// Creats a BLOB cell
+        /// Creats a BINARY cell
         /// </summary>
         /// <param name="Value">A .Net array of bytes</param>
         public Cell(byte[] Value)
             : this()
         {
-            this.BLOB = Value;
+            this.BINARY = Value;
             this.NULL = 0;
-            this.AFFINITY = CellAffinity.BLOB;
+            this.AFFINITY = CellAffinity.BINARY;
             for (int i = 0; i < Value.Length; i++)
                 this.INT_A += Value[i] * i;
             this.INT_A = this.INT_A ^ Value.Length;
@@ -347,10 +392,10 @@ namespace Pulse.Elements
         {
             this.AFFINITY = Type;
             this.NULL = 1;
-            if (Type == CellAffinity.STRING)
-                this.STRING = "";
-            if (Type == CellAffinity.BLOB)
-                this.BLOB = new byte[0];
+            if (Type == CellAffinity.CSTRING)
+                this.CSTRING = "";
+            if (Type == CellAffinity.BINARY)
+                this.BINARY = new byte[0];
         }
 
         // -- Auto Casts -- //
@@ -413,12 +458,12 @@ namespace Pulse.Elements
                     case CellAffinity.SHORT:
                     case CellAffinity.INT:
                     case CellAffinity.LONG: return this.LONG == 0;
-                    case CellAffinity.FLOAT:
+                    case CellAffinity.SINGLE:
                     case CellAffinity.DOUBLE: return this.DOUBLE == 0;
                     case CellAffinity.BOOL: return !this.BOOL;
-                    case CellAffinity.TEXT:
-                    case CellAffinity.STRING: return this.STRING.Length == 0;
-                    case CellAffinity.BLOB: return this.BLOB.Length == 0;
+                    case CellAffinity.BSTRING: return this.BSTRING.Length == 0;
+                    case CellAffinity.CSTRING: return this.CSTRING.Length == 0;
+                    case CellAffinity.BINARY: return this.BINARY.Length == 0;
                     default: return false;
                 }
             }
@@ -440,7 +485,7 @@ namespace Pulse.Elements
                     case CellAffinity.SHORT:
                     case CellAffinity.INT:
                     case CellAffinity.LONG: return this.LONG == 1;
-                    case CellAffinity.FLOAT:
+                    case CellAffinity.SINGLE:
                     case CellAffinity.DOUBLE: return this.DOUBLE == 1;
                     case CellAffinity.BOOL: return this.BOOL;
                     default: return false;
@@ -462,28 +507,39 @@ namespace Pulse.Elements
                 {
                     return 0L;
                 }
-                else if (this.AFFINITY != CellAffinity.STRING && this.AFFINITY != CellAffinity.BLOB)
+                else if (this.AFFINITY != CellAffinity.CSTRING && this.AFFINITY != CellAffinity.BINARY)
                 {
                     return this.LONG;
                 }
-                else if (this.AFFINITY == CellAffinity.STRING)
+                else if (this.AFFINITY == CellAffinity.CSTRING)
                 {
                     
                     long l = 0;
-                    for (int i = 0; i < this.STRING.Length; i++)
+                    for (int i = 0; i < this.CSTRING.Length; i++)
                     {
-                        l += (i + 1) * (this.STRING[i] + 1);
+                        l += (i + 1) * (this.CSTRING[i] + 1);
                     }
                     return l;
 
                 }
-                else if (this.AFFINITY == CellAffinity.BLOB)
+                else if (this.AFFINITY == CellAffinity.BSTRING)
                 {
 
                     long l = 0;
-                    for (int i = 0; i < this.BLOB.Length; i++)
+                    for (int i = 0; i < this.BSTRING.Length; i++)
                     {
-                        l += (i + 1) * (this.BLOB[i] + 1);
+                        l += (i + 1) * (this.BSTRING[i] + 1);
+                    }
+                    return l;
+
+                }
+                else if (this.AFFINITY == CellAffinity.BINARY)
+                {
+
+                    long l = 0;
+                    for (int i = 0; i < this.BINARY.Length; i++)
+                    {
+                        l += (i + 1) * (this.BINARY[i] + 1);
                     }
                     return l;
 
@@ -504,10 +560,12 @@ namespace Pulse.Elements
             {
 
                 int len = 0;
-                if ((this.AFFINITY == CellAffinity.STRING || this.AFFINITY == CellAffinity.TEXT) && this.STRING != null)
-                    len = this.STRING.Length;
-                else if (this.AFFINITY == CellAffinity.BLOB && this.BLOB != null)
-                    len = this.BLOB.Length;
+                if (this.AFFINITY == CellAffinity.CSTRING && this.CSTRING != null)
+                    len = this.CSTRING.Length;
+                if (this.AFFINITY == CellAffinity.BSTRING && this.BSTRING != null)
+                    len = this.BSTRING.Length;
+                else if (this.AFFINITY == CellAffinity.BINARY && this.BINARY != null)
+                    len = this.BINARY.Length;
 
                 return CellSerializer.Length(this.AFFINITY, len);
                     
@@ -545,10 +603,10 @@ namespace Pulse.Elements
                     return (byte)(this.SHORT & 255);
                 if (this.AFFINITY == CellAffinity.INT)
                     return (byte)(this.INT & 255);
-                if (this.AFFINITY == CellAffinity.LONG || this.AFFINITY == CellAffinity.DATE)
+                if (this.AFFINITY == CellAffinity.LONG || this.AFFINITY == CellAffinity.DATE_TIME)
                     return (byte)(this.LONG & 255);
-                if (this.AFFINITY == CellAffinity.FLOAT)
-                    return (byte)(this.FLOAT);
+                if (this.AFFINITY == CellAffinity.SINGLE)
+                    return (byte)(this.SINGLE);
                 if (this.AFFINITY == CellAffinity.DOUBLE)
                     return (byte)this.DOUBLE;
                 if (this.AFFINITY == CellAffinity.BOOL)
@@ -573,10 +631,10 @@ namespace Pulse.Elements
                     return (short)this.BYTE;
                 if (this.AFFINITY == CellAffinity.INT)
                     return (short)(this.INT & 255);
-                if (this.AFFINITY == CellAffinity.LONG || this.AFFINITY == CellAffinity.DATE)
+                if (this.AFFINITY == CellAffinity.LONG || this.AFFINITY == CellAffinity.DATE_TIME)
                     return (short)(this.LONG & 255);
-                if (this.AFFINITY == CellAffinity.FLOAT)
-                    return (short)(this.FLOAT);
+                if (this.AFFINITY == CellAffinity.SINGLE)
+                    return (short)(this.SINGLE);
                 if (this.AFFINITY == CellAffinity.DOUBLE)
                     return (short)this.DOUBLE;
                 if (this.AFFINITY == CellAffinity.BOOL)
@@ -601,10 +659,10 @@ namespace Pulse.Elements
                     return (int)this.BYTE;
                 if (this.AFFINITY == CellAffinity.SHORT)
                     return (int)this.SHORT;
-                if (this.AFFINITY == CellAffinity.LONG || this.AFFINITY == CellAffinity.DATE)
+                if (this.AFFINITY == CellAffinity.LONG || this.AFFINITY == CellAffinity.DATE_TIME)
                     return (int)(this.LONG & 255);
-                if (this.AFFINITY == CellAffinity.FLOAT)
-                    return (int)(this.FLOAT);
+                if (this.AFFINITY == CellAffinity.SINGLE)
+                    return (int)(this.SINGLE);
                 if (this.AFFINITY == CellAffinity.DOUBLE)
                     return (int)this.DOUBLE;
                 if (this.AFFINITY == CellAffinity.BOOL)
@@ -622,7 +680,7 @@ namespace Pulse.Elements
             get
             {
 
-                if (this.AFFINITY == CellAffinity.LONG || this.AFFINITY == CellAffinity.DATE)
+                if (this.AFFINITY == CellAffinity.LONG || this.AFFINITY == CellAffinity.DATE_TIME)
                     return this.LONG;
 
                 if (this.AFFINITY == CellAffinity.BYTE)
@@ -631,8 +689,8 @@ namespace Pulse.Elements
                     return (long)this.SHORT;
                 if (this.AFFINITY == CellAffinity.INT)
                     return (long)this.INT;
-                if (this.AFFINITY == CellAffinity.FLOAT)
-                    return (long)(this.FLOAT);
+                if (this.AFFINITY == CellAffinity.SINGLE)
+                    return (long)(this.SINGLE);
                 if (this.AFFINITY == CellAffinity.DOUBLE)
                     return (long)this.DOUBLE;
                 if (this.AFFINITY == CellAffinity.BOOL)
@@ -645,12 +703,12 @@ namespace Pulse.Elements
         /// <summary>
         /// 
         /// </summary>
-        public float valueFLOAT
+        public float valueSINGLE
         {
             get
             {
-                if (this.AFFINITY == CellAffinity.FLOAT)
-                    return this.FLOAT;
+                if (this.AFFINITY == CellAffinity.SINGLE)
+                    return this.SINGLE;
 
                 if (this.AFFINITY == CellAffinity.BYTE)
                     return (float)this.BYTE;
@@ -658,7 +716,7 @@ namespace Pulse.Elements
                     return (float)this.SHORT;
                 if (this.AFFINITY == CellAffinity.INT)
                     return (float)this.INT;
-                if (this.AFFINITY == CellAffinity.LONG || this.AFFINITY == CellAffinity.DATE)
+                if (this.AFFINITY == CellAffinity.LONG || this.AFFINITY == CellAffinity.DATE_TIME)
                     return (float)this.LONG;
                 if (this.AFFINITY == CellAffinity.DOUBLE)
                     return (float)this.DOUBLE;
@@ -687,10 +745,10 @@ namespace Pulse.Elements
                     return (double)this.SHORT;
                 if (this.AFFINITY == CellAffinity.INT)
                     return (double)this.INT;
-                if (this.AFFINITY == CellAffinity.LONG || this.AFFINITY == CellAffinity.DATE)
+                if (this.AFFINITY == CellAffinity.LONG || this.AFFINITY == CellAffinity.DATE_TIME)
                     return (double)this.LONG;
-                if (this.AFFINITY == CellAffinity.FLOAT)
-                    return (double)this.FLOAT;
+                if (this.AFFINITY == CellAffinity.SINGLE)
+                    return (double)this.SINGLE;
                 if (this.AFFINITY == CellAffinity.BOOL)
                     return this.BOOL ? (double)1 : (double)0;
 
@@ -700,13 +758,13 @@ namespace Pulse.Elements
         }
 
         /// <summary>
-        /// Returns the Spike DATE if the affinity is DATE, otherwise return the minimum date time .Net Value
+        /// Returns the Spike DATE_TIME if the affinity is DATE_TIME, otherwise return the minimum date time .Net Value
         /// </summary>
         public DateTime valueDATE
         {
             get
             {
-                if (this.Affinity == CellAffinity.DATE) return this.DATE;
+                if (this.Affinity == CellAffinity.DATE_TIME) return this.DATE;
                 return DateTime.MinValue;
             }
         }
@@ -714,46 +772,47 @@ namespace Pulse.Elements
         /// <summary>
         /// 
         /// </summary>
-        public string valueTEXT
+        public BString valueBSTRING
         {
             get
             {
 
                 if (this.IsNull)
-                    return Cell.NULL_STRING_TEXT;
+                    return new BString(Cell.NULL_STRING_TEXT);
 
                 switch (this.Affinity)
                 {
 
                     case CellAffinity.BYTE:
-                        return this.BYTE.ToString();
+                        return new BString(this.BYTE.ToString());
                     case CellAffinity.SHORT:
-                        return this.SHORT.ToString();
+                        return new BString(this.SHORT.ToString());
                     case CellAffinity.INT:
-                        return this.INT.ToString();
+                        return new BString(this.INT.ToString());
                     case CellAffinity.LONG:
-                        return this.LONG.ToString();
+                        return new BString(this.LONG.ToString());
 
-                    case CellAffinity.FLOAT:
-                        return Math.Round(this.FLOAT, NUMERIC_ROUNDER).ToString();
+                    case CellAffinity.SINGLE:
+                        return new BString(Math.Round(this.SINGLE, NUMERIC_ROUNDER).ToString());
                     case CellAffinity.DOUBLE:
-                        return Math.Round(this.DOUBLE, NUMERIC_ROUNDER).ToString();
+                        return new BString(Math.Round(this.DOUBLE, NUMERIC_ROUNDER).ToString());
 
                     case CellAffinity.BOOL:
-                        return this.BOOL ? TRUE_STRING : FALSE_STRING;
+                        return new BString(this.BOOL ? TRUE_STRING : FALSE_STRING);
 
-                    case CellAffinity.DATE:
-                        return CellFormater.ToLongDate(this.DATE);
+                    case CellAffinity.DATE_TIME:
+                        return new BString(CellFormater.ToLongDate(this.DATE));
 
-                    case CellAffinity.TEXT:
-                    case CellAffinity.STRING:
-                        return this.STRING;
+                    case CellAffinity.BSTRING:
+                        return this.BSTRING;
+                    case CellAffinity.CSTRING:
+                        return new BString(this.CSTRING);
 
-                    case CellAffinity.BLOB:
-                        return HEX_LITERARL + BitConverter.ToString(this.BLOB).Replace("-", "");
+                    case CellAffinity.BINARY:
+                        return new BString(HEX_LITERARL + BitConverter.ToString(this.BINARY).Replace("-", ""));
 
                     default:
-                        return "";
+                        return BString.Empty;
 
                 }
 
@@ -764,7 +823,7 @@ namespace Pulse.Elements
         /// <summary>
         /// If the cell is null, returns '@@NULL'; otherwise, casts the Value as a string
         /// </summary>
-        public string valueSTRING
+        public string valueCSTRING
         {
             get
             {
@@ -784,23 +843,24 @@ namespace Pulse.Elements
                     case CellAffinity.LONG:
                         return this.LONG.ToString();
 
-                    case CellAffinity.FLOAT:
-                        return Math.Round(this.FLOAT, NUMERIC_ROUNDER).ToString();
+                    case CellAffinity.SINGLE:
+                        return Math.Round(this.SINGLE, NUMERIC_ROUNDER).ToString();
                     case CellAffinity.DOUBLE:
                         return Math.Round(this.DOUBLE, NUMERIC_ROUNDER).ToString();
 
                     case CellAffinity.BOOL:
                         return this.BOOL ? TRUE_STRING : FALSE_STRING;
 
-                    case CellAffinity.DATE:
+                    case CellAffinity.DATE_TIME:
                         return CellFormater.ToShortDate(this.DATE);
 
-                    case CellAffinity.TEXT:
-                    case CellAffinity.STRING:
-                        return this.STRING;
+                    case CellAffinity.BSTRING:
+                        return this.BSTRING.ToString();
+                    case CellAffinity.CSTRING:
+                        return this.CSTRING;
 
-                    case CellAffinity.BLOB:
-                        return HEX_LITERARL + BitConverter.ToString(this.BLOB).Replace("-", "");
+                    case CellAffinity.BINARY:
+                        return HEX_LITERARL + BitConverter.ToString(this.BINARY).Replace("-", "");
 
                     default:
                         return "";
@@ -812,15 +872,15 @@ namespace Pulse.Elements
         }
 
         /// <summary>
-        /// If the affinity is null, returns an empty byte array; if the Value is a BLOB, returns the BLOB; if the Value is a stirng, returns the string as a byte array, unless the string has a hex prefix, then it converts the hex string to a byte array; otherwise it converts an LONG, DOUBLE, BOOL to a byte array.
+        /// If the affinity is null, returns an empty byte array; if the Value is a BINARY, returns the BINARY; if the Value is a stirng, returns the string as a byte array, unless the string has a hex prefix, then it converts the hex string to a byte array; otherwise it converts an LONG, DOUBLE, BOOL to a byte array.
         /// </summary>
-        public byte[] valueBLOB
+        public byte[] valueBINARY
         {
             get
             {
 
-                if (this.AFFINITY == CellAffinity.BLOB)
-                    return this.NULL == 1 ? new byte[0] : this.BLOB;
+                if (this.AFFINITY == CellAffinity.BINARY)
+                    return this.NULL == 1 ? new byte[0] : this.BINARY;
 
                 if (this.AFFINITY == CellAffinity.BOOL)
                     return this.BOOL == true ? new byte[1] { 1 } : new byte[1] { 0 };
@@ -828,12 +888,14 @@ namespace Pulse.Elements
                     return new byte[1] { this.BYTE };
                 else if (this.AFFINITY == CellAffinity.SHORT)
                     return BitConverter.GetBytes(this.SHORT);
-                else if (this.AFFINITY == CellAffinity.FLOAT || this.AFFINITY == CellAffinity.INT)
+                else if (this.AFFINITY == CellAffinity.SINGLE || this.AFFINITY == CellAffinity.INT)
                     return BitConverter.GetBytes(this.INT);
-                else if (this.AFFINITY == CellAffinity.DATE || this.AFFINITY == CellAffinity.LONG || this.AFFINITY == CellAffinity.DOUBLE)
+                else if (this.AFFINITY == CellAffinity.DATE_TIME || this.AFFINITY == CellAffinity.LONG || this.AFFINITY == CellAffinity.DOUBLE)
                     return BitConverter.GetBytes(this.LONG);
-                else // STRING
-                    return ASCIIEncoding.BigEndianUnicode.GetBytes(this.STRING);
+                else if (this.AFFINITY == CellAffinity.BSTRING)
+                    return this.BSTRING.ToByteArray;
+                else // CSTRING
+                    return ASCIIEncoding.BigEndianUnicode.GetBytes(this.CSTRING);
 
             }
         }
@@ -853,12 +915,12 @@ namespace Pulse.Elements
                     case CellAffinity.SHORT: return this.SHORT;
                     case CellAffinity.INT: return this.INT;
                     case CellAffinity.LONG: return this.LONG;
-                    case CellAffinity.FLOAT: return this.FLOAT;
+                    case CellAffinity.SINGLE: return this.SINGLE;
                     case CellAffinity.DOUBLE: return this.DOUBLE;
-                    case CellAffinity.DATE: return this.DATE;
-                    case CellAffinity.TEXT:
-                    case CellAffinity.STRING: return this.STRING;
-                    case CellAffinity.BLOB: return this.BLOB;
+                    case CellAffinity.DATE_TIME: return this.DATE;
+                    case CellAffinity.BSTRING:
+                    case CellAffinity.CSTRING: return this.CSTRING;
+                    case CellAffinity.BINARY: return this.BINARY;
                     
                 }
 
@@ -881,7 +943,7 @@ namespace Pulse.Elements
             // Check if null //
             if (this.IsNull == true) return Cell.NULL_STRING_TEXT;
 
-            return this.valueSTRING;
+            return this.valueCSTRING;
 
         }
 
@@ -896,7 +958,7 @@ namespace Pulse.Elements
         }
 
         /// <summary>
-        /// If null, return int.MinValue, for LONG, DOUBLE, BOOL, and DATE, return INT_A; for blobs, returns the sum of all bytes; for strings, returns the sum of the (i + 1) OriginalPage char[i]
+        /// If null, return int.MinValue, for LONG, DOUBLE, BOOL, and DATE_TIME, return INT_A; for blobs, returns the sum of all bytes; for strings, returns the sum of the (i + 1) OriginalPage char[i]
         /// </summary>
         /// <returns>An integer hash code</returns>
         public override int GetHashCode()
@@ -905,15 +967,15 @@ namespace Pulse.Elements
             if (this.NULL == 1)
                 return int.MinValue;
 
-            if (this.Affinity != CellAffinity.STRING && this.AFFINITY != CellAffinity.BLOB)
+            if (this.Affinity != CellAffinity.CSTRING && this.AFFINITY != CellAffinity.BINARY)
                 return this.INT_A;
 
-            if (this.AFFINITY == CellAffinity.BLOB)
-                return this.BLOB.Sum<byte>((x) => { return (int)x; });
+            if (this.AFFINITY == CellAffinity.BINARY)
+                return this.BINARY.Sum<byte>((x) => { return (int)x; });
 
             int t = 0;
-            for (int i = 0; i < this.STRING.Length; i++)
-                t += (i + 1) * this.STRING[i];
+            for (int i = 0; i < this.CSTRING.Length; i++)
+                t += (i + 1) * this.CSTRING[i];
 
             return t;
 
@@ -946,7 +1008,7 @@ namespace Pulse.Elements
          */
 
         /// <summary>
-        /// Performs the 'NOT' opperation, will return for null for DATE, STRING, and BLOBs
+        /// Performs the 'NOT' opperation, will return for null for DATE_TIME, CSTRING, and BLOBs
         /// </summary>
         /// <param name="C">A cell</param>
         /// <returns>A cell</returns>
@@ -957,8 +1019,8 @@ namespace Pulse.Elements
             if (C.NULL == 1)
                 return C;
 
-            if (C.AFFINITY == CellAffinity.FLOAT)
-                C.FLOAT = -C.FLOAT;
+            if (C.AFFINITY == CellAffinity.SINGLE)
+                C.SINGLE = -C.SINGLE;
             else if (C.AFFINITY == CellAffinity.DOUBLE)
                 C.DOUBLE = -C.DOUBLE;
             else if (C.AFFINITY == CellAffinity.SHORT)
@@ -999,9 +1061,9 @@ namespace Pulse.Elements
                 {
                     C1.DOUBLE += C2.DOUBLE;
                 }
-                else if (C1.AFFINITY == CellAffinity.FLOAT)
+                else if (C1.AFFINITY == CellAffinity.SINGLE)
                 {
-                    C1.FLOAT += C2.FLOAT;
+                    C1.SINGLE += C2.SINGLE;
                 }
                 else if (C1.AFFINITY == CellAffinity.BYTE)
                 {
@@ -1019,15 +1081,19 @@ namespace Pulse.Elements
                 {
                     C1.LONG += C2.LONG;
                 }
-                else if (C1.AFFINITY == CellAffinity.STRING || C1.AFFINITY == CellAffinity.TEXT)
+                else if (C1.AFFINITY == CellAffinity.BSTRING)
                 {
-                    C1.STRING += C2.STRING;
+                    C1.BSTRING += C2.BSTRING;
                 }
-                else if (C1.AFFINITY == CellAffinity.BLOB)
+                else if (C1.AFFINITY == CellAffinity.CSTRING)
                 {
-                    byte[] b = new byte[C1.BLOB.Length + C2.BLOB.Length];
-                    Array.Copy(C1.BLOB, 0, b, 0, C1.BLOB.Length);
-                    Array.Copy(C2.BLOB, 0, b, C1.BLOB.Length, C2.BLOB.Length);
+                    C1.CSTRING += C2.CSTRING;
+                }
+                else if (C1.AFFINITY == CellAffinity.BINARY)
+                {
+                    byte[] b = new byte[C1.BINARY.Length + C2.BINARY.Length];
+                    Array.Copy(C1.BINARY, 0, b, 0, C1.BINARY.Length);
+                    Array.Copy(C2.BINARY, 0, b, C1.BINARY.Length, C2.BINARY.Length);
                     C1 = new Cell(b);
                 }
                 else
@@ -1037,21 +1103,21 @@ namespace Pulse.Elements
             else
             {
 
-                if (C1.AFFINITY == CellAffinity.STRING || C2.AFFINITY == CellAffinity.STRING)
+                if (C1.AFFINITY == CellAffinity.CSTRING || C2.AFFINITY == CellAffinity.CSTRING)
                 {
-                    C1.STRING = C1.valueSTRING + C2.valueSTRING;
-                    C1.AFFINITY = CellAffinity.STRING;
+                    C1.CSTRING = C1.valueCSTRING + C2.valueCSTRING;
+                    C1.AFFINITY = CellAffinity.CSTRING;
                 }
-                else if (C1.AFFINITY == CellAffinity.TEXT || C2.AFFINITY == CellAffinity.TEXT)
+                else if (C1.AFFINITY == CellAffinity.BSTRING || C2.AFFINITY == CellAffinity.BSTRING)
                 {
-                    C1.STRING = C1.valueTEXT + C2.valueTEXT;
-                    C1.AFFINITY = CellAffinity.TEXT;
+                    C1.BSTRING = C1.valueBSTRING + C2.valueBSTRING;
+                    C1.AFFINITY = CellAffinity.BSTRING;
                 }
-                else if (C1.AFFINITY == CellAffinity.BLOB || C2.AFFINITY == CellAffinity.BLOB)
+                else if (C1.AFFINITY == CellAffinity.BINARY || C2.AFFINITY == CellAffinity.BINARY)
                 {
-                    byte[] b = new byte[C1.valueBLOB.Length + C2.valueBLOB.Length];
-                    Array.Copy(C1.valueBLOB, 0, b, 0, C1.valueBLOB.Length);
-                    Array.Copy(C2.valueBLOB, 0, b, C1.valueBLOB.Length, C2.valueBLOB.Length);
+                    byte[] b = new byte[C1.valueBINARY.Length + C2.valueBINARY.Length];
+                    Array.Copy(C1.valueBINARY, 0, b, 0, C1.valueBINARY.Length);
+                    Array.Copy(C2.valueBINARY, 0, b, C1.valueBINARY.Length, C2.valueBINARY.Length);
                     C1 = new Cell(b);
                 }
                 else if (C1.AFFINITY == CellAffinity.DOUBLE || C2.AFFINITY == CellAffinity.DOUBLE)
@@ -1059,10 +1125,10 @@ namespace Pulse.Elements
                     C1.DOUBLE = C1.valueDOUBLE + C2.valueDOUBLE;
                     C1.AFFINITY = CellAffinity.DOUBLE;
                 }
-                else if (C1.AFFINITY == CellAffinity.FLOAT || C2.AFFINITY == CellAffinity.FLOAT)
+                else if (C1.AFFINITY == CellAffinity.SINGLE || C2.AFFINITY == CellAffinity.SINGLE)
                 {
-                    C1.FLOAT = C1.valueFLOAT + C2.valueFLOAT;
-                    C1.AFFINITY = CellAffinity.FLOAT;
+                    C1.SINGLE = C1.valueSINGLE + C2.valueSINGLE;
+                    C1.AFFINITY = CellAffinity.SINGLE;
                 }
                 else if (C1.AFFINITY == CellAffinity.LONG || C2.AFFINITY == CellAffinity.LONG)
                 {
@@ -1084,9 +1150,9 @@ namespace Pulse.Elements
                     C1.BYTE = (byte)(C1.valueBYTE + C2.valueBYTE);
                     C1.AFFINITY = CellAffinity.BYTE;
                 }
-                else if (C1.AFFINITY == CellAffinity.DATE || C2.AFFINITY == CellAffinity.DATE)
+                else if (C1.AFFINITY == CellAffinity.DATE_TIME || C2.AFFINITY == CellAffinity.DATE_TIME)
                 {
-                    C1.AFFINITY = CellAffinity.DATE;
+                    C1.AFFINITY = CellAffinity.DATE_TIME;
                     C1.NULL = 1;
                 }
                 else
@@ -1101,7 +1167,7 @@ namespace Pulse.Elements
             if (C1.NULL == 1)
             {
                 C1.ULONG = 0;
-                C1.STRING = "";
+                C1.CSTRING = "";
             }
             return C1;
 
@@ -1119,8 +1185,8 @@ namespace Pulse.Elements
             if (C.NULL == 1)
                 return C;
 
-            if (C.AFFINITY == CellAffinity.FLOAT)
-                C.FLOAT = +C.FLOAT;
+            if (C.AFFINITY == CellAffinity.SINGLE)
+                C.SINGLE = +C.SINGLE;
             else if (C.AFFINITY == CellAffinity.DOUBLE)
                 C.DOUBLE = +C.DOUBLE;
             else if (C.AFFINITY == CellAffinity.SHORT)
@@ -1145,8 +1211,8 @@ namespace Pulse.Elements
         {
             if (C.NULL == 1)
                 return C;
-            if (C.AFFINITY == CellAffinity.FLOAT)
-                C.FLOAT++;
+            if (C.AFFINITY == CellAffinity.SINGLE)
+                C.SINGLE++;
             else if (C.AFFINITY == CellAffinity.DOUBLE)
                 C.DOUBLE++;
             else if (C.AFFINITY == CellAffinity.BYTE)
@@ -1176,9 +1242,9 @@ namespace Pulse.Elements
             // If affinities match //
             if (C1.AFFINITY == C2.AFFINITY)
             {
-                if (C1.AFFINITY == CellAffinity.FLOAT)
+                if (C1.AFFINITY == CellAffinity.SINGLE)
                 {
-                    C1.FLOAT -= C2.FLOAT;
+                    C1.SINGLE -= C2.SINGLE;
                 }
                 else if (C1.AFFINITY == CellAffinity.DOUBLE)
                 {
@@ -1200,14 +1266,18 @@ namespace Pulse.Elements
                 {
                     C1.LONG -= C2.LONG;
                 }
-                else if (C1.AFFINITY == CellAffinity.DATE)
+                else if (C1.AFFINITY == CellAffinity.DATE_TIME)
                 {
                     C1.LONG = C1.LONG - C2.LONG;
                     C1.AFFINITY = CellAffinity.LONG;
                 }
-                else if (C1.AFFINITY == CellAffinity.STRING || C1.AFFINITY == CellAffinity.TEXT)
+                else if (C1.AFFINITY == CellAffinity.BSTRING)
                 {
-                    C1.STRING = C1.STRING.Replace(C2.STRING, "");
+                    C1.BSTRING = C1.BSTRING.Remove(C2.BSTRING);
+                }
+                else if (C1.AFFINITY == CellAffinity.CSTRING)
+                {
+                    C1.CSTRING = C1.CSTRING.Replace(C2.CSTRING, "");
                 }
                 else
                 {
@@ -1218,19 +1288,19 @@ namespace Pulse.Elements
             else
             {
 
-                if (C1.AFFINITY == CellAffinity.STRING || C2.AFFINITY == CellAffinity.STRING)
+                if (C1.AFFINITY == CellAffinity.CSTRING || C2.AFFINITY == CellAffinity.CSTRING)
                 {
-                    C1.STRING = C1.valueSTRING.Replace(C2.valueSTRING, "");
-                    C1.AFFINITY = CellAffinity.STRING;
+                    C1.CSTRING = C1.valueCSTRING.Replace(C2.valueCSTRING, "");
+                    C1.AFFINITY = CellAffinity.CSTRING;
                 }
-                else if (C1.AFFINITY == CellAffinity.TEXT || C2.AFFINITY == CellAffinity.TEXT)
+                else if (C1.AFFINITY == CellAffinity.BSTRING || C2.AFFINITY == CellAffinity.BSTRING)
                 {
-                    C1.STRING = C1.valueTEXT.Replace(C2.valueTEXT, "");
-                    C1.AFFINITY = CellAffinity.TEXT;
+                    C1.BSTRING = C1.valueBSTRING.Replace(C2.valueBSTRING, "");
+                    C1.AFFINITY = CellAffinity.BSTRING;
                 }
-                else if (C1.AFFINITY == CellAffinity.BLOB || C2.AFFINITY == CellAffinity.BLOB)
+                else if (C1.AFFINITY == CellAffinity.BINARY || C2.AFFINITY == CellAffinity.BINARY)
                 {
-                    C1.AFFINITY = CellAffinity.BLOB;
+                    C1.AFFINITY = CellAffinity.BINARY;
                     C1.NULL = 1;
                 }
                 else if (C1.AFFINITY == CellAffinity.DOUBLE || C2.AFFINITY == CellAffinity.DOUBLE)
@@ -1238,10 +1308,10 @@ namespace Pulse.Elements
                     C1.DOUBLE = C1.valueDOUBLE - C2.valueDOUBLE;
                     C1.AFFINITY = CellAffinity.DOUBLE;
                 }
-                else if (C1.AFFINITY == CellAffinity.FLOAT || C2.AFFINITY == CellAffinity.FLOAT)
+                else if (C1.AFFINITY == CellAffinity.SINGLE || C2.AFFINITY == CellAffinity.SINGLE)
                 {
-                    C1.FLOAT = C1.valueFLOAT - C2.valueFLOAT;
-                    C1.AFFINITY = CellAffinity.FLOAT;
+                    C1.SINGLE = C1.valueSINGLE - C2.valueSINGLE;
+                    C1.AFFINITY = CellAffinity.SINGLE;
                 }
                 else if (C1.AFFINITY == CellAffinity.LONG || C2.AFFINITY == CellAffinity.LONG)
                 {
@@ -1263,9 +1333,9 @@ namespace Pulse.Elements
                     C1.BYTE = (byte)(C1.valueBYTE - C2.valueBYTE);
                     C1.AFFINITY = CellAffinity.BYTE;
                 }
-                else if (C1.AFFINITY == CellAffinity.DATE || C2.AFFINITY == CellAffinity.DATE)
+                else if (C1.AFFINITY == CellAffinity.DATE_TIME || C2.AFFINITY == CellAffinity.DATE_TIME)
                 {
-                    C1.AFFINITY = CellAffinity.DATE;
+                    C1.AFFINITY = CellAffinity.DATE_TIME;
                     C1.NULL = 1;
                 }
                 else
@@ -1280,7 +1350,7 @@ namespace Pulse.Elements
             if (C1.NULL == 1)
             {
                 C1.ULONG = 0;
-                C1.STRING = "";
+                C1.CSTRING = "";
             }
 
             return C1;
@@ -1301,16 +1371,16 @@ namespace Pulse.Elements
 
             if (C.AFFINITY == CellAffinity.DOUBLE)
                 C.DOUBLE = -C.DOUBLE;
-            else if (C.AFFINITY == CellAffinity.FLOAT)
-                C.FLOAT = -C.FLOAT;
+            else if (C.AFFINITY == CellAffinity.SINGLE)
+                C.SINGLE = -C.SINGLE;
             else if (C.AFFINITY == CellAffinity.SHORT)
                 C.SHORT = (short)(-C.SHORT);
             else if (C.AFFINITY == CellAffinity.INT)
                 C.INT = -C.INT;
             else if (C.AFFINITY == CellAffinity.LONG)
                 C.LONG = -C.LONG;
-            else if (C.AFFINITY == CellAffinity.STRING || C.AFFINITY == CellAffinity.TEXT)
-                C.STRING = new string(C.STRING.Reverse().ToArray());
+            else if (C.AFFINITY == CellAffinity.CSTRING || C.AFFINITY == CellAffinity.BSTRING)
+                C.CSTRING = new string(C.CSTRING.Reverse().ToArray());
             else
                 C.NULL = 1;
 
@@ -1329,8 +1399,8 @@ namespace Pulse.Elements
                 return C;
             if (C.AFFINITY == CellAffinity.DOUBLE)
                 C.DOUBLE--;
-            else if (C.AFFINITY == CellAffinity.FLOAT)
-                C.FLOAT--;
+            else if (C.AFFINITY == CellAffinity.SINGLE)
+                C.SINGLE--;
             else if (C.AFFINITY == CellAffinity.SHORT)
                 C.SHORT--;
             else if (C.AFFINITY == CellAffinity.INT)
@@ -1362,9 +1432,9 @@ namespace Pulse.Elements
                 {
                     C1.DOUBLE *= C2.DOUBLE;
                 }
-                else if (C1.AFFINITY == CellAffinity.FLOAT)
+                else if (C1.AFFINITY == CellAffinity.SINGLE)
                 {
-                    C1.FLOAT *= C2.FLOAT;
+                    C1.SINGLE *= C2.SINGLE;
                 }
                 else if (C1.AFFINITY == CellAffinity.BYTE)
                 {
@@ -1391,19 +1461,19 @@ namespace Pulse.Elements
             else
             {
 
-                if (C1.AFFINITY == CellAffinity.STRING || C2.AFFINITY == CellAffinity.STRING)
+                if (C1.AFFINITY == CellAffinity.CSTRING || C2.AFFINITY == CellAffinity.CSTRING)
                 {
-                    C1.AFFINITY = CellAffinity.STRING;
+                    C1.AFFINITY = CellAffinity.CSTRING;
                     C1.NULL = 1;
                 }
-                if (C1.AFFINITY == CellAffinity.TEXT || C2.AFFINITY == CellAffinity.TEXT)
+                if (C1.AFFINITY == CellAffinity.BSTRING || C2.AFFINITY == CellAffinity.BSTRING)
                 {
-                    C1.AFFINITY = CellAffinity.TEXT;
+                    C1.AFFINITY = CellAffinity.BSTRING;
                     C1.NULL = 1;
                 }
-                else if (C1.AFFINITY == CellAffinity.BLOB || C2.AFFINITY == CellAffinity.BLOB)
+                else if (C1.AFFINITY == CellAffinity.BINARY || C2.AFFINITY == CellAffinity.BINARY)
                 {
-                    C1.AFFINITY = CellAffinity.BLOB;
+                    C1.AFFINITY = CellAffinity.BINARY;
                     C1.NULL = 1;
                 }
                 else if (C1.AFFINITY == CellAffinity.DOUBLE || C2.AFFINITY == CellAffinity.DOUBLE)
@@ -1411,10 +1481,10 @@ namespace Pulse.Elements
                     C1.DOUBLE = C1.valueDOUBLE * C2.valueDOUBLE;
                     C1.AFFINITY = CellAffinity.DOUBLE;
                 }
-                else if (C1.AFFINITY == CellAffinity.FLOAT || C2.AFFINITY == CellAffinity.FLOAT)
+                else if (C1.AFFINITY == CellAffinity.SINGLE || C2.AFFINITY == CellAffinity.SINGLE)
                 {
-                    C1.FLOAT = C1.valueFLOAT * C2.valueFLOAT;
-                    C1.AFFINITY = CellAffinity.FLOAT;
+                    C1.SINGLE = C1.valueSINGLE * C2.valueSINGLE;
+                    C1.AFFINITY = CellAffinity.SINGLE;
                 }
                 else if (C1.AFFINITY == CellAffinity.LONG || C2.AFFINITY == CellAffinity.LONG)
                 {
@@ -1436,9 +1506,9 @@ namespace Pulse.Elements
                     C1.BYTE = (byte)(C1.valueBYTE * C2.valueBYTE);
                     C1.AFFINITY = CellAffinity.BYTE;
                 }
-                else if (C1.AFFINITY == CellAffinity.DATE || C2.AFFINITY == CellAffinity.DATE)
+                else if (C1.AFFINITY == CellAffinity.DATE_TIME || C2.AFFINITY == CellAffinity.DATE_TIME)
                 {
-                    C1.AFFINITY = CellAffinity.DATE;
+                    C1.AFFINITY = CellAffinity.DATE_TIME;
                     C1.NULL = 1;
                 }
                 else
@@ -1453,7 +1523,7 @@ namespace Pulse.Elements
             if (C1.NULL == 1)
             {
                 C1.ULONG = 0;
-                C1.STRING = "";
+                C1.CSTRING = "";
             }
 
             return C1;
@@ -1481,9 +1551,9 @@ namespace Pulse.Elements
                 {
                     C1.DOUBLE /= C2.DOUBLE;
                 }
-                else if (C1.AFFINITY == CellAffinity.FLOAT && C2.FLOAT != 0)
+                else if (C1.AFFINITY == CellAffinity.SINGLE && C2.SINGLE != 0)
                 {
-                    C1.FLOAT /= C2.FLOAT;
+                    C1.SINGLE /= C2.SINGLE;
                 }
                 else if (C1.AFFINITY == CellAffinity.LONG && C2.LONG != 0)
                 {
@@ -1510,19 +1580,19 @@ namespace Pulse.Elements
             else
             {
 
-                if (C1.AFFINITY == CellAffinity.STRING || C2.AFFINITY == CellAffinity.STRING)
+                if (C1.AFFINITY == CellAffinity.CSTRING || C2.AFFINITY == CellAffinity.CSTRING)
                 {
-                    C1.AFFINITY = CellAffinity.STRING;
+                    C1.AFFINITY = CellAffinity.CSTRING;
                     C1.NULL = 1;
                 }
-                if (C1.AFFINITY == CellAffinity.TEXT || C2.AFFINITY == CellAffinity.TEXT)
+                if (C1.AFFINITY == CellAffinity.BSTRING || C2.AFFINITY == CellAffinity.BSTRING)
                 {
-                    C1.AFFINITY = CellAffinity.TEXT;
+                    C1.AFFINITY = CellAffinity.BSTRING;
                     C1.NULL = 1;
                 }
-                else if (C1.AFFINITY == CellAffinity.BLOB || C2.AFFINITY == CellAffinity.BLOB)
+                else if (C1.AFFINITY == CellAffinity.BINARY || C2.AFFINITY == CellAffinity.BINARY)
                 {
-                    C1.AFFINITY = CellAffinity.BLOB;
+                    C1.AFFINITY = CellAffinity.BINARY;
                     C1.NULL = 1;
                 }
                 else if (C1.AFFINITY == CellAffinity.DOUBLE || C2.AFFINITY == CellAffinity.DOUBLE)
@@ -1539,18 +1609,18 @@ namespace Pulse.Elements
                     C1.AFFINITY = CellAffinity.DOUBLE;
 
                 }
-                else if (C1.AFFINITY == CellAffinity.FLOAT || C2.AFFINITY == CellAffinity.FLOAT)
+                else if (C1.AFFINITY == CellAffinity.SINGLE || C2.AFFINITY == CellAffinity.SINGLE)
                 {
 
-                    if (C2.valueFLOAT != 0)
+                    if (C2.valueSINGLE != 0)
                     {
-                        C1.FLOAT = C1.valueFLOAT / C2.valueFLOAT;
+                        C1.SINGLE = C1.valueSINGLE / C2.valueSINGLE;
                     }
                     else
                     {
                         C1.NULL = 1;
                     }
-                    C1.AFFINITY = CellAffinity.FLOAT;
+                    C1.AFFINITY = CellAffinity.SINGLE;
 
                 }
                 else if (C1.AFFINITY == CellAffinity.LONG || C2.AFFINITY == CellAffinity.LONG)
@@ -1609,9 +1679,9 @@ namespace Pulse.Elements
                     C1.AFFINITY = CellAffinity.BYTE;
 
                 }
-                else if (C1.AFFINITY == CellAffinity.DATE || C2.AFFINITY == CellAffinity.DATE)
+                else if (C1.AFFINITY == CellAffinity.DATE_TIME || C2.AFFINITY == CellAffinity.DATE_TIME)
                 {
-                    C1.AFFINITY = CellAffinity.DATE;
+                    C1.AFFINITY = CellAffinity.DATE_TIME;
                     C1.NULL = 1;
                 }
                 else
@@ -1626,7 +1696,7 @@ namespace Pulse.Elements
             if (C1.NULL == 1)
             {
                 C1.ULONG = 0;
-                C1.STRING = "";
+                C1.CSTRING = "";
             }
 
             return C1;
@@ -1656,9 +1726,9 @@ namespace Pulse.Elements
                 {
                     C1.DOUBLE /= C2.DOUBLE;
                 }
-                else if (C1.AFFINITY == CellAffinity.FLOAT && C2.FLOAT != 0)
+                else if (C1.AFFINITY == CellAffinity.SINGLE && C2.SINGLE != 0)
                 {
-                    C1.FLOAT /= C2.FLOAT;
+                    C1.SINGLE /= C2.SINGLE;
                 }
                 else if (C1.AFFINITY == CellAffinity.LONG && C2.LONG != 0)
                 {
@@ -1677,7 +1747,7 @@ namespace Pulse.Elements
                     C1.BYTE /= C2.BYTE;
                 }
                 else if (C1.AFFINITY == CellAffinity.BYTE || C1.AFFINITY == CellAffinity.SHORT || C1.AFFINITY == CellAffinity.INT 
-                    || C1.AFFINITY == CellAffinity.LONG || C1.AFFINITY == CellAffinity.FLOAT || C1.AFFINITY == CellAffinity.DOUBLE)
+                    || C1.AFFINITY == CellAffinity.LONG || C1.AFFINITY == CellAffinity.SINGLE || C1.AFFINITY == CellAffinity.DOUBLE)
                 {
                     C1.ULONG = 0;
                 }
@@ -1690,19 +1760,19 @@ namespace Pulse.Elements
             else
             {
 
-                if (C1.AFFINITY == CellAffinity.STRING || C2.AFFINITY == CellAffinity.STRING)
+                if (C1.AFFINITY == CellAffinity.CSTRING || C2.AFFINITY == CellAffinity.CSTRING)
                 {
-                    C1.AFFINITY = CellAffinity.STRING;
+                    C1.AFFINITY = CellAffinity.CSTRING;
                     C1.NULL = 1;
                 }
-                else if (C1.AFFINITY == CellAffinity.TEXT || C2.AFFINITY == CellAffinity.TEXT)
+                else if (C1.AFFINITY == CellAffinity.BSTRING || C2.AFFINITY == CellAffinity.BSTRING)
                 {
-                    C1.AFFINITY = CellAffinity.TEXT;
+                    C1.AFFINITY = CellAffinity.BSTRING;
                     C1.NULL = 1;
                 }
-                else if (C1.AFFINITY == CellAffinity.BLOB || C2.AFFINITY == CellAffinity.BLOB)
+                else if (C1.AFFINITY == CellAffinity.BINARY || C2.AFFINITY == CellAffinity.BINARY)
                 {
-                    C1.AFFINITY = CellAffinity.BLOB;
+                    C1.AFFINITY = CellAffinity.BINARY;
                     C1.NULL = 1;
                 }
                 else if (C1.AFFINITY == CellAffinity.DOUBLE || C2.AFFINITY == CellAffinity.DOUBLE)
@@ -1719,18 +1789,18 @@ namespace Pulse.Elements
                     C1.AFFINITY = CellAffinity.DOUBLE;
 
                 }
-                else if (C1.AFFINITY == CellAffinity.FLOAT || C2.AFFINITY == CellAffinity.FLOAT)
+                else if (C1.AFFINITY == CellAffinity.SINGLE || C2.AFFINITY == CellAffinity.SINGLE)
                 {
 
-                    if (C2.valueFLOAT != 0)
+                    if (C2.valueSINGLE != 0)
                     {
-                        C1.FLOAT = C1.valueFLOAT / C2.valueFLOAT;
+                        C1.SINGLE = C1.valueSINGLE / C2.valueSINGLE;
                     }
                     else
                     {
-                        C1.FLOAT = 0F;
+                        C1.SINGLE = 0F;
                     }
-                    C1.AFFINITY = CellAffinity.FLOAT;
+                    C1.AFFINITY = CellAffinity.SINGLE;
 
                 }
                 else if (C1.AFFINITY == CellAffinity.LONG || C2.AFFINITY == CellAffinity.LONG)
@@ -1789,9 +1859,9 @@ namespace Pulse.Elements
                     C1.AFFINITY = CellAffinity.BYTE;
 
                 }
-                else if (C1.AFFINITY == CellAffinity.DATE || C2.AFFINITY == CellAffinity.DATE)
+                else if (C1.AFFINITY == CellAffinity.DATE_TIME || C2.AFFINITY == CellAffinity.DATE_TIME)
                 {
-                    C1.AFFINITY = CellAffinity.DATE;
+                    C1.AFFINITY = CellAffinity.DATE_TIME;
                     C1.NULL = 1;
                 }
                 else
@@ -1806,7 +1876,7 @@ namespace Pulse.Elements
             if (C1.NULL == 1)
             {
                 C1.ULONG = 0;
-                C1.STRING = "";
+                C1.CSTRING = "";
             }
 
             return C1;
@@ -1834,9 +1904,9 @@ namespace Pulse.Elements
                 {
                     C1.DOUBLE %= C2.DOUBLE;
                 }
-                else if (C1.AFFINITY == CellAffinity.FLOAT && C2.FLOAT != 0)
+                else if (C1.AFFINITY == CellAffinity.SINGLE && C2.SINGLE != 0)
                 {
-                    C1.FLOAT %= C2.FLOAT;
+                    C1.SINGLE %= C2.SINGLE;
                 }
                 else if (C1.AFFINITY == CellAffinity.LONG && C2.LONG != 0)
                 {
@@ -1863,19 +1933,19 @@ namespace Pulse.Elements
             else
             {
 
-                if (C1.AFFINITY == CellAffinity.STRING || C2.AFFINITY == CellAffinity.STRING)
+                if (C1.AFFINITY == CellAffinity.CSTRING || C2.AFFINITY == CellAffinity.CSTRING)
                 {
-                    C1.AFFINITY = CellAffinity.STRING;
+                    C1.AFFINITY = CellAffinity.CSTRING;
                     C1.NULL = 1;
                 }
-                else if (C1.AFFINITY == CellAffinity.TEXT || C2.AFFINITY == CellAffinity.TEXT)
+                else if (C1.AFFINITY == CellAffinity.BSTRING || C2.AFFINITY == CellAffinity.BSTRING)
                 {
-                    C1.AFFINITY = CellAffinity.TEXT;
+                    C1.AFFINITY = CellAffinity.BSTRING;
                     C1.NULL = 1;
                 }
-                else if (C1.AFFINITY == CellAffinity.BLOB || C2.AFFINITY == CellAffinity.BLOB)
+                else if (C1.AFFINITY == CellAffinity.BINARY || C2.AFFINITY == CellAffinity.BINARY)
                 {
-                    C1.AFFINITY = CellAffinity.BLOB;
+                    C1.AFFINITY = CellAffinity.BINARY;
                     C1.NULL = 1;
                 }
                 else if (C1.AFFINITY == CellAffinity.DOUBLE || C2.AFFINITY == CellAffinity.DOUBLE)
@@ -1892,18 +1962,18 @@ namespace Pulse.Elements
                     C1.AFFINITY = CellAffinity.DOUBLE;
 
                 }
-                else if (C1.AFFINITY == CellAffinity.FLOAT || C2.AFFINITY == CellAffinity.FLOAT)
+                else if (C1.AFFINITY == CellAffinity.SINGLE || C2.AFFINITY == CellAffinity.SINGLE)
                 {
 
-                    if (C2.valueFLOAT != 0)
+                    if (C2.valueSINGLE != 0)
                     {
-                        C1.FLOAT = C1.valueFLOAT % C2.valueFLOAT;
+                        C1.SINGLE = C1.valueSINGLE % C2.valueSINGLE;
                     }
                     else
                     {
                         C1.NULL = 1;
                     }
-                    C1.AFFINITY = CellAffinity.FLOAT;
+                    C1.AFFINITY = CellAffinity.SINGLE;
 
                 }
                 else if (C1.AFFINITY == CellAffinity.LONG || C2.AFFINITY == CellAffinity.LONG)
@@ -1962,9 +2032,9 @@ namespace Pulse.Elements
                     C1.AFFINITY = CellAffinity.BYTE;
 
                 }
-                else if (C1.AFFINITY == CellAffinity.DATE || C2.AFFINITY == CellAffinity.DATE)
+                else if (C1.AFFINITY == CellAffinity.DATE_TIME || C2.AFFINITY == CellAffinity.DATE_TIME)
                 {
-                    C1.AFFINITY = CellAffinity.DATE;
+                    C1.AFFINITY = CellAffinity.DATE_TIME;
                     C1.NULL = 1;
                 }
                 else
@@ -1979,7 +2049,7 @@ namespace Pulse.Elements
             if (C1.NULL == 1)
             {
                 C1.ULONG = 0;
-                C1.STRING = "";
+                C1.CSTRING = "";
             }
 
             return C1;
@@ -2006,16 +2076,16 @@ namespace Pulse.Elements
                 return (C1.BOOL && C2.BOOL ? CellValues.True : CellValues.False);
 
             // If neither a string or blob //
-            if (C1.AFFINITY != CellAffinity.STRING && C2.AFFINITY != CellAffinity.STRING
-                && C1.AFFINITY != CellAffinity.TEXT && C2.AFFINITY != CellAffinity.TEXT
-                && C1.AFFINITY != CellAffinity.BLOB && C2.AFFINITY != CellAffinity.BLOB)
+            if (C1.AFFINITY != CellAffinity.CSTRING && C2.AFFINITY != CellAffinity.CSTRING
+                && C1.AFFINITY != CellAffinity.BSTRING && C2.AFFINITY != CellAffinity.BSTRING
+                && C1.AFFINITY != CellAffinity.BINARY && C2.AFFINITY != CellAffinity.BINARY)
             {
 
                 C1.LONG = C1.LONG & C2.LONG;
                 if (C1.AFFINITY == CellAffinity.DOUBLE || C2.AFFINITY == CellAffinity.DOUBLE)
                     C1.AFFINITY = CellAffinity.DOUBLE;
-                else if (C1.AFFINITY == CellAffinity.FLOAT || C2.AFFINITY == CellAffinity.FLOAT)
-                    C1.AFFINITY = CellAffinity.FLOAT;
+                else if (C1.AFFINITY == CellAffinity.SINGLE || C2.AFFINITY == CellAffinity.SINGLE)
+                    C1.AFFINITY = CellAffinity.SINGLE;
                 else if (C1.AFFINITY == CellAffinity.LONG || C2.AFFINITY == CellAffinity.LONG)
                     C1.AFFINITY = CellAffinity.LONG;
                 else if (C1.AFFINITY == CellAffinity.INT || C2.AFFINITY == CellAffinity.INT)
@@ -2024,52 +2094,52 @@ namespace Pulse.Elements
                     C1.AFFINITY = CellAffinity.SHORT;
                 else if (C1.AFFINITY == CellAffinity.BYTE || C2.AFFINITY == CellAffinity.BYTE)
                     C1.AFFINITY = CellAffinity.BYTE;
-                else if (C1.AFFINITY == CellAffinity.DATE || C2.AFFINITY == CellAffinity.DATE)
-                    C1.AFFINITY = CellAffinity.DATE;
+                else if (C1.AFFINITY == CellAffinity.DATE_TIME || C2.AFFINITY == CellAffinity.DATE_TIME)
+                    C1.AFFINITY = CellAffinity.DATE_TIME;
                 else if (C1.AFFINITY == CellAffinity.BOOL || C2.AFFINITY == CellAffinity.BOOL)
                     C1.AFFINITY = CellAffinity.BOOL;
 
             }
-            else if (C1.AFFINITY == CellAffinity.STRING || C2.AFFINITY == CellAffinity.STRING)
+            else if (C1.AFFINITY == CellAffinity.CSTRING || C2.AFFINITY == CellAffinity.CSTRING)
             {
 
                 StringBuilder sb = new StringBuilder();
                 int t = 0;
-                for (int i = 0; i < C1.STRING.Length; i++)
+                for (int i = 0; i < C1.CSTRING.Length; i++)
                 {
-                    if (t >= C2.valueSTRING.Length)
+                    if (t >= C2.valueCSTRING.Length)
                         t = 0;
-                    sb.Append((char)(C1.valueSTRING[i] & C2.valueSTRING[t]));
+                    sb.Append((char)(C1.valueCSTRING[i] & C2.valueCSTRING[t]));
                     t++;
                 }
-                C1.STRING = sb.ToString();
+                C1.CSTRING = sb.ToString();
 
             }
-            else if (C1.AFFINITY == CellAffinity.TEXT || C2.AFFINITY == CellAffinity.TEXT)
+            else if (C1.AFFINITY == CellAffinity.BSTRING || C2.AFFINITY == CellAffinity.BSTRING)
             {
 
                 StringBuilder sb = new StringBuilder();
                 int t = 0;
-                for (int i = 0; i < C1.STRING.Length; i++)
+                for (int i = 0; i < C1.CSTRING.Length; i++)
                 {
-                    if (t >= C2.valueSTRING.Length)
+                    if (t >= C2.valueCSTRING.Length)
                         t = 0;
-                    sb.Append((char)(C1.valueSTRING[i] & C2.valueSTRING[t]));
+                    sb.Append((char)(C1.valueCSTRING[i] & C2.valueCSTRING[t]));
                     t++;
                 }
-                C1.STRING = sb.ToString();
+                C1.CSTRING = sb.ToString();
 
             }
             else
             {
 
                 int t = 0;
-                byte[] b = C2.valueBLOB;
-                for (int i = 0; i < C1.BLOB.Length; i++)
+                byte[] b = C2.valueBINARY;
+                for (int i = 0; i < C1.BINARY.Length; i++)
                 {
                     if (t >= b.Length)
                         t = 0;
-                    C1.BLOB[i] = (byte)(C1.BLOB[i] & b[t]);
+                    C1.BINARY[i] = (byte)(C1.BINARY[i] & b[t]);
                     t++;
                 }
 
@@ -2097,16 +2167,16 @@ namespace Pulse.Elements
                 return (C1.BOOL || C2.BOOL ? CellValues.True : CellValues.False);
 
             // If neither a string or blob //
-            if (C1.AFFINITY != CellAffinity.STRING && C2.AFFINITY != CellAffinity.STRING
-                && C1.AFFINITY != CellAffinity.TEXT && C2.AFFINITY != CellAffinity.TEXT
-                && C1.AFFINITY != CellAffinity.BLOB && C2.AFFINITY != CellAffinity.BLOB)
+            if (C1.AFFINITY != CellAffinity.CSTRING && C2.AFFINITY != CellAffinity.CSTRING
+                && C1.AFFINITY != CellAffinity.BSTRING && C2.AFFINITY != CellAffinity.BSTRING
+                && C1.AFFINITY != CellAffinity.BINARY && C2.AFFINITY != CellAffinity.BINARY)
             {
 
                 C1.LONG = C1.LONG | C2.LONG;
                 if (C1.AFFINITY == CellAffinity.DOUBLE || C2.AFFINITY == CellAffinity.DOUBLE)
                     C1.AFFINITY = CellAffinity.DOUBLE;
-                else if (C1.AFFINITY == CellAffinity.FLOAT || C2.AFFINITY == CellAffinity.FLOAT)
-                    C1.AFFINITY = CellAffinity.FLOAT;
+                else if (C1.AFFINITY == CellAffinity.SINGLE || C2.AFFINITY == CellAffinity.SINGLE)
+                    C1.AFFINITY = CellAffinity.SINGLE;
                 else if (C1.AFFINITY == CellAffinity.LONG || C2.AFFINITY == CellAffinity.LONG)
                     C1.AFFINITY = CellAffinity.LONG;
                 else if (C1.AFFINITY == CellAffinity.INT || C2.AFFINITY == CellAffinity.INT)
@@ -2115,49 +2185,49 @@ namespace Pulse.Elements
                     C1.AFFINITY = CellAffinity.SHORT;
                 else if (C1.AFFINITY == CellAffinity.BYTE || C2.AFFINITY == CellAffinity.BYTE)
                     C1.AFFINITY = CellAffinity.BYTE;
-                else if (C1.AFFINITY == CellAffinity.DATE || C2.AFFINITY == CellAffinity.DATE)
-                    C1.AFFINITY = CellAffinity.DATE;
+                else if (C1.AFFINITY == CellAffinity.DATE_TIME || C2.AFFINITY == CellAffinity.DATE_TIME)
+                    C1.AFFINITY = CellAffinity.DATE_TIME;
                 else if (C1.AFFINITY == CellAffinity.BOOL || C2.AFFINITY == CellAffinity.BOOL)
                     C1.AFFINITY = CellAffinity.BOOL;
 
             }
-            else if (C1.AFFINITY == CellAffinity.STRING || C2.AFFINITY == CellAffinity.STRING)
+            else if (C1.AFFINITY == CellAffinity.CSTRING || C2.AFFINITY == CellAffinity.CSTRING)
             {
                 StringBuilder sb = new StringBuilder();
                 int t = 0;
-                for (int i = 0; i < C1.STRING.Length; i++)
+                for (int i = 0; i < C1.CSTRING.Length; i++)
                 {
-                    if (t >= C2.valueSTRING.Length)
+                    if (t >= C2.valueCSTRING.Length)
                         t = 0;
-                    sb.Append((char)(C1.STRING[i] | C2.valueSTRING[t]));
+                    sb.Append((char)(C1.CSTRING[i] | C2.valueCSTRING[t]));
                     t++;
                 }
-                C1.STRING = sb.ToString();
+                C1.CSTRING = sb.ToString();
 
             }
-            else if (C1.AFFINITY == CellAffinity.TEXT || C2.AFFINITY == CellAffinity.TEXT)
+            else if (C1.AFFINITY == CellAffinity.BSTRING || C2.AFFINITY == CellAffinity.BSTRING)
             {
                 StringBuilder sb = new StringBuilder();
                 int t = 0;
-                for (int i = 0; i < C1.STRING.Length; i++)
+                for (int i = 0; i < C1.CSTRING.Length; i++)
                 {
-                    if (t >= C2.valueSTRING.Length)
+                    if (t >= C2.valueCSTRING.Length)
                         t = 0;
-                    sb.Append((char)(C1.STRING[i] | C2.valueSTRING[t]));
+                    sb.Append((char)(C1.CSTRING[i] | C2.valueCSTRING[t]));
                     t++;
                 }
-                C1.STRING = sb.ToString();
+                C1.CSTRING = sb.ToString();
 
             }
             else
             {
 
                 int t = 0;
-                byte[] b = C2.valueBLOB;
-                for (int i = 0; i < C1.BLOB.Length; i++)
+                byte[] b = C2.valueBINARY;
+                for (int i = 0; i < C1.BINARY.Length; i++)
                 {
                     if (t >= b.Length) t = 0;
-                    C1.BLOB[i] = (byte)(C1.BLOB[i] | b[t]);
+                    C1.BINARY[i] = (byte)(C1.BINARY[i] | b[t]);
                     t++;
                 }
 
@@ -2185,16 +2255,16 @@ namespace Pulse.Elements
                 return (C1.BOOL ^ C2.BOOL ? CellValues.True : CellValues.False);
 
             // If neither a string or blob //
-            if (C1.AFFINITY != CellAffinity.STRING && C2.AFFINITY != CellAffinity.STRING
-                && C1.AFFINITY != CellAffinity.TEXT && C2.AFFINITY != CellAffinity.TEXT
-                && C1.AFFINITY != CellAffinity.BLOB && C2.AFFINITY != CellAffinity.BLOB)
+            if (C1.AFFINITY != CellAffinity.CSTRING && C2.AFFINITY != CellAffinity.CSTRING
+                && C1.AFFINITY != CellAffinity.BSTRING && C2.AFFINITY != CellAffinity.BSTRING
+                && C1.AFFINITY != CellAffinity.BINARY && C2.AFFINITY != CellAffinity.BINARY)
             {
 
                 C1.LONG = C1.LONG ^ C2.LONG;
                 if (C1.AFFINITY == CellAffinity.DOUBLE || C2.AFFINITY == CellAffinity.DOUBLE)
                     C1.AFFINITY = CellAffinity.DOUBLE;
-                else if (C1.AFFINITY == CellAffinity.FLOAT || C2.AFFINITY == CellAffinity.FLOAT)
-                    C1.AFFINITY = CellAffinity.FLOAT;
+                else if (C1.AFFINITY == CellAffinity.SINGLE || C2.AFFINITY == CellAffinity.SINGLE)
+                    C1.AFFINITY = CellAffinity.SINGLE;
                 else if (C1.AFFINITY == CellAffinity.LONG || C2.AFFINITY == CellAffinity.LONG)
                     C1.AFFINITY = CellAffinity.LONG;
                 else if (C1.AFFINITY == CellAffinity.INT || C2.AFFINITY == CellAffinity.INT)
@@ -2203,54 +2273,54 @@ namespace Pulse.Elements
                     C1.AFFINITY = CellAffinity.SHORT;
                 else if (C1.AFFINITY == CellAffinity.BYTE || C2.AFFINITY == CellAffinity.BYTE)
                     C1.AFFINITY = CellAffinity.BYTE;
-                else if (C1.AFFINITY == CellAffinity.DATE || C2.AFFINITY == CellAffinity.DATE)
-                    C1.AFFINITY = CellAffinity.DATE;
+                else if (C1.AFFINITY == CellAffinity.DATE_TIME || C2.AFFINITY == CellAffinity.DATE_TIME)
+                    C1.AFFINITY = CellAffinity.DATE_TIME;
                 else if (C1.AFFINITY == CellAffinity.BOOL || C2.AFFINITY == CellAffinity.BOOL)
                     C1.AFFINITY = CellAffinity.BOOL;
 
             }
-            else if (C1.AFFINITY == CellAffinity.STRING || C2.AFFINITY == CellAffinity.STRING)
+            else if (C1.AFFINITY == CellAffinity.CSTRING || C2.AFFINITY == CellAffinity.CSTRING)
             {
 
                 StringBuilder sb = new StringBuilder();
                 int t = 0;
-                for (int i = 0; i < C1.STRING.Length; i++)
+                for (int i = 0; i < C1.CSTRING.Length; i++)
                 {
-                    if (t >= C2.valueSTRING.Length) t = 0;
-                    sb.Append((char)(C1.STRING[i] ^ C2.valueSTRING[t]));
+                    if (t >= C2.valueCSTRING.Length) t = 0;
+                    sb.Append((char)(C1.CSTRING[i] ^ C2.valueCSTRING[t]));
                     t++;
                 }
-                C1.STRING = sb.ToString();
+                C1.CSTRING = sb.ToString();
 
             }
-            else if (C1.AFFINITY == CellAffinity.TEXT || C2.AFFINITY == CellAffinity.TEXT)
+            else if (C1.AFFINITY == CellAffinity.BSTRING || C2.AFFINITY == CellAffinity.BSTRING)
             {
 
                 StringBuilder sb = new StringBuilder();
                 int t = 0;
-                for (int i = 0; i < C1.STRING.Length; i++)
+                for (int i = 0; i < C1.CSTRING.Length; i++)
                 {
-                    if (t >= C2.valueSTRING.Length) t = 0;
-                    sb.Append((char)(C1.STRING[i] ^ C2.valueSTRING[t]));
+                    if (t >= C2.valueCSTRING.Length) t = 0;
+                    sb.Append((char)(C1.CSTRING[i] ^ C2.valueCSTRING[t]));
                     t++;
                 }
-                C1.STRING = sb.ToString();
+                C1.CSTRING = sb.ToString();
 
             }
             else
             {
 
                 int t = 0;
-                byte[] a = C2.valueBLOB;
-                byte[] b = C2.valueBLOB;
+                byte[] a = C2.valueBINARY;
+                byte[] b = C2.valueBINARY;
                 for (int i = 0; i < a.Length; i++)
                 {
                     if (t >= b.Length) t = 0;
                     a[i] = (byte)(a[i] ^ b[t]);
                     t++;
                 }
-                C1.AFFINITY = CellAffinity.BLOB;
-                C1.BLOB = a;
+                C1.AFFINITY = CellAffinity.BINARY;
+                C1.BINARY = a;
             
             }
             return C1;
@@ -2269,10 +2339,10 @@ namespace Pulse.Elements
             if (C1.NULL == 1 && C2.NULL == 1)
                 return true;
             
-            if (C1.AFFINITY != CellAffinity.STRING && C1.AFFINITY != CellAffinity.TEXT && C1.AFFINITY != CellAffinity.BLOB)
+            if (C1.AFFINITY != CellAffinity.CSTRING && C1.AFFINITY != CellAffinity.BSTRING && C1.AFFINITY != CellAffinity.BINARY)
                 return C1.LONG == C2.LONG;
-            else if (C1.AFFINITY == CellAffinity.STRING || C1.AFFINITY == CellAffinity.TEXT)
-                return C1.STRING == C2.valueSTRING;
+            else if (C1.AFFINITY == CellAffinity.CSTRING || C1.AFFINITY == CellAffinity.BSTRING)
+                return C1.CSTRING == C2.valueCSTRING;
 
             return CellComparer.Compare(C1, C2) == 0;
 
@@ -2290,10 +2360,10 @@ namespace Pulse.Elements
             if (C1.NULL != C2.NULL)
                 return true;
 
-            if (C1.AFFINITY != CellAffinity.STRING && C1.AFFINITY != CellAffinity.BLOB)
+            if (C1.AFFINITY != CellAffinity.CSTRING && C1.AFFINITY != CellAffinity.BINARY)
                 return C1.LONG != C2.LONG;
-            else if (C1.AFFINITY == CellAffinity.STRING || C1.AFFINITY == CellAffinity.TEXT)
-                return C1.STRING != C2.STRING;
+            else if (C1.AFFINITY == CellAffinity.CSTRING || C1.AFFINITY == CellAffinity.BSTRING)
+                return C1.CSTRING != C2.CSTRING;
 
             return CellComparer.Compare(C1, C2) != 0;
 
@@ -2361,6 +2431,178 @@ namespace Pulse.Elements
         public static bool operator false(Cell C)
         {
             return !(C.NULL == 0 && C.BOOL);
+        }
+
+        public static Cell LeftShift(Cell C, int X)
+        {
+
+            if (C.IsNull)
+                return C;
+
+            switch (C.Affinity)
+            {
+
+                case CellAffinity.BOOL:
+                    return CellValues.NullBOOL;
+                case CellAffinity.DATE_TIME:
+                    return CellValues.NullDATE;
+                case CellAffinity.BYTE:
+                    C.B0 = (byte)(C.B0 << X);
+                    return C;
+                case CellAffinity.SHORT:
+                    C.SHORT = (short)(C.SHORT << X);
+                    return C;
+                case CellAffinity.SINGLE:
+                case CellAffinity.INT:
+                    C.INT = (int)(C.INT << X);
+                    return C;
+                case CellAffinity.DOUBLE:
+                case CellAffinity.LONG:
+                    C.LONG = (long)(C.LONG << X);
+                    return C;
+                case CellAffinity.BINARY:
+                    C.BINARY = BitHelper.ShiftLeft(C.BINARY, X);
+                    return C;
+                case CellAffinity.BSTRING:
+                    C.BSTRING = new BString(BitHelper.ShiftLeft(C.BSTRING._elements, X));
+                    return C;
+                case CellAffinity.CSTRING:
+                    C.CSTRING = UTF8Encoding.Unicode.GetString(BitHelper.ShiftLeft(UTF8Encoding.Unicode.GetBytes(C.CSTRING), X));
+                    return C;
+                
+            }
+
+            throw new Exception();
+
+        }
+
+        public static Cell RightShift(Cell C, int X)
+        {
+
+            if (C.IsNull)
+                return C;
+
+            switch (C.Affinity)
+            {
+
+                case CellAffinity.BOOL:
+                    return CellValues.NullBOOL;
+                case CellAffinity.DATE_TIME:
+                    return CellValues.NullDATE;
+                case CellAffinity.BYTE:
+                    C.B0 = (byte)(C.B0 >> X);
+                    return C;
+                case CellAffinity.SHORT:
+                    C.SHORT = (short)(C.SHORT >> X);
+                    return C;
+                case CellAffinity.SINGLE:
+                case CellAffinity.INT:
+                    C.INT = (int)(C.INT >> X);
+                    return C;
+                case CellAffinity.DOUBLE:
+                case CellAffinity.LONG:
+                    C.LONG = (long)(C.LONG >> X);
+                    return C;
+                case CellAffinity.BINARY:
+                    C.BINARY = BitHelper.ShiftRight(C.BINARY, X);
+                    return C;
+                case CellAffinity.BSTRING:
+                    C.BSTRING = new BString(BitHelper.ShiftRight(C.BSTRING._elements, X));
+                    return C;
+                case CellAffinity.CSTRING:
+                    C.CSTRING = UTF8Encoding.Unicode.GetString(BitHelper.ShiftRight(UTF8Encoding.Unicode.GetBytes(C.CSTRING), X));
+                    return C;
+
+            }
+
+            throw new Exception();
+
+        }
+
+        public static Cell LeftRotate(Cell C, int X)
+        {
+
+            if (C.IsNull)
+                return C;
+
+            switch (C.Affinity)
+            {
+
+                case CellAffinity.BOOL:
+                    return CellValues.NullBOOL;
+                case CellAffinity.DATE_TIME:
+                    return CellValues.NullDATE;
+                case CellAffinity.BYTE:
+                    C.B0 = BitHelper.RotateLeft(C.B0, X);
+                    return C;
+                case CellAffinity.SHORT:
+                    C.SHORT = BitHelper.RotateLeft(C.SHORT, X);
+                    return C;
+                case CellAffinity.SINGLE:
+                case CellAffinity.INT:
+                    C.INT = BitHelper.RotateLeft(C.INT, X);
+                    return C;
+                case CellAffinity.DOUBLE:
+                case CellAffinity.LONG:
+                    C.LONG = BitHelper.RotateLeft(C.LONG, X);
+                    return C;
+                case CellAffinity.BINARY:
+                    C.BINARY = BitHelper.RotateLeft(C.BINARY, X);
+                    return C;
+                case CellAffinity.BSTRING:
+                    C.BSTRING = new BString(BitHelper.RotateLeft(C.BSTRING._elements, X));
+                    return C;
+                case CellAffinity.CSTRING:
+                    C.CSTRING = UTF8Encoding.Unicode.GetString(BitHelper.RotateLeft(UTF8Encoding.Unicode.GetBytes(C.CSTRING), X));
+                    return C;
+
+            }
+
+            throw new Exception();
+
+        }
+
+        public static Cell RightRotate(Cell C, int X)
+        {
+
+            if (C.IsNull)
+                return C;
+
+            switch (C.Affinity)
+            {
+
+                case CellAffinity.BOOL:
+                    return CellValues.NullBOOL;
+                case CellAffinity.DATE_TIME:
+                    return CellValues.NullDATE;
+                case CellAffinity.BYTE:
+                    C.B0 = BitHelper.RotateRight(C.B0, X);
+                    return C;
+                case CellAffinity.SHORT:
+                    C.SHORT = BitHelper.RotateRight(C.SHORT, X);
+                    return C;
+                case CellAffinity.SINGLE:
+                case CellAffinity.INT:
+                    C.INT = BitHelper.RotateRight(C.INT, X);
+                    return C;
+                case CellAffinity.DOUBLE:
+                case CellAffinity.LONG:
+                    C.LONG = BitHelper.RotateRight(C.LONG, X);
+                    return C;
+                case CellAffinity.BINARY:
+                    C.BINARY = BitHelper.RotateRight(C.BINARY, X);
+                    return C;
+                case CellAffinity.BSTRING:
+                    C.BSTRING = new BString(BitHelper.RotateRight(C.BSTRING._elements, X));
+                    return C;
+                case CellAffinity.CSTRING:
+                    C.CSTRING = UTF8Encoding.Unicode.GetString(BitHelper.RotateRight(UTF8Encoding.Unicode.GetBytes(C.CSTRING), X));
+                    return C;
+
+            }
+
+            throw new Exception();
+
         }
 
         #endregion
@@ -2454,7 +2696,7 @@ namespace Pulse.Elements
 
         public static implicit operator float(Cell C)
         {
-            return C.valueFLOAT;
+            return C.valueSINGLE;
         }
 
         public static implicit operator Cell(float Value)
@@ -2474,7 +2716,7 @@ namespace Pulse.Elements
 
         public static implicit operator byte[](Cell C)
         {
-            return C.valueBLOB;
+            return C.valueBINARY;
         }
 
         public static implicit operator Cell(byte[] Value)
@@ -2482,9 +2724,19 @@ namespace Pulse.Elements
             return new Cell(Value);
         }
 
+        public static implicit operator BString(Cell C)
+        {
+            return C.valueBSTRING;
+        }
+
+        public static implicit operator Cell(BString Value)
+        {
+            return new Cell(Value);
+        }
+
         public static implicit operator string(Cell C)
         {
-            return (C.Affinity == CellAffinity.TEXT ? C.valueTEXT : C.valueSTRING);
+            return C.valueCSTRING;
         }
 
         public static implicit operator Cell(string Value)
@@ -2558,7 +2810,7 @@ namespace Pulse.Elements
 
         //public static explicit operator float(Cell C)
         //{
-        //    return C.valueFLOAT;
+        //    return C.valueSINGLE;
         //}
 
         //public static explicit operator Cell(float Value)
@@ -2578,7 +2830,7 @@ namespace Pulse.Elements
 
         //public static explicit operator byte[](Cell C)
         //{
-        //    return C.valueBLOB;
+        //    return C.valueBINARY;
         //}
 
         //public static explicit operator Cell(byte[] Value)
@@ -2588,7 +2840,7 @@ namespace Pulse.Elements
 
         //public static explicit operator string(Cell C)
         //{
-        //    return (C.Affinity == CellAffinity.TEXT ? C.valueTEXT : C.valueSTRING);
+        //    return (C.Affinity == CellAffinity.BSTRING ? C.valueBSTRING : C.valueCSTRING);
         //}
 
         //public static explicit operator Cell(string Value)

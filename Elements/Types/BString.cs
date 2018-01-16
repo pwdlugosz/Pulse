@@ -5,35 +5,55 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Pulse.Alpha
+namespace Pulse.Elements
 {
     
+    /// <summary>
+    /// Represents an immutible 8-bit string
+    /// </summary>
     public sealed class BString 
     {
 
-        private byte[] _elements;
+        public byte[] _elements;
 
         public static readonly BString Empty = new BString(0);
 
         public BString(byte[] Data)
         {
+            if (Data == null)
+            {
+                this._elements = new byte[] { };
+                return;
+            }
             this._elements = new byte[Data.Length];
             Array.Copy(Data, 0, this._elements, 0, Data.Length);
         }
-        
+
+        public BString(byte Value, int Length)
+        {
+            if (Length < 0)
+                throw new Exception("Length must be greater than 0");
+            this._elements = new byte[Length];
+            for (int i = 0; i < Length; i++)
+                this._elements[i] = Value;
+        }
+
         public BString(string Text)
-            : this(BStringEncoding.StringToBytes(Text))
+            : this(BStringEncoding.StringToBytes(Text ?? ""))
         {
         }
 
         public BString(int Length)
-            :this(new byte[Length])
+            : this(Length == 0 ? new byte[] {} : new byte[Length])
         {
         }
 
         public int Length
         {
-            get { return this._elements.Length; }
+            get 
+            {
+                return this._elements.Length; 
+            }
         }
 
         public bool IsEmpty
@@ -46,7 +66,8 @@ namespace Pulse.Alpha
             get
             {
                 byte[] b = new byte[this.Length];
-                Array.Copy(this._elements, 0, b, 0, b.Length);
+                //Array.Copy(this._elements, 0, b, 0, b.Length);
+                Array.Copy(this._elements, b, b.Length);
                 return b;
             }
         }
@@ -143,7 +164,7 @@ namespace Pulse.Alpha
                     if (Delim.Contains(b))
                     {
 
-                        BString s = sb.ToUTF8();
+                        BString s = sb.ToBString();
 
                         // Check the size of the current cache and add the string, which would happend if we had 'A,B,,C,D' //
                         if (s.Length == 0)
@@ -175,7 +196,7 @@ namespace Pulse.Alpha
                 throw new ArgumentOutOfRangeException("Unclosed escape sequence");
 
             // Now do clean up //
-            BString t = sb.ToUTF8();
+            BString t = sb.ToBString();
 
             // The string has some Value //
             if (t.Length != 0)
@@ -183,7 +204,7 @@ namespace Pulse.Alpha
 
                 // Check that we didn't end on a delim Value, but if we did and we want delims, then keep it //
                 if (!(t.Length == 1 && Delim.Contains(t[0])) || KeepDelims)
-                    TempArray.Add(sb.ToUTF8());
+                    TempArray.Add(sb.ToBString());
 
             }
             // Check if we end on a delim, such as A,B,C,D, where ',' is a delim; we want our array to be {A , B , C , D , null}
@@ -295,7 +316,7 @@ namespace Pulse.Alpha
 
             }
 
-            return builder.ToUTF8();
+            return builder.ToBString();
 
         }
 
@@ -501,7 +522,7 @@ namespace Pulse.Alpha
             BStringBuilder builder = new BStringBuilder();
             builder.Append(A);
             builder.Append(B);
-            return builder.ToUTF8();
+            return builder.ToBString();
         }
 
         public static BString Concat(IEnumerable<BString> Elements)
@@ -511,7 +532,7 @@ namespace Pulse.Alpha
             {
                 builder.Append(u);
             }
-            return builder.ToUTF8();
+            return builder.ToBString();
         }
 
         // Helpers //
@@ -606,7 +627,7 @@ namespace Pulse.Alpha
                 this.AppendLine();
             }
 
-            public BString ToUTF8()
+            public BString ToBString()
             {
                 return new BString(this._Values.ToArray());
             }
@@ -685,94 +706,95 @@ namespace Pulse.Alpha
 
         }
 
-    }
-
-
-    public static class BStringEncoding
-    {
-
-        public static byte Tab
-        {
-            get { return 9; }
-        }
-
-        public static byte LineFeed
-        {
-            get { return 10; }
-        }
-
-        public static byte CarriageReturn
-        {
-            get { return 13; }
-        }
-
-        public static byte Space
-        {
-            get { return 32; }
-        }
-
-        public static byte[] WhiteSpace
-        {
-            get { return new byte[]{9,10,11,12,13,32,133,160}; } 
-        }
-
-        public static byte CharToByte(char Value)
-        {
-            return (byte)(Value & 255);
-        }
-
-        public static char ByteToChar(byte Value)
-        {
-            return (char)Value;
-        }
-
-        public static bool IsLatinChar(byte Value)
-        {
-            return (Value >= 65 && Value <= 90) || (Value >= 97 && Value <= 122);
-        }
-
-        public static bool IsNumeric(byte Value)
-        {
-            return (Value >= 48 && Value <= 57);
-        }
-
-        public static bool IsWhiteSpace(byte Value)
-        {
-            return (Value >= 9 && Value <= 13) || Value == 32 || Value == 133 || Value == 160;
-        }
-        
-        public static byte[] StringToBytes(string Text)
+        public static class BStringEncoding
         {
 
-            byte[] b = new byte[Text.Length];
-            int i = 0;
-            foreach(char c in Text)
+            public static byte Tab
             {
-                b[i] = (byte)(c & 255);
-                i++;
+                get { return 9; }
             }
-            return b;
 
-        }
-
-        public static string BytesToString(byte[] Binary)
-        {
-            StringBuilder sb = new StringBuilder();
-            foreach(byte b in Binary)
+            public static byte LineFeed
             {
-                sb.Append((char)b);
+                get { return 10; }
             }
-            return sb.ToString();
-        }
 
-        public static byte ToUpper(byte Value)
-        {
-            return (byte)(Value >= 97 && Value <= 122 ? Value - 32 : Value);
-        }
+            public static byte CarriageReturn
+            {
+                get { return 13; }
+            }
 
-        public static byte ToLower(byte Value)
-        {
-            return (byte)(Value >= 65 && Value <= 90 ? Value + 32 : Value);
+            public static byte Space
+            {
+                get { return 32; }
+            }
+
+            public static byte[] WhiteSpace
+            {
+                get { return new byte[] { 9, 10, 11, 12, 13, 32, 133, 160 }; }
+            }
+
+            public static byte CharToByte(char Value)
+            {
+                return (byte)(Value & 255);
+            }
+
+            public static char ByteToChar(byte Value)
+            {
+                return (char)Value;
+            }
+
+            public static bool IsLatinChar(byte Value)
+            {
+                return (Value >= 65 && Value <= 90) || (Value >= 97 && Value <= 122);
+            }
+
+            public static bool IsNumeric(byte Value)
+            {
+                return (Value >= 48 && Value <= 57);
+            }
+
+            public static bool IsWhiteSpace(byte Value)
+            {
+                return (Value >= 9 && Value <= 13) || Value == 32 || Value == 133 || Value == 160;
+            }
+
+            public static byte[] StringToBytes(string Text)
+            {
+
+                byte[] b = new byte[Text.Length];
+                int i = 0;
+                foreach (char c in Text)
+                {
+                    b[i] = (byte)(c & 255);
+                    i++;
+                }
+                return b;
+
+            }
+
+            public static string BytesToString(byte[] Binary)
+            {
+
+                if (Binary == null) throw new Exception();
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < Binary.Length; i++)
+                {
+                    sb.Append((char)Binary[i]);
+                }
+                return sb.ToString();
+            }
+
+            public static byte ToUpper(byte Value)
+            {
+                return (byte)(Value >= 97 && Value <= 122 ? Value - 32 : Value);
+            }
+
+            public static byte ToLower(byte Value)
+            {
+                return (byte)(Value >= 65 && Value <= 90 ? Value + 32 : Value);
+            }
+
         }
 
     }

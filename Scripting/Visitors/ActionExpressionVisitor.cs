@@ -256,7 +256,13 @@ namespace Pulse.Scripting
 
         public override ActionExpression VisitActionTableInsertTable(PulseParser.ActionTableInsertTableContext context)
         {
-            return base.VisitActionTableInsertTable(context);
+
+            Table t = this._tFactory.GetTable(context.table_name());
+            TableExpression te = this._tFactory.Render(context.table_expression());
+            using (RecordWriter w = t.OpenWriter())
+            {
+                return new ActionExpressionInsertSelect(this._Host, this._Master, w, te);
+            }
         }
 
         public override ActionExpression VisitActionSet(PulseParser.ActionSetContext context)
@@ -374,7 +380,7 @@ namespace Pulse.Scripting
         }
 
         // For Each //
-        public override ActionExpression VisitActionForEach(PulseParser.ActionForEachContext context)
+        public override ActionExpression VisitActionForEachRecord(PulseParser.ActionForEachRecordContext context)
         {
 
 
@@ -386,7 +392,7 @@ namespace Pulse.Scripting
             this._sFactory.Map.Local.DeclareRecord(alias, new AssociativeRecord(t.Columns));
 
             // Now we can actually render the query! //
-            ActionExpressionForEach aeq = new ActionExpressionForEach(this._Host, this._Master, t, alias);
+            ActionExpressionForEachTable aeq = new ActionExpressionForEachTable(this._Host, this._Master, t, alias);
             foreach (PulseParser.Action_expressionContext x in context.action_expression())
             {
                 ActionExpression ae = this.Visit(x);
@@ -399,6 +405,48 @@ namespace Pulse.Scripting
             this._sFactory.Map.Local.RemoveRecord(alias);
 
             return aeq;
+
+        }
+
+        public override ActionExpression VisitActionForEachMatrix(PulseParser.ActionForEachMatrixContext context)
+        {
+
+            string mLib = ScriptingHelper.GetLibName(context.matrix_name());
+            string mName = ScriptingHelper.GetVarName(context.matrix_name());
+            string sLib = ScriptingHelper.GetLibName(context.scalar_name());
+            string sName = ScriptingHelper.GetVarName(context.scalar_name());
+
+            Cell c = CellValues.Null(this._sFactory.Map.GetMatrix(mLib, mName).Affinity);
+            this._sFactory.Map.DeclareScalar(sLib, sName, c);
+
+            ActionExpression y = new ActionExpressionForEachMatrix(this._Host, this._Master, mLib, mName, sLib, sName);
+            foreach (PulseParser.Action_expressionContext ctx in context.action_expression())
+            {
+                ActionExpression x = this.Visit(ctx);
+                y.AddChild(x);
+            }
+
+            return y;
+
+        }
+
+        public override ActionExpression VisitActionForEachMatrixExpression(PulseParser.ActionForEachMatrixExpressionContext context)
+        {
+
+            string sLib = ScriptingHelper.GetLibName(context.scalar_name());
+            string sName = ScriptingHelper.GetVarName(context.scalar_name());
+            MatrixExpression m = this._mFactory.Render(context.matrix_expression());
+
+            this._sFactory.Map.DeclareScalar(sLib, sName, CellValues.Null(m.ReturnAffinity()));
+
+            ActionExpression y = new ActionExpressionForEachMatrixExpression(this._Host, this._Master, m, sLib, sName);
+            foreach (PulseParser.Action_expressionContext ctx in context.action_expression())
+            {
+                ActionExpression x = this.Visit(ctx);
+                y.AddChild(x);
+            }
+
+            return y;
 
         }
 
