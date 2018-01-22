@@ -43,7 +43,6 @@ namespace Pulse.Expressions.ScalarExpressions
 
         public override string Unparse(FieldResolver Variants)
         {
-            //return this._Type.ToString().ToUpper() + "." + this._NameID.ToString();
             return this._NameID;
         }
 

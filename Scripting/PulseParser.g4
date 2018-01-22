@@ -134,7 +134,7 @@ order : LITERAL_INT (K_ASC | K_DESC)?;
 // ----------------------------------------------------------------------------------------------------- //
 // ----------------------------------------------- SCALARS --------------------------------------------- //
 // ----------------------------------------------------------------------------------------------------- //
-
+            
 // Expressions
 scalar_expression
 	: IDENTIFIER DOT type																				# Pointer			// X.STRING.5
@@ -152,16 +152,16 @@ scalar_expression
 	| record_name DOT IDENTIFIER																		# RecordMember			// @R.Name
 	| matrix_expression LBRAC scalar_expression (COMMA scalar_expression)? RBRAC						# MatrixMember			// $M[]
 
-	| LITERAL_STRING																					# LiteralString
+	| LITERAL_CSTRING																					# LiteralCString
 	| LITERAL_BSTRING																					# LiteralBString
-	| LITERAL_BLOB																						# LiteralBLOB
+	| LITERAL_BINARY																					# LiteralBinary
 	| LITERAL_DOUBLE																					# LiteralDouble
-	| LITERAL_FLOAT																						# LiteralFloat
+	| LITERAL_SINGLE																					# LiteralSingle
 	| LITERAL_LONG																						# LiteralLong
 	| LITERAL_INT																						# LiteralInt
 	| LITERAL_SHORT																						# LiteralShort
 	| LITERAL_BYTE																						# LiteralByte
-	| LITERAL_DATE																						# LiteralDate
+	| LITERAL_DATE_TIME																					# LiteralDateTime
 	| LITERAL_BOOL																						# LiteralBool
 	| LITERAL_NULL																						# LiteralNull																
 	| type																								# ExpressionType
@@ -250,9 +250,9 @@ param : scalar_expression | matrix_expression | record_expression | table_expres
 
 
 // Types //
-sliteral : (LITERAL_STRING | LITERAL_BSTRING | LITERAL_BLOB | LITERAL_DOUBLE | LITERAL_FLOAT | LITERAL_LONG | LITERAL_INT | LITERAL_SHORT | LITERAL_BYTE | LITERAL_DATE | LITERAL_BOOL | LITERAL_NULL);
+sliteral : (LITERAL_CSTRING | LITERAL_BSTRING | LITERAL_BINARY | LITERAL_DOUBLE | LITERAL_SINGLE | LITERAL_LONG | LITERAL_INT | LITERAL_SHORT | LITERAL_BYTE | LITERAL_DATE_TIME | LITERAL_BOOL | LITERAL_NULL);
 hyper_type : (K_TABLE | K_MATRIX | K_RECORD | K_SCALAR);
-type : (T_BLOB | T_BOOL | T_DATE | T_FLOAT | T_DOUBLE | T_BYTE | T_SHORT | T_INT | T_LONG | T_TEXT | T_STRING) (DOT LITERAL_INT)?;
+type : (T_BINARY | T_BOOL | T_DATE | T_SINGLE | T_DOUBLE | T_BYTE | T_SHORT | T_INT | T_LONG | T_BSTRING | T_CSTRING) (DOT LITERAL_INT)?;
 
 // ----------------------------------------------------------------------------------------------------- //
 // ------------------------------------------------ NAMES ---------------------------------------------- //

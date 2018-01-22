@@ -13,7 +13,7 @@ using Pulse.Expressions.TableExpressions;
 namespace Pulse.Expressions.MatrixExpressions
 {
 
-    public abstract class MatrixExpression : IBindable, IExpression
+    public abstract class MatrixExpression
     {
 
         private MatrixExpression _ParentNode;
@@ -104,29 +104,12 @@ namespace Pulse.Expressions.MatrixExpressions
 
         public abstract MatrixExpression CloneOfMe();
 
-        public virtual void Bind(string PointerRef, ScalarExpression Value)
-        {
-            this._Children.ForEach((x) => { x.Bind(PointerRef, Value); });
-        }
-
-        public SuperExpressionAffinity SuperAffinity { get { return SuperExpressionAffinity.Matrix; } }
-
-        public ScalarExpression Scalar { get { return null; } }
-
-        public MatrixExpression Matrix { get { return this; } }
-
-        public RecordExpression Record { get { return null; } }
-
-        public TableExpression Table { get { return null; } }
-
-
         // Statics //
         public static MatrixExpression Empty
         {
             get 
             {
-                CellMatrix m = new CellMatrix(0, 0, CellValues.NullLONG);
-                return new MatrixExpressionLiteral(null, m);
+                return null;
             }
         }
 
@@ -134,12 +117,204 @@ namespace Pulse.Expressions.MatrixExpressions
         {
             get
             {
-                CellMatrix m = new CellMatrix(1, 1, CellValues.NullLONG);
-                return new MatrixExpressionLiteral(null, m);
+                return null;
             }
         }
 
 
+    }
+
+    public abstract class MatrixExpressionUnary : MatrixExpression
+    {
+
+        protected MatrixExpression _Value;
+        protected string _Name;
+        protected string _Token;
+
+        public MatrixExpressionUnary(MatrixExpression Parent, string Name, string Token, MatrixExpression Value)
+            : base(Parent)
+        {
+            this._Value = Value;
+            this._Name = Name;
+            this._Token = Token;
+        }
+
+        public override MatrixExpression CloneOfMe()
+        {
+            return null;
+        }
+
+        public override CellAffinity ReturnAffinity()
+        {
+            return this._Value.ReturnAffinity();
+        }
+
+        public override int ReturnSize()
+        {
+            return this._Value.ReturnSize();
+        }
+
+        public sealed class MatrixExpressionTranspose : MatrixExpressionUnary
+        {
+
+            public MatrixExpressionTranspose(MatrixExpression Parent, MatrixExpression Value)
+                : base(Parent, "TRANSPOSE", "~", Value)
+            {
+            }
+
+            public override CellMatrix Evaluate(FieldResolver Variant)
+            {
+                return this._Value.Evaluate(Variant).Transposition;
+            }
+
+        }
+
+        public sealed class MatrixExpressionInverse : MatrixExpressionUnary
+        {
+
+            public MatrixExpressionInverse(MatrixExpression Parent, MatrixExpression Value)
+                : base(Parent, "INVERSE", "!!", Value)
+            {
+            }
+
+            public override CellMatrix Evaluate(FieldResolver Variant)
+            {
+                return this._Value.Evaluate(Variant).Inverse;
+            }
+
+        }
+
+    }
+
+    public abstract class MatrixExpressionBinary : MatrixExpression
+    {
+
+
+        protected MatrixExpression _ValueA;
+        protected MatrixExpression _ValueB;
+        protected string _Name;
+        protected string _Token;
+
+        public MatrixExpressionBinary(MatrixExpression Parent, string Name, string Token, MatrixExpression ValueA, MatrixExpression ValueB)
+            : base(Parent)
+        {
+            this._ValueA = ValueA;
+            this._ValueB = ValueB;
+            this._Name = Name;
+            this._Token = Token;
+        }
+
+        public override MatrixExpression CloneOfMe()
+        {
+            return null;
+        }
+
+        public override CellAffinity ReturnAffinity()
+        {
+            return CellAffinityHelper.Highest(this._ValueA.ReturnAffinity(), this._ValueB.ReturnAffinity());
+        }
+
+        public override int ReturnSize()
+        {
+            CellAffinity a = this._ValueA.ReturnAffinity();
+            CellAffinity b = this._ValueB.ReturnAffinity();
+            if (a == b) return Math.Max(this._ValueA.ReturnSize(), this._ValueB.ReturnSize());
+            if ((int)a > (int)b)
+                return this._ValueA.ReturnSize();
+            return this._ValueB.ReturnSize();
+        }
+
+        public sealed class MatrixExpressionBinaryAdd : MatrixExpressionBinary
+        {
+
+            public MatrixExpressionBinaryAdd(MatrixExpression Parent, MatrixExpression A, MatrixExpression B)
+                : base(Parent, "ADD", "+", A, B)
+            {
+            }
+
+            public override CellMatrix Evaluate(FieldResolver Variant)
+            {
+                return this._ValueA.Evaluate(Variant) + this._ValueA.Evaluate(Variant);
+            }
+
+        }
+
+        public sealed class MatrixExpressionBinarySubtract : MatrixExpressionBinary
+        {
+
+            public MatrixExpressionBinarySubtract(MatrixExpression Parent, MatrixExpression A, MatrixExpression B)
+                : base(Parent, "SUB", "-", A, B)
+            {
+            }
+
+            public override CellMatrix Evaluate(FieldResolver Variant)
+            {
+                return this._ValueA.Evaluate(Variant) - this._ValueA.Evaluate(Variant);
+            }
+
+        }
+
+        public sealed class MatrixExpressionBinaryMultiply : MatrixExpressionBinary
+        {
+
+            public MatrixExpressionBinaryMultiply(MatrixExpression Parent, MatrixExpression A, MatrixExpression B)
+                : base(Parent, "MUL", "*", A, B)
+            {
+            }
+
+            public override CellMatrix Evaluate(FieldResolver Variant)
+            {
+                return this._ValueA.Evaluate(Variant) * this._ValueA.Evaluate(Variant);
+            }
+
+        }
+
+        public sealed class MatrixExpressionBinaryDivide : MatrixExpressionBinary
+        {
+
+            public MatrixExpressionBinaryDivide(MatrixExpression Parent, MatrixExpression A, MatrixExpression B)
+                : base(Parent, "DIV", "/", A, B)
+            {
+            }
+
+            public override CellMatrix Evaluate(FieldResolver Variant)
+            {
+                return this._ValueA.Evaluate(Variant) / this._ValueA.Evaluate(Variant);
+            }
+
+        }
+
+        public sealed class MatrixExpressionBinaryCheckDivide : MatrixExpressionBinary
+        {
+
+            public MatrixExpressionBinaryCheckDivide(MatrixExpression Parent, MatrixExpression A, MatrixExpression B)
+                : base(Parent, "CDIV", "/?", A, B)
+            {
+            }
+
+            public override CellMatrix Evaluate(FieldResolver Variant)
+            {
+                return CellMatrix.CheckDivide(this._ValueA.Evaluate(Variant) , this._ValueA.Evaluate(Variant));
+            }
+
+        }
+
+        public sealed class MatrixExpressionBinaryMMultiply : MatrixExpressionBinary
+        {
+
+            public MatrixExpressionBinaryMMultiply(MatrixExpression Parent, MatrixExpression A, MatrixExpression B)
+                : base(Parent, "MMULT", "**", A, B)
+            {
+            }
+
+            public override CellMatrix Evaluate(FieldResolver Variant)
+            {
+                return this._ValueA.Evaluate(Variant) ^ this._ValueB.Evaluate(Variant);
+            }
+
+        }
+    
+    
     }
 
     public abstract class MatrixExpressionFunction : MatrixExpression
@@ -199,5 +374,245 @@ namespace Pulse.Expressions.MatrixExpressions
         }
 
     }
+
+
+    //public sealed class MatrixExpressionSubtractScalar : MatrixExpression
+    //{
+
+    //    private int _Association = 0; // 0 == left (A * B[]), 1 == right (B[] * A)
+    //    private ScalarExpression _expression;
+
+    //    public MatrixExpressionSubtractScalar(MatrixExpression Parent, ScalarExpression Expression, int Association)
+    //        : base(Parent)
+    //    {
+    //        this._Association = Association;
+    //        this._expression = Expression;
+    //    }
+
+    //    public override CellMatrix Evaluate(FieldResolver Variant)
+    //    {
+    //        if (this._Association == 0)
+    //            return this._expression.Evaluate(Variant) - this[0].Evaluate(Variant);
+    //        else
+    //            return this[0].Evaluate(Variant) - this._expression.Evaluate(Variant);
+    //    }
+
+    //    public override CellAffinity ReturnAffinity()
+    //    {
+    //        if (this._Association == 0)
+    //            return this._expression.ReturnAffinity();
+    //        else
+    //            return this[0].ReturnAffinity();
+    //    }
+
+    //    public override int ReturnSize()
+    //    {
+    //        if (this._Association == 0)
+    //            return this._expression.ReturnSize();
+    //        else
+    //            return this[0].ReturnSize();
+    //    }
+
+    //    public override MatrixExpression CloneOfMe()
+    //    {
+    //        MatrixExpression node = new MatrixExpressionSubtractScalar(this.ParentNode, this._expression.CloneOfMe(), this._Association);
+    //        foreach (MatrixExpression m in this._Children)
+    //            node.AddChildNode(m.CloneOfMe());
+    //        return node;
+    //    }
+
+
+    //}
+
+    //public sealed class MatrixExpressionMultiplyScalar : MatrixExpression
+    //{
+
+    //    private int _Association = 0; // 0 == left (A * B[]), 1 == right (B[] * A)
+    //    private ScalarExpression _expression;
+
+    //    public MatrixExpressionMultiplyScalar(MatrixExpression Parent, ScalarExpression Expression, int Association)
+    //        : base(Parent)
+    //    {
+    //        this._Association = Association;
+    //        this._expression = Expression;
+    //    }
+
+    //    public override CellMatrix Evaluate(FieldResolver Variant)
+    //    {
+    //        if (this._Association == 0)
+    //            return this._expression.Evaluate(Variant) * this[0].Evaluate(Variant);
+    //        else
+    //            return this[0].Evaluate(Variant) * this._expression.Evaluate(Variant);
+    //    }
+
+    //    public override CellAffinity ReturnAffinity()
+    //    {
+    //        if (this._Association == 0)
+    //            return this._expression.ReturnAffinity();
+    //        else
+    //            return this[0].ReturnAffinity();
+    //    }
+
+    //    public override int ReturnSize()
+    //    {
+    //        if (this._Association == 0)
+    //            return this._expression.ReturnSize();
+    //        else
+    //            return this[0].ReturnSize();
+    //    }
+
+    //    public override MatrixExpression CloneOfMe()
+    //    {
+    //        MatrixExpression node = new MatrixExpressionMultiplyScalar(this.ParentNode, this._expression.CloneOfMe(), this._Association);
+    //        foreach (MatrixExpression m in this._Children)
+    //            node.AddChildNode(m.CloneOfMe());
+    //        return node;
+    //    }
+
+    //}
+
+    //public sealed class MatrixExpressionCheckDivideScalar : MatrixExpression
+    //{
+
+    //    private int _Association = 0; // 0 == left (A * B[]), 1 == right (B[] * A)
+    //    private ScalarExpression _expression;
+
+    //    public MatrixExpressionCheckDivideScalar(MatrixExpression Parent, ScalarExpression Expression, int Association)
+    //        : base(Parent)
+    //    {
+    //        this._Association = Association;
+    //        this._expression = Expression;
+    //    }
+
+    //    public override CellMatrix Evaluate(FieldResolver Variant)
+    //    {
+    //        if (this._Association == 0)
+    //            return CellMatrix.CheckDivide(this._expression.Evaluate(Variant), this[0].Evaluate(Variant));
+    //        else
+    //            return CellMatrix.CheckDivide(this[0].Evaluate(Variant), this._expression.Evaluate(Variant));
+    //    }
+
+    //    public override CellAffinity ReturnAffinity()
+    //    {
+    //        if (this._Association == 0)
+    //            return this._expression.ReturnAffinity();
+    //        else
+    //            return this[0].ReturnAffinity();
+    //    }
+
+    //    public override int ReturnSize()
+    //    {
+    //        if (this._Association == 0)
+    //            return this._expression.ReturnSize();
+    //        else
+    //            return this[0].ReturnSize();
+    //    }
+
+    //    public override MatrixExpression CloneOfMe()
+    //    {
+    //        MatrixExpression node = new MatrixExpressionCheckDivideScalar(this.ParentNode, this._expression.CloneOfMe(), this._Association);
+    //        foreach (MatrixExpression m in this._Children)
+    //            node.AddChildNode(m.CloneOfMe());
+    //        return node;
+    //    }
+
+    //}
+
+    //public sealed class MatrixExpressionDivideScalar : MatrixExpression
+    //{
+
+    //    private int _Association = 0; // 0 == left (A * B[]), 1 == right (B[] * A)
+    //    private ScalarExpression _expression;
+
+    //    public MatrixExpressionDivideScalar(MatrixExpression Parent, ScalarExpression Expression, int Association)
+    //        : base(Parent)
+    //    {
+    //        this._Association = Association;
+    //        this._expression = Expression;
+    //    }
+
+    //    public override CellMatrix Evaluate(FieldResolver Variant)
+    //    {
+    //        if (this._Association == 0)
+    //            return this._expression.Evaluate(Variant) / this[0].Evaluate(Variant);
+    //        else
+    //            return this[0].Evaluate(Variant) / this._expression.Evaluate(Variant);
+    //    }
+
+    //    public override CellAffinity ReturnAffinity()
+    //    {
+    //        if (this._Association == 0)
+    //            return this._expression.ReturnAffinity();
+    //        else
+    //            return this[0].ReturnAffinity();
+    //    }
+
+    //    public override int ReturnSize()
+    //    {
+    //        if (this._Association == 0)
+    //            return this._expression.ReturnSize();
+    //        else
+    //            return this[0].ReturnSize();
+    //    }
+
+    //    public override MatrixExpression CloneOfMe()
+    //    {
+    //        MatrixExpression node = new MatrixExpressionDivideScalar(this.ParentNode, this._expression.CloneOfMe(), this._Association);
+    //        foreach (MatrixExpression m in this._Children)
+    //            node.AddChildNode(m.CloneOfMe());
+    //        return node;
+    //    }
+
+    //}
+
+    //public sealed class MatrixExpressionAddScalar : MatrixExpression
+    //{
+
+    //    private int _Association = 0; // 0 == left (A * B[]), 1 == right (B[] * A)
+    //    private ScalarExpression _expression;
+
+    //    public MatrixExpressionAddScalar(MatrixExpression Parent, ScalarExpression Expression, int Association)
+    //        : base(Parent)
+    //    {
+    //        this._Association = Association;
+    //        this._expression = Expression;
+    //    }
+
+    //    public override CellMatrix Evaluate(FieldResolver Variant)
+    //    {
+    //        if (this._Association == 0)
+    //            return this._expression.Evaluate(Variant) + this[0].Evaluate(Variant);
+    //        else
+    //            return this[0].Evaluate(Variant) + this._expression.Evaluate(Variant);
+    //    }
+
+    //    public override CellAffinity ReturnAffinity()
+    //    {
+    //        if (this._Association == 0)
+    //            return this._expression.ReturnAffinity();
+    //        else
+    //            return this[0].ReturnAffinity();
+    //    }
+
+    //    public override int ReturnSize()
+    //    {
+    //        if (this._Association == 0)
+    //            return this._expression.ReturnSize();
+    //        else
+    //            return this[0].ReturnSize();
+    //    }
+
+    //    public override MatrixExpression CloneOfMe()
+    //    {
+    //        MatrixExpression node = new MatrixExpressionAddScalar(this.ParentNode, this._expression.CloneOfMe(), this._Association);
+    //        foreach (MatrixExpression m in this._Children)
+    //            node.AddChildNode(m.CloneOfMe());
+    //        return node;
+    //    }
+
+    //}
+
+
+
 
 }

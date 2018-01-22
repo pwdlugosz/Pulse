@@ -146,7 +146,7 @@ namespace Pulse.Scripting
     //            Values.Add(this.RenderNFrame(ctx));
     //        }
 
-    //        return new MatrixExpressionLiteral2(null, Values);
+    //        return new MatrixExpressionLiteral(null, Values);
 
     //    }
 
@@ -519,7 +519,7 @@ namespace Pulse.Scripting
     //        }
 
     //        // Figure out what we're working with //
-    //        // Object is a strict named scalar Store.Name
+    //        // Object is a strict named scalar Add.Name
     //        if (this._Map.Global.Exists(name, ObjectStore.ObjectAffinity.Scalar))
     //        {
     //            return new ScalarExpressionStoreRef(null, FieldResolver.GLOBAL, name, this._Map.Global.Scalars[name].Affinity, this._Map.Global.Scalars[name].Length);
@@ -532,7 +532,7 @@ namespace Pulse.Scripting
     //        // Object is a record in a heap
     //        else if (this._Map.Global.Exists(name, ObjectStore.ObjectAffinity.Record))
     //        {
-    //            return new RecordExpressionStoreRef(this._Host, null, Elements.Host.GLOBAL, name, this._Host.Store.GetRecord(name).Columns);
+    //            return new RecordExpressionStoreRef(this._Host, null, Elements.Host.GLOBAL, name, this._Host.Add.GetRecord(name).Columns);
     //        }
     //        // Object is a table
     //        else if (this._Map.Global.Exists(name, ObjectStore.ObjectAffinity.Table))
@@ -549,13 +549,13 @@ namespace Pulse.Scripting
 
     //        /*
     //         * Can be: 
-    //         * -- Scalar: DecaultContext.Store.Name
+    //         * -- Scalar: DecaultContext.Add.Name
     //         * -- Table: Database.Name
-    //         * -- Record: Store.Name
-    //         * -- Matrix: Store.Name
-    //         * -- Scalar: Store.Name
-    //         * -- Scalar: LOCAL.Store.Name
-    //         * -- Scalar: GLOBAL.Store.Name
+    //         * -- Record: Add.Name
+    //         * -- Matrix: Add.Name
+    //         * -- Scalar: Add.Name
+    //         * -- Scalar: LOCAL.Add.Name
+    //         * -- Scalar: GLOBAL.Add.Name
     //         * 
     //         */
 
@@ -583,7 +583,7 @@ namespace Pulse.Scripting
     //            ObjectStore os = this._Map[store];
 
     //            // Figure out what we're working with //
-    //            // Object is a strict named scalar Store.Name
+    //            // Object is a strict named scalar Add.Name
     //            if (os.Exists(name, ObjectStore.ObjectAffinity.Scalar))
     //            {
     //                return new ScalarExpressionStoreRef(null, store, name, os.Scalars[name].Affinity, os.Scalars[name].Length);
@@ -665,7 +665,7 @@ namespace Pulse.Scripting
     //    //        ObjectStore os = this._Map[lib];
 
     //    //        // Figure out what we're working with //
-    //    //        // Object is a strict named scalar Store.Name
+    //    //        // Object is a strict named scalar Add.Name
     //    //        if (os.Exists(name, ObjectStore.ObjectAffinity.Scalar))
     //    //        {
     //    //            return new ScalarExpressionStoreRef(null, name, os);

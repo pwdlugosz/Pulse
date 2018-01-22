@@ -37,13 +37,13 @@ namespace Pulse.Elements
                 case CellAffinity.LONG:
                     return ParseLONG(Value);
                 case CellAffinity.SINGLE:
-                    return ParseFLOAT(Value);
+                    return ParseSINGLE(Value);
                 case CellAffinity.DOUBLE:
                     return ParseDOUBLE(Value);
                 case CellAffinity.BINARY:
-                    return ParseBLOB(Value);
+                    return ParseBINARY(Value);
                 case CellAffinity.BSTRING:
-                    return ParseTEXT(Value);
+                    return ParseBSTRING(Value);
                 case CellAffinity.CSTRING:
                     return ParseSTRING(Value);
             }
@@ -137,7 +137,7 @@ namespace Pulse.Elements
             return CellValues.NullLONG;
         }
 
-        public static Cell ParseFLOAT(string Value)
+        public static Cell ParseSINGLE(string Value)
         {
             if (Value == null)
                 return CellValues.NullSINGLE;
@@ -170,7 +170,7 @@ namespace Pulse.Elements
             return DateParse(t);
         }
 
-        public static Cell ParseBLOB(string Value)
+        public static Cell ParseBINARY(string Value)
         {
             if (Value == null)
                 return CellValues.NullBLOB;
@@ -179,12 +179,12 @@ namespace Pulse.Elements
             return ByteParse(t);
         }
 
-        public static Cell ParseTEXT(string Value)
+        public static Cell ParseBSTRING(string Value)
         {
             if (Value == null)
                 return CellValues.NullBSTRING;
 
-            return new Cell(Clean(Value), true);
+            return new Cell(new BString(Clean(Value)));
         }
 
         public static Cell ParseSTRING(string Value)
@@ -192,7 +192,7 @@ namespace Pulse.Elements
             if (Value == null)
                 return CellValues.NullCSTRING;
 
-            return new Cell(Clean(Value), false);
+            return new Cell(Clean(Value));
         }
 
         /// <summary>

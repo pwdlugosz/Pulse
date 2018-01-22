@@ -11,7 +11,7 @@ using Pulse.Expressions.ScalarExpressions;
 namespace Pulse.Expressions.ActionExpressions
 {
 
-    public abstract class ActionExpression : IBindable
+    public abstract class ActionExpression 
     {
 
         protected Host _Host;

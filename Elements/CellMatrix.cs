@@ -339,8 +339,11 @@ namespace Pulse.Elements
 
                 for (int j = 0; j < this.ColumnCount; j++)
                 {
-                    string v = this[i, j].valueCSTRING;
-                    sb.Append(v);
+                    Cell x = this[i, j];
+                    //string v = x.valueCSTRING;
+                    BString q = x.valueBSTRING;
+
+                    sb.Append(q);
                     if (j != this.ColumnCount - 1)
                         sb.Append(",");
                 }
@@ -886,7 +889,7 @@ namespace Pulse.Elements
 
             if (CellMatrix.CheckDimensions2(A, B) == false)
             {
-                throw new Exception(string.Format("Dimension mismatch A {0}OriginalPage{1} B {2}OriginalPage{3}", A.RowCount, A.ColumnCount, B.RowCount, B.ColumnCount));
+                throw new Exception(string.Format("Dimension mismatch A {0}:{1} B {2}:{3}", A.RowCount, A.ColumnCount, B.RowCount, B.ColumnCount));
             }
 
             CellMatrix C = new CellMatrix(A.RowCount, B.ColumnCount, CellValues.Zero(A.Affinity));
@@ -969,11 +972,68 @@ namespace Pulse.Elements
                     if (i != j)
                         A[i, j] = CellValues.Zero(A.Affinity);
                     else
-                        A[i, j] = CellValues.Zero(A.Affinity);
+                        A[i, j] = CellValues.One(A.Affinity);
                 }
             }
 
             return A;
+
+        }
+
+        public static int Compare(CellMatrix A, CellMatrix B)
+        {
+
+            if (A.RowCount != B.RowCount)
+                return A.RowCount - B.RowCount;
+            else if (A.ColumnCount != B.ColumnCount)
+                return A.ColumnCount - B.ColumnCount;
+
+            for (int i = 0; i < A.RowCount; i++)
+            {
+                for (int j = 0; j < A.RowCount; j++)
+                {
+                    int c = CellComparer.Compare(A[i, j], B[i, j]);
+                    if (c != 0) return c;
+                }
+            }
+
+            return 0;
+
+        }
+
+        public static bool operator ==(CellMatrix A, CellMatrix B)
+        {
+
+            if (A.RowCount != B.RowCount || A.ColumnCount != B.ColumnCount)
+                return false;
+
+            for (int i = 0; i < A.RowCount; i++)
+            {
+                for (int j = 0; j < A.ColumnCount; j++)
+                {
+                    if (A[i, j] != B[i, j])
+                        return false;
+                }
+            }
+            return true;
+
+        }
+
+        public static bool operator !=(CellMatrix A, CellMatrix B)
+        {
+
+            if (A.RowCount != B.RowCount || A.ColumnCount != B.ColumnCount)
+                return true;
+
+            for (int i = 0; i < A.RowCount; i++)
+            {
+                for (int j = 0; j < A.ColumnCount; j++)
+                {
+                    if (A[i, j] != B[i, j])
+                        return true;
+                }
+            }
+            return false;
 
         }
 

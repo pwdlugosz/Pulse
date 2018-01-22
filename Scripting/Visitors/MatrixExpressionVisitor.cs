@@ -43,25 +43,21 @@ namespace Pulse.Scripting
 
         public override MatrixExpression VisitMatrixInvert(PulseParser.MatrixInvertContext context)
         {
-            MatrixExpression m = new MatrixExpressionInverse(this._Master);
-            m.AddChildNode(this.Visit(context.matrix_expression()));
+            MatrixExpression m = new MatrixExpressionUnary.MatrixExpressionInverse(this._Master, this.Visit(context.matrix_expression()));
             this._Master = m;
             return m;
         }
 
         public override MatrixExpression VisitMatrixTranspose(PulseParser.MatrixTransposeContext context)
         {
-            MatrixExpression m = new MatrixExpressionTranspose(this._Master);
-            m.AddChildNode(this.Visit(context.matrix_expression()));
+            MatrixExpression m = new MatrixExpressionUnary.MatrixExpressionTranspose(this._Master, this.Visit(context.matrix_expression()));
             this._Master = m;
             return m;
         }
 
         public override MatrixExpression VisitMatrixTrueMul(PulseParser.MatrixTrueMulContext context)
         {
-            MatrixExpression m = new MatrixExpressionMatrixMultiply(this._Master);
-            m.AddChildNode(this.Visit(context.matrix_expression()[0]));
-            m.AddChildNode(this.Visit(context.matrix_expression()[1]));
+            MatrixExpression m = new MatrixExpressionBinary.MatrixExpressionBinaryMMultiply(this._Master, this.Visit(context.matrix_expression()[0]), this.Visit(context.matrix_expression()[1]));
             this._Master = m;
             return m;
         }
@@ -71,106 +67,30 @@ namespace Pulse.Scripting
 
             MatrixExpression m;
             if (context.op.Type == PulseParser.MUL)
-                m = new MatrixExpressionMultiply(this._Master);
+                m = new MatrixExpressionBinary.MatrixExpressionBinaryMultiply(this._Master, this.Visit(context.matrix_expression()[0]), this.Visit(context.matrix_expression()[1]));
             else if (context.op.Type == PulseParser.DIV)
-                m = new MatrixExpressionDivide(this._Master);
+                m = new MatrixExpressionBinary.MatrixExpressionBinaryDivide(this._Master, this.Visit(context.matrix_expression()[0]), this.Visit(context.matrix_expression()[1]));
             else
-                m = new MatrixExpressionCheckDivide(this._Master);
+                m = new MatrixExpressionBinary.MatrixExpressionBinaryCheckDivide(this._Master, this.Visit(context.matrix_expression()[0]), this.Visit(context.matrix_expression()[1]));
 
-            m.AddChildNode(this.Visit(context.matrix_expression()[0]));
-            m.AddChildNode(this.Visit(context.matrix_expression()[1]));
             this._Master = m;
             return m;
 
         }
-
-        //public override MatrixExpression VisitMatrixMulDivLeft(PulseParser.MatrixMulDivLeftContext context)
-        //{
-
-        //    ScalarExpression node = this.SeedVisitor.Render(context.scalar_expression());
-        //    MatrixExpression m;
-        //    // Third parameter here: 0 == scalar is on left side (A + B[]), 1 == scalar is on right side (A[] + B)
-        //    if (context.op.Type == PulseParser.MUL)
-        //        m = new MatrixExpressionMultiplyScalar(this._Master, node, 0);
-        //    else if (context.op.Type == PulseParser.DIV)
-        //        m = new MatrixExpressionDivideScalar(this._Master, node, 0);
-        //    else
-        //        m = new MatrixExpressionCheckDivideScalar(this._Master, node, 0);
-
-        //    m.AddChildNode(this.Visit(context.matrix_expression()));
-        //    this._Master = m;
-        //    return m;
-
-        //}
-
-        //public override MatrixExpression VisitMatrixMulDivRight(PulseParser.MatrixMulDivRightContext context)
-        //{
-
-        //    ScalarExpression node = this.SeedVisitor.Render(context.scalar_expression());
-        //    MatrixExpression m;
-        //    // Third parameter here: 0 == scalar is on left side (A + B[]), 1 == scalar is on right side (A[] + B)
-        //    if (context.op.Type == PulseParser.MUL)
-        //        m = new MatrixExpressionMultiplyScalar(this._Master, node, 1);
-        //    else if (context.op.Type == PulseParser.DIV)
-        //        m = new MatrixExpressionDivideScalar(this._Master, node, 1);
-        //    else
-        //        m = new MatrixExpressionCheckDivideScalar(this._Master, node, 1);
-
-        //    m.AddChildNode(this.Visit(context.matrix_expression()));
-        //    this._Master = m;
-        //    return m;
-
-        //}
 
         public override MatrixExpression VisitMatrixAddSub(PulseParser.MatrixAddSubContext context)
         {
 
             MatrixExpression m;
             if (context.op.Type == PulseParser.PLUS)
-                m = new MatrixExpressionAdd(this._Master);
+                m = new MatrixExpressionBinary.MatrixExpressionBinaryAdd(this._Master, this.Visit(context.matrix_expression()[0]), this.Visit(context.matrix_expression()[1]));
             else
-                m = new MatrixExpressionSubtract(this._Master);
+                m = new MatrixExpressionBinary.MatrixExpressionBinarySubtract(this._Master, this.Visit(context.matrix_expression()[0]), this.Visit(context.matrix_expression()[1]));
 
-            m.AddChildNode(this.Visit(context.matrix_expression()[0]));
-            m.AddChildNode(this.Visit(context.matrix_expression()[1]));
             this._Master = m;
             return m;
 
         }
-
-        //public override MatrixExpression VisitMatrixAddSubLeft(PulseParser.MatrixAddSubLeftContext context)
-        //{
-
-        //    ScalarExpression node = this.SeedVisitor.Render(context.scalar_expression());
-        //    MatrixExpression m;
-        //    // Third parameter here: 0 == scalar is on left side (A + B[]), 1 == scalar is on right side (A[] + B)
-        //    if (context.op.Type == PulseParser.PLUS)
-        //        m = new MatrixExpressionAddScalar(this._Master, node, 0);
-        //    else
-        //        m = new MatrixExpressionSubtractScalar(this._Master, node, 0);
-
-        //    m.AddChildNode(this.Visit(context.matrix_expression()));
-        //    this._Master = m;
-        //    return m;
-
-        //}
-
-        //public override MatrixExpression VisitMatrixAddSubRight(PulseParser.MatrixAddSubRightContext context)
-        //{
-
-        //    ScalarExpression node = this.SeedVisitor.Render(context.scalar_expression());
-        //    MatrixExpression m;
-        //    // Third parameter here: 0 == scalar is on left side (A + B[]), 1 == scalar is on right side (A[] + B)
-        //    if (context.op.Type == PulseParser.PLUS)
-        //        m = new MatrixExpressionAddScalar(this._Master, node, 1);
-        //    else
-        //        m = new MatrixExpressionSubtractScalar(this._Master, node, 1);
-
-        //    m.AddChildNode(this.Visit(context.matrix_expression()));
-        //    this._Master = m;
-        //    return m;
-
-        //}
 
         public override MatrixExpression VisitMatrixLookup(PulseParser.MatrixLookupContext context)
         {
@@ -204,7 +124,7 @@ namespace Pulse.Scripting
             }
 
             // Get the highest affinity and record legnth //
-            return new MatrixExpressionLiteral2(this._Master, x);
+            return new MatrixExpressionLiteral(this._Master, x);
 
         }
 

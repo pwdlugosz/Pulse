@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 namespace Pulse.Elements
 {
 
-
     /// <summary>
     /// Contains functions for cells
     /// </summary>
@@ -1008,6 +1007,44 @@ namespace Pulse.Elements
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <returns></returns>
+        public static Cell Logit(Cell C)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            double d = 1D / (1 + Math.Exp(-C.valueDOUBLE));
+            if (double.IsInfinity(d) || double.IsNaN(d))
+            {
+                C.NULL = 1;
+                return C;
+            }
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) C.DOUBLE = d;
+            else if (C.AFFINITY == CellAffinity.SINGLE) C.SINGLE = (float)d;
+            else if (C.AFFINITY == CellAffinity.LONG) C.LONG = (long)d;
+            else if (C.AFFINITY == CellAffinity.INT) C.INT = (int)d;
+            else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)d;
+            else if (C.AFFINITY == CellAffinity.BYTE) C.BYTE = (byte)d;
+            else C.NULL = 1;
+
+            return C;
+
+        }
+
+        public static Cell ModPow(Cell Base, Cell Exp, Cell Mod)
+        {
+
+            Cell u = LongModPow(Base.valueLONG, Exp.valueLONG, Mod.valueLONG);
+            return CellConverter.Cast(u, Base.Affinity);
+
+        }
+
         // Other //
         /// <summary>
         /// Returns the absolute Value of a cell's numeric Value; the resulting Value will be null if the result is either nan or infinity; casts the result back to original affinity passed
@@ -1050,6 +1087,29 @@ namespace Pulse.Elements
             else if (C.AFFINITY == CellAffinity.SHORT) C.SHORT = (short)Math.Sign(C.SHORT);
             else if (C.AFFINITY == CellAffinity.BYTE) C.LONG = Math.Sign(C.BYTE);
             else C.NULL = 1;
+
+            return C;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="C"></param>
+        /// <param name="Percision"></param>
+        /// <returns></returns>
+        public static Cell Round(Cell C, int Percision)
+        {
+
+            if (C.NULL == 1)
+                return C;
+
+            if (C.AFFINITY == CellAffinity.DOUBLE) 
+                C.DOUBLE = Math.Round(C.DOUBLE, Percision);
+            else if (C.AFFINITY == CellAffinity.SINGLE) 
+                C.SINGLE = (Single)Math.Round((double)C.SINGLE, Percision);
+            else if (C.AFFINITY != CellAffinity.BYTE && C.AFFINITY != CellAffinity.SHORT && C.AFFINITY != CellAffinity.INT && C.AFFINITY != CellAffinity.LONG) 
+                C.NULL = 1;
 
             return C;
 
@@ -1476,7 +1536,7 @@ namespace Pulse.Elements
             {
                 if (Position + Length > C.valueCSTRING.Length || Position < 0 || Length < 0)
                     return CellValues.NullCSTRING;
-                return new Cell(C.valueCSTRING.Substring((int)Position, (int)Length), false);
+                return new Cell(C.valueCSTRING.Substring((int)Position, (int)Length));
             }
 
         }
@@ -1676,6 +1736,32 @@ namespace Pulse.Elements
             }
 
             return 0;
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Base"></param>
+        /// <param name="Exp"></param>
+        /// <param name="Mod"></param>
+        /// <returns></returns>
+        internal static long LongModPow(long Base, long Exp, long Mod)
+        {
+
+            long x = 1;
+
+            while (Exp != 0)
+            {
+                if ((Exp & 1) == 1)
+                {
+                    x = (x * Base) % Mod;
+                }
+                Base = (Base * Base) % Mod;
+                Exp >>= 1;
+            }
+
+            return x;
 
         }
 

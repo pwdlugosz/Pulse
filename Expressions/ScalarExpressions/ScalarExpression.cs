@@ -17,12 +17,11 @@ namespace Pulse.Expressions.ScalarExpressions
     /// <summary>
     /// Represents the base class for all expressions
     /// </summary>
-    public abstract class ScalarExpression : IBindable
+    public abstract class ScalarExpression 
     {
 
         protected ScalarExpressionAffinity _Affinity;
         protected ScalarExpression _ParentNode;
-        protected List<ScalarExpression> _ChildNodes;
         protected Guid _UID;
         protected string _name;
 
@@ -31,7 +30,6 @@ namespace Pulse.Expressions.ScalarExpressions
             this._Affinity = Affinity;
             this._name = Affinity.ToString();
             this._ParentNode = Parent;
-            this._ChildNodes = new List<ScalarExpression>();
             this._UID = Guid.NewGuid();
         }
 
@@ -53,39 +51,11 @@ namespace Pulse.Expressions.ScalarExpressions
         }
 
         /// <summary>
-        /// All child nodes
-        /// </summary>
-        public List<ScalarExpression> ChildNodes
-        {
-            get { return _ChildNodes; }
-        }
-
-        /// <summary>
         /// True if this node has no parent (top of the chain)
         /// </summary>
         public bool IsMaster
         {
             get { return _ParentNode == null; }
-        }
-
-        /// <summary>
-        /// True if this node is has no children (bottom of the chain)
-        /// </summary>
-        public bool IsTerminal
-        {
-            get { return this.ChildNodes.Count == 0; }
-        }
-
-        /// <summary>
-        /// True if the node's children are all terminal
-        /// </summary>
-        public bool IsQuasiTerminal
-        {
-            get
-            {
-                if (this.IsTerminal) return false;
-                return this.ChildNodes.TrueForAll((n) => { return n.IsTerminal; });
-            }
         }
 
         /// <summary>
@@ -103,85 +73,6 @@ namespace Pulse.Expressions.ScalarExpressions
         {
             get { return this._name; }
             set { this._name = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the nth child node
-        /// </summary>
-        /// <param name="IndexOf"></param>
-        /// <returns></returns>
-        public ScalarExpression this[int IndexOf]
-        {
-            get { return this._ChildNodes[IndexOf]; }
-        }
-
-        // Methods //
-        /// <summary>
-        /// Adds a child node
-        /// </summary>
-        /// <param name="OriginalNode"></param>
-        public void AddChildNode(ScalarExpression Node)
-        {
-            Node.ParentNode = this;
-            this._ChildNodes.Add(Node);
-        }
-
-        /// <summary>
-        /// Adds many child nodes
-        /// </summary>
-        /// <param name="Nodes"></param>
-        public void AddChildren(params ScalarExpression[] Nodes)
-        {
-            foreach (ScalarExpression n in Nodes)
-                this.AddChildNode(n);
-        }
-
-        /// <summary>
-        /// Removes all child nodes
-        /// </summary>
-        public void Deallocate()
-        {
-            if (this.IsMaster) return;
-            this.ParentNode.ChildNodes.Remove(this);
-        }
-
-        /// <summary>
-        /// Removes a single child node
-        /// </summary>
-        /// <param name="OriginalNode"></param>
-        public void Deallocate(ScalarExpression Node)
-        {
-            if (this.IsTerminal) return;
-            this._ChildNodes.Remove(Node);
-        }
-
-        // Size and Affinities //
-        /// <summary>
-        /// Gets all the child return affinitys
-        /// </summary>
-        /// <param name="Variants"></param>
-        /// <returns></returns>
-        public CellAffinity[] ReturnAffinityChildren()
-        {
-            List<CellAffinity> c = new List<CellAffinity>();
-            foreach (ScalarExpression x in _ChildNodes)
-                c.Add(x.ReturnAffinity());
-            return c.ToArray();
-        }
-
-        /// <summary>
-        /// Gets all the child data sizes
-        /// </summary>
-        /// <param name="Variants"></param>
-        /// <returns></returns>
-        public int[] ReturnSizeChildren()
-        {
-
-            List<int> c = new List<int>();
-            foreach (ScalarExpression x in _ChildNodes)
-                c.Add(x.ReturnSize());
-            return c.ToArray();
-
         }
 
         // Abstracts //
@@ -222,16 +113,6 @@ namespace Pulse.Expressions.ScalarExpressions
         public virtual string Unparse(FieldResolver Variants)
         {
             return "NULL";
-        }
-
-        /// <summary>
-        /// Binds an expression to the tree
-        /// </summary>
-        /// <param name="PointerRef"></param>
-        /// <param name="Value"></param>
-        public virtual void Bind(string PointerRef, ScalarExpression Value)
-        {
-            this._ChildNodes.ForEach((x) => { x.Bind(PointerRef, Value); });
         }
 
         // Virtuals //

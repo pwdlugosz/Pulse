@@ -183,7 +183,7 @@ namespace Pulse.Expressions.RecordExpressions
 
     }
 
-    public abstract class RecordExpression : IExpression
+    public abstract class RecordExpression
     {
 
         protected Host _Host;
@@ -213,16 +213,6 @@ namespace Pulse.Expressions.RecordExpressions
         {
             return this.EvaluateAssociative(Variants);
         }
-
-        public SuperExpressionAffinity SuperAffinity { get { return SuperExpressionAffinity.Record; } }
-
-        public ScalarExpression Scalar { get { return null; } }
-
-        public MatrixExpression Matrix { get { return null; } }
-
-        public RecordExpression Record { get { return this; } }
-
-        public TableExpression Table { get { return null; } }
 
     }
 
@@ -413,5 +403,41 @@ namespace Pulse.Expressions.RecordExpressions
 
 
     }
+
+    public sealed class RecordExpressionPointer : RecordExpression
+    {
+
+        private string _Name;
+        private Schema _Columns;
+
+        public RecordExpressionPointer(Host Host, RecordExpression Parent, string Name, Schema Columns)
+            : base(Host, Parent)
+        {
+            this._Name = Name;
+            this._Columns = Columns;
+        }
+
+        public override Schema Columns
+        {
+            get { return this._Columns; }
+        }
+
+        public override Record Evaluate(FieldResolver Variants)
+        {
+            throw new Exception("Cannot evaluate pointer expressions");
+        }
+
+        public override AssociativeRecord EvaluateAssociative(FieldResolver Variants)
+        {
+            throw new Exception("Cannot evaluate pointer expressions");
+        }
+
+        public override RecordExpression CloneOfMe()
+        {
+            return new RecordExpressionPointer(this._Host, this._Parent, this._Name, this._Columns);
+        }
+
+    }
+
 
 }

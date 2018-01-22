@@ -792,14 +792,14 @@ namespace Pulse.Tables
                 sw.WriteLine("Recycle Bin Count={0}", this._RecycleBin.Count);
 
                 // Dump the table store //
-                sw.WriteLine("----- Table Store -----");
+                sw.WriteLine("----- Table Add -----");
                 foreach (KeyValuePair<string, Table> kv in this._TableStore)
                 {
                     sw.WriteLine("Name={0}; PageCount={1}; RecordCount={2}; Path={3}", kv.Value.Name, kv.Value.PageCount, kv.Value.RecordCount, kv.Value.Header.Path);
                 }
 
                 // Dump the page store //
-                sw.WriteLine("----- Page Store -----");
+                sw.WriteLine("----- Page Add -----");
                 foreach (KeyValuePair<PageUID, Page> kv in this._PageStore)
                 {
                     sw.WriteLine("ID={0}; RecorcCount={1}; Path={2}", kv.Value.PageID, kv.Value.Count, kv.Key.Key);

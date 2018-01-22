@@ -606,25 +606,25 @@ namespace Pulse.Elements
             {
 
                 case CellAffinity.BOOL:
-                    return new Cell(Value.BOOL ? Cell.TRUE_STRING : Cell.FALSE_STRING, true);
+                    return new Cell(new BString(Value.BOOL ? Cell.TRUE_STRING : Cell.FALSE_STRING));
                 case CellAffinity.BYTE:
-                    return new Cell(Value.BYTE.ToString(), true);
+                    return new Cell(new BString(Value.BYTE.ToString()));
                 case CellAffinity.SHORT:
-                    return new Cell(Value.SHORT.ToString(), true);
+                    return new Cell(new BString(Value.SHORT.ToString()));
                 case CellAffinity.INT:
-                    return new Cell(Value.INT.ToString(), true);
+                    return new Cell(new BString(Value.INT.ToString()));
                 case CellAffinity.LONG:
-                    return new Cell(Value.LONG.ToString(), true);
+                    return new Cell(new BString(Value.LONG.ToString()));
                 case CellAffinity.DATE_TIME:
-                    return new Cell(Value.DATE.ToString(), true);
+                    return new Cell(new BString(Value.DATE.ToString()));
                 case CellAffinity.SINGLE:
-                    return new Cell(Value.SINGLE.ToString(), true);
+                    return new Cell(new BString(Value.SINGLE.ToString()));
                 case CellAffinity.DOUBLE:
-                    return new Cell(Value.DOUBLE.ToString(), true);
+                    return new Cell(new BString(Value.DOUBLE.ToString()));
                 case CellAffinity.BINARY:
-                    return new Cell(System.Text.ASCIIEncoding.UTF8.GetString(Value.BINARY, 0, Value.BINARY.Length), true);
+                    return new Cell(new BString(Value.BINARY));
                 case CellAffinity.CSTRING:
-                    return new Cell(Value.CSTRING, true);
+                    return new Cell(new BString(Value.CSTRING));
             }
 
             return CellValues.NullBSTRING;
@@ -659,25 +659,25 @@ namespace Pulse.Elements
             {
 
                 case CellAffinity.BOOL:
-                    return new Cell(Value.BOOL ? Cell.TRUE_STRING : Cell.FALSE_STRING, false);
+                    return new Cell(Value.BOOL ? Cell.TRUE_STRING : Cell.FALSE_STRING);
                 case CellAffinity.BYTE:
-                    return new Cell(Value.BYTE.ToString(), false);
+                    return new Cell(Value.BYTE.ToString());
                 case CellAffinity.SHORT:
-                    return new Cell(Value.SHORT.ToString(), false);
+                    return new Cell(Value.SHORT.ToString());
                 case CellAffinity.INT:
-                    return new Cell(Value.INT.ToString(), false);
+                    return new Cell(Value.INT.ToString());
                 case CellAffinity.LONG:
-                    return new Cell(Value.LONG.ToString(), false);
+                    return new Cell(Value.LONG.ToString());
                 case CellAffinity.DATE_TIME:
-                    return new Cell(Value.DATE.ToString(), false);
+                    return new Cell(Value.DATE.ToString());
                 case CellAffinity.SINGLE:
-                    return new Cell(Value.SINGLE.ToString(), false);
+                    return new Cell(Value.SINGLE.ToString());
                 case CellAffinity.DOUBLE:
-                    return new Cell(Value.DOUBLE.ToString(), false);
+                    return new Cell(Value.DOUBLE.ToString());
                 case CellAffinity.BINARY:
-                    return new Cell(System.Text.ASCIIEncoding.Unicode.GetString(Value.BINARY, 0, Value.BINARY.Length / 2), false);
+                    return new Cell(System.Text.ASCIIEncoding.Unicode.GetString(Value.BINARY, 0, Value.BINARY.Length / 2));
                 case CellAffinity.BSTRING:
-                    return new Cell(Value.CSTRING, false);
+                    return new Cell(Value.CSTRING);
             }
 
             return CellValues.NullCSTRING;

@@ -590,6 +590,30 @@ namespace Pulse.Tables
 
         }
 
+        public static int Compare(Table A, Table B)
+        {
+
+            if (A.Columns.Count != B.Columns.Count)
+                return A.Columns.Count - B.Columns.Count;
+            else if (A.RecordCount != B.RecordCount)
+                return (int)((A.RecordCount - B.RecordCount) & (long)int.MaxValue);
+
+            RecordReader rr_a = A.OpenReader();
+            RecordReader rr_b = B.OpenReader();
+
+            int c = 0;
+            while (rr_a.CanAdvance && rr_b.CanAdvance)
+            {
+                c = Record.Compare(rr_a.ReadNext(), rr_b.ReadNext());
+                if (c != 0)
+                    break;
+                    
+            }
+
+            return c;
+
+        }
+
         // Classes //
         protected class PageEnumerator : IEnumerable<Page>, IEnumerator<Page>, IEnumerable, IEnumerator, IDisposable
         {

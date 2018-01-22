@@ -115,7 +115,6 @@ namespace Pulse.Scripting
             else
                 throw new Exception("Unknow opperation");
 
-            f.AddChildren(a);
             this._Master = f;
 
             return f;
@@ -379,8 +378,7 @@ namespace Pulse.Scripting
             ScalarExpression row = this.Visit(context.scalar_expression()[0]);
             ScalarExpression col = (context.scalar_expression().Length >= 2 ? this.Visit(context.scalar_expression()[1]) : new ScalarExpressionConstant(null, CellValues.ZeroINT));
             MatrixExpression m = (new MatrixExpressionVisitor(this._Host, this)).Render(context.matrix_expression());
-            ScalarExpressionMatrixRef s = new ScalarExpressionMatrixRef(this._Host, this._Master, m);
-            s.AddChildren(row, col);
+            ScalarExpressionMatrixRef s = new ScalarExpressionMatrixRef(this._Host, this._Master, m, row, col);
             return s;
 
         }
@@ -391,7 +389,7 @@ namespace Pulse.Scripting
             return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.BOOL));
         }
 
-        public override ScalarExpression VisitLiteralDate(PulseParser.LiteralDateContext context)
+        public override ScalarExpression VisitLiteralDateTime(PulseParser.LiteralDateTimeContext context)
         {
             string s = context.GetText();
             s = s.Replace("T", "").Replace("t", "");
@@ -423,7 +421,7 @@ namespace Pulse.Scripting
             return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.LONG));
         }
 
-        public override ScalarExpression VisitLiteralFloat(PulseParser.LiteralFloatContext context)
+        public override ScalarExpression VisitLiteralSingle(PulseParser.LiteralSingleContext context)
         {
             string s = context.GetText();
             s = s.Replace("F", "").Replace("f", "");
@@ -437,7 +435,7 @@ namespace Pulse.Scripting
             return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.DOUBLE));
         }
 
-        public override ScalarExpression VisitLiteralBLOB(PulseParser.LiteralBLOBContext context)
+        public override ScalarExpression VisitLiteralBinary(PulseParser.LiteralBinaryContext context)
         {
             string s = context.GetText();
             return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.BINARY));
@@ -452,7 +450,7 @@ namespace Pulse.Scripting
             return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.BSTRING));
         }
 
-        public override ScalarExpression VisitLiteralString(PulseParser.LiteralStringContext context)
+        public override ScalarExpression VisitLiteralCString(PulseParser.LiteralCStringContext context)
         {
             string s = context.GetText();
             s = CleanString(s);

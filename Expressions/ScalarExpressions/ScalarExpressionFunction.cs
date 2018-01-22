@@ -49,15 +49,7 @@ namespace Pulse.Expressions.ScalarExpressions
         /// <returns></returns>
         public override string Unparse(FieldResolver Variants)
         {
-
-            string s = "";
-            for (int i = 0; i < this._ChildNodes.Count; i++)
-            {
-                s += this._ChildNodes[i].Unparse(Variants);
-                if (i < this._ChildNodes.Count - 1) s += ",";
-            }
-            return this.Name + "(" + s + ")";
-
+            return null;
         }
 
         /// <summary>
@@ -67,9 +59,7 @@ namespace Pulse.Expressions.ScalarExpressions
         /// <returns></returns>
         public override CellAffinity ReturnAffinity()
         {
-            if (this._DynamicReturn)
-                return CellAffinityHelper.Highest(this.ReturnAffinityChildren());
-            return this._ReturnAffinity;
+            return this.MaxReturnAffinityOfScalarOrMatrixParameters().Affinity;
         }
 
         /// <summary>
@@ -79,9 +69,7 @@ namespace Pulse.Expressions.ScalarExpressions
         /// <returns></returns>
         public override int ReturnSize()
         {
-            if (this._ChildNodes.Count == 0)
-                return CellSerializer.DefaultLength(this._ReturnAffinity);
-            return this.ReturnSizeChildren().Max();
+            return this.MaxReturnAffinityOfScalarOrMatrixParameters().Size;
         }
 
         /// <summary>
@@ -99,9 +87,9 @@ namespace Pulse.Expressions.ScalarExpressions
         {
             get
             {
-                foreach (ScalarExpression e in this._ChildNodes)
+                foreach (Parameter p in this._Params)
                 {
-                    if (e.IsVolatile)
+                    if (p.Affinity == ParameterAffinity.Scalar && p.Scalar.IsVolatile)
                         return true;
                 }
                 return false;
@@ -172,6 +160,141 @@ namespace Pulse.Expressions.ScalarExpressions
             }
 
             return true;
+
+        }
+
+        protected FunctionMeta MaxReturnAffinityOfScalarParamters()
+        {
+
+            FunctionMeta f = new FunctionMeta();
+            foreach (Parameter p in this._Params)
+            {
+                if (p.Affinity == ParameterAffinity.Scalar)
+                    f = FunctionMeta.Max(f, new FunctionMeta(p.Scalar));
+            }
+            return f;
+
+        }
+
+        protected FunctionMeta MaxReturnAffinityOfMatrixParameters()
+        {
+
+            FunctionMeta f = new FunctionMeta();
+            foreach (Parameter p in this._Params)
+            {
+                if (p.Affinity == ParameterAffinity.Matrix)
+                    f = FunctionMeta.Max(f, new FunctionMeta(p.Matrix));
+            }
+            return f;
+
+        }
+
+        protected FunctionMeta MaxReturnAffinityOfScalarOrMatrixParameters()
+        {
+
+            FunctionMeta f = new FunctionMeta();
+            foreach (Parameter p in this._Params)
+            {
+                if (p.Affinity == ParameterAffinity.Scalar)
+                    f = FunctionMeta.Max(f, new FunctionMeta(p.Scalar));
+                else if (p.Affinity == ParameterAffinity.Matrix)
+                    f = FunctionMeta.Max(f, new FunctionMeta(p.Matrix));
+            }
+            return f;
+
+        }
+
+        protected struct FunctionMeta
+        {
+
+            private CellAffinity _A;
+            private int _S;
+
+            public FunctionMeta(CellAffinity Affinity, int Size)
+            {
+                this._A = Affinity;
+                this._S = (CellAffinityHelper.IsVariableLength(Affinity) ? Size : CellSerializer.DefaultLength(Affinity));
+            }
+
+            public FunctionMeta(ScalarExpression X)
+                :this(X.ReturnAffinity(), X.ReturnSize())
+            {
+            }
+
+            public FunctionMeta(MatrixExpressions.MatrixExpression X)
+                : this(X.ReturnAffinity(), X.ReturnSize())
+            {
+            }
+
+            public CellAffinity Affinity 
+            {
+                get { return this._A; }
+                private set { this._A = value; } 
+            }
+
+            public int Size 
+            {
+                get { return this._S; }
+                private set { this._S = value; }
+            }
+
+            public static FunctionMeta MinValue
+            {
+                get { return new FunctionMeta(CellAffinity.BOOL, -1); }
+            }
+
+            public static FunctionMeta MaxValue
+            {
+                get { return new FunctionMeta(CellAffinity.CSTRING, 4096); }
+            }
+
+            public static bool operator ==(FunctionMeta A, FunctionMeta B)
+            {
+                return A.Affinity == B.Affinity && A.Size == B.Size;
+            }
+
+            public static bool operator !=(FunctionMeta A, FunctionMeta B)
+            {
+                return A.Affinity != B.Affinity || A.Size != B.Size;
+            }
+
+            public static bool operator <(FunctionMeta A, FunctionMeta B)
+            {
+                if (A.Affinity < B.Affinity)
+                    return true;
+                return A.Size < B.Size;
+            }
+
+            public static bool operator <=(FunctionMeta A, FunctionMeta B)
+            {
+                if (A.Affinity <= B.Affinity)
+                    return true;
+                return A.Size <= B.Size;
+            }
+
+            public static bool operator >(FunctionMeta A, FunctionMeta B)
+            {
+                if (A.Affinity > B.Affinity)
+                    return true;
+                return A.Size > B.Size;
+            }
+
+            public static bool operator >=(FunctionMeta A, FunctionMeta B)
+            {
+                if (A.Affinity >= B.Affinity)
+                    return true;
+                return A.Size >= B.Size;
+            }
+
+            public static FunctionMeta Min(FunctionMeta A, FunctionMeta B)
+            {
+                return (A > B ? B : A);
+            }
+
+            public static FunctionMeta Max(FunctionMeta A, FunctionMeta B)
+            {
+                return (A > B ? A : B);
+            }
 
         }
 

@@ -42,19 +42,19 @@ namespace Pulse.Scripting
             else if (context.T_LONG() != null)
                 return CellAffinity.LONG;
 
-            else if (context.T_FLOAT() != null)
+            else if (context.T_SINGLE() != null)
                 return CellAffinity.SINGLE;
 
             else if (context.T_DOUBLE() != null)
                 return CellAffinity.DOUBLE;
 
-            else if (context.T_BLOB() != null)
+            else if (context.T_BINARY() != null)
                 return CellAffinity.BINARY;
 
-            else if (context.T_TEXT() != null)
+            else if (context.T_BSTRING() != null)
                 return CellAffinity.BSTRING;
 
-            else if (context.T_STRING() != null)
+            else if (context.T_CSTRING() != null)
                 return CellAffinity.CSTRING;
 
             throw new Exception(string.Format("Invalid type '{0}'", context.GetText()));

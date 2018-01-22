@@ -342,25 +342,25 @@ namespace Pulse.Libraries
     //        }
 
     //        // Binomial //
-    //        public static double BinomialPMF(double Value, double P, double N)
+    //        public static double BinomialPMF(double Value, double x, double N)
     //        {
     //            double x = SpecialFunction.bincoeff((long)Value, (long)N);
-    //            return x * Math.Pow(P, Value) * Math.Pow(P, N - Value);
+    //            return x * Math.Pow(x, Value) * Math.Pow(x, N - Value);
     //        }
 
-    //        public static double BinomialCDF(double Value, double P, double N)
+    //        public static double BinomialCDF(double Value, double x, double N)
     //        {
 
     //            double p = 0;
     //            for (int i = 0; i <= (int)Value; i++)
     //            {
-    //                p += BinomialPMF(i, P, N);
+    //                p += BinomialPMF(i, x, N);
     //            }
     //            return p;
 
     //        }
 
-    //        public static double BinomialINV(double PValue, double P, double N)
+    //        public static double BinomialINV(double PValue, double x, double N)
     //        {
 
     //            double x = -1, p = 0;
@@ -368,7 +368,7 @@ namespace Pulse.Libraries
     //            {
 
     //                x += 1;
-    //                p += BinomialPMF(x, P, N);
+    //                p += BinomialPMF(x, x, N);
 
     //            }
 
@@ -377,25 +377,25 @@ namespace Pulse.Libraries
     //        }
 
     //        // Negative Binomial //
-    //        public static double NegativeBinomialPMF(double Value, double P, double R)
+    //        public static double NegativeBinomialPMF(double Value, double x, double R)
     //        {
     //            double x = SpecialFunction.bincoeff((long)Value, (long)(Value + R - 1));
-    //            return x * Math.Pow(P, Value) * Math.Pow(1 - P, R);
+    //            return x * Math.Pow(x, Value) * Math.Pow(1 - x, R);
     //        }
 
-    //        public static double NegativeBinomialCDF(double Value, double P, double R)
+    //        public static double NegativeBinomialCDF(double Value, double x, double R)
     //        {
 
     //            double p = 0;
     //            for (int i = 0; i <= (int)Value; i++)
     //            {
-    //                p += NegativeBinomialPMF(i, P, R);
+    //                p += NegativeBinomialPMF(i, x, R);
     //            }
     //            return p;
 
     //        }
 
-    //        public static double NegativeBinomialINV(double PValue, double P, double R)
+    //        public static double NegativeBinomialINV(double PValue, double x, double R)
     //        {
 
     //            double x = -1, p = 0;
@@ -403,7 +403,7 @@ namespace Pulse.Libraries
     //            {
 
     //                x += 1;
-    //                p += NegativeBinomialPMF(x, P, R);
+    //                p += NegativeBinomialPMF(x, x, R);
 
     //            }
 
@@ -412,24 +412,24 @@ namespace Pulse.Libraries
     //        }
 
     //        // Geometric Distribution //
-    //        public static double GeometricPMF(double Value, double P)
+    //        public static double GeometricPMF(double Value, double x)
     //        {
-    //            return P * Math.Pow(1 - P, Value - 1);
+    //            return x * Math.Pow(1 - x, Value - 1);
     //        }
 
-    //        public static double GeometricCDF(double Value, double P)
+    //        public static double GeometricCDF(double Value, double x)
     //        {
-    //            return 1 - Math.Pow(1 - P, Value);
+    //            return 1 - Math.Pow(1 - x, Value);
     //        }
 
-    //        public static double GeometricINV(double PValue, double P)
+    //        public static double GeometricINV(double PValue, double x)
     //        {
 
     //            double x = -1, p = 0;
     //            while (p < PValue)
     //            {
     //                x += 1;
-    //                p += GeometricCDF(x, P);
+    //                p += GeometricCDF(x, x);
     //            }
 
     //            return x;
@@ -984,7 +984,7 @@ namespace Pulse.Libraries
     //        /// <returns></returns>
     //        public static double gamma(double x)
     //        {
-    //            double[] P = {
+    //            double[] x = {
     //                     1.60119522476751861407E-4,
     //                     1.19135147006586384913E-3,
     //                     1.04213797561761569935E-2,
@@ -1072,7 +1072,7 @@ namespace Pulse.Libraries
     //            if ((x == 2.0) || (x == 3.0)) return z;
 
     //            x -= 2.0;
-    //            p = polevl(x, P, 6);
+    //            p = polevl(x, x, 6);
     //            q = polevl(x, Q, 7);
     //            return z * p / q;
 
@@ -1311,7 +1311,7 @@ namespace Pulse.Libraries
     //        {
     //            double x, y, z, p, q;
 
-    //            double[] P = {
+    //            double[] x = {
     //                     2.46196981473530512524E-10,
     //                     5.64189564831068821977E-1,
     //                     7.46321056442269912687E0,
@@ -1369,7 +1369,7 @@ namespace Pulse.Libraries
 
     //            if (x < 8.0)
     //            {
-    //                p = polevl(x, P, 8);
+    //                p = polevl(x, x, 8);
     //                q = p1evl(x, Q, 8);
     //            }
     //            else

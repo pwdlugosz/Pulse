@@ -104,16 +104,16 @@ TABLE_TOK : '#';
 
 // Core types //
 T_BOOL : B O O L;
-T_DATE : D A T E;
+T_DATETIME : D A T E T I M E;
 T_BYTE : B Y T E;
 T_SHORT : S H O R T;
 T_INT : I N T;
 T_LONG : L O N G;
-T_FLOAT : S I N G L E | F L O A T;
+T_SINGLE : S I N G L E | F L O A T;
 T_DOUBLE : D O U B L E | N U M;
-T_BLOB : B L O B;
-T_TEXT : T E X T;
-T_STRING : S T R I N G;
+T_BINARY : B I N A R Y;
+T_BSTRING : B S T R I N G;
+T_CSTRING : C S T R I N G;
 
 // Cell Literal Support //
 LITERAL_NULL // NULL INT
@@ -123,14 +123,14 @@ LITERAL_BOOL
 	: T R U E 
 	| F A L S E
 	;
-LITERAL_BLOB 
+LITERAL_BINARY
 	: '0' X (HEX HEX)*;
-LITERAL_DATE 
+LITERAL_DATETIME 
 	: '\'' DIGIT+ '-' DIGIT+ '-' DIGIT+ '\'' T 												// 'YYYY-MM-DD'T
 	| '\'' DIGIT+ '-' DIGIT+ '-' DIGIT+ ':' DIGIT+ ':' DIGIT+ ':' DIGIT+ '\'' T				// 'YYYY-MM-DD:HH:MM:SS'T
 	| '\'' DIGIT+ '-' DIGIT+ '-' DIGIT+ ':' DIGIT+ ':' DIGIT+ ':' DIGIT+ '.' DIGIT+ '\'' T	// 'YYYY-MM-DD:HH:MM:SS.LLLLLLLL'T
 	;
-LITERAL_FLOAT 
+LITERAL_SINGLE
 	: DIGIT+ '.' DIGIT+ F  // FLOAT
 	| (DIGIT+) F			// 'F' MEANS THIS HAS THE FORM OF AN INT, BUT WE WANT IT TO BE A FLOAT; AVOIDS HAVING TO DO A CAST
 	;
@@ -152,6 +152,8 @@ LITERAL_LONG
 	;
 LITERAL_BSTRING
 	: B LITERAL_STRING;
+LITERAL_CSTRING
+	: C? LITERAL_STRING;
 LITERAL_STRING 
 	: '\'' ( ~'\'' | '\'\'' )* '\'' // NORMAL STRING -> 'abcdef'
 	| '"' ( ~'"' | '""')* '"'		// NORMAL STRING -> "ABCDEF"

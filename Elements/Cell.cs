@@ -295,6 +295,8 @@ namespace Pulse.Elements
             : this()
         {
 
+            this.AFFINITY = CellAffinity.BSTRING;
+
             // Handle null strings //
             if (Value == null)
             {
@@ -317,17 +319,12 @@ namespace Pulse.Elements
 
         }
 
-        /// <summary>
-        /// Creates a string cell; strings greater than 1024 chars will be truncated
-        /// </summary>
-        /// <param name="Value">A .Net string Value to be converted to a cell</param>
-        /// <param name="TrimQuotes">True will conver 'ABCD' to ABCD</param>
-        public Cell(string Value, bool UTF8)
+        public Cell(string Value)
             : this()
         {
 
             // Set the affinity //
-            this.AFFINITY = (UTF8 ? CellAffinity.BSTRING : CellAffinity.CSTRING);
+            this.AFFINITY = CellAffinity.CSTRING;
 
             // Handle null strings //
             if (Value == null)
@@ -343,14 +340,7 @@ namespace Pulse.Elements
             else if (Value.Length >= MAX_STRING_LENGTH) // Fix strings that are too long
                 Value = Value.Substring(0, MAX_STRING_LENGTH);
 
-            if (UTF8)
-            {
-                this.BSTRING = new BString(Value);
-            }
-            else
-            {
-                this.CSTRING = Value;
-            }
+            this.CSTRING = Value;
             this.NULL = 0;
 
             this.INT_A = Value.GetHashCode();
@@ -358,14 +348,56 @@ namespace Pulse.Elements
 
         }
 
-        /// <summary>
-        /// Creates a string cell; strings greater than 1024 chars will be truncated
-        /// </summary>
-        /// <param name="Value">A .Net string Value to be converted to a cell</param>
-        public Cell(string Value)
-            : this(Value, true)
-        {
-        }
+
+        ///// <summary>
+        ///// Creates a string cell; strings greater than 1024 chars will be truncated
+        ///// </summary>
+        ///// <param name="Value">A .Net string Value to be converted to a cell</param>
+        ///// <param name="TrimQuotes">True will conver 'ABCD' to ABCD</param>
+        //public Cell(string Value, bool UTF8)
+        //    : this()
+        //{
+
+        //    // Set the affinity //
+        //    this.AFFINITY = (UTF8 ? CellAffinity.BSTRING : CellAffinity.CSTRING);
+
+        //    // Handle null strings //
+        //    if (Value == null)
+        //    {
+        //        this.CSTRING = "\0";
+        //        this.NULL = 1;
+        //        return;
+        //    }
+
+        //    // Fix the values
+        //    if (Value.Length == 0) // fix instances that are zero length
+        //        Value = "\0";
+        //    else if (Value.Length >= MAX_STRING_LENGTH) // Fix strings that are too long
+        //        Value = Value.Substring(0, MAX_STRING_LENGTH);
+
+        //    if (UTF8)
+        //    {
+        //        this.BSTRING = new BString(Value);
+        //    }
+        //    else
+        //    {
+        //        this.CSTRING = Value;
+        //    }
+        //    this.NULL = 0;
+
+        //    this.INT_A = Value.GetHashCode();
+        //    this.INT_B = Value.Length;
+
+        //}
+
+        ///// <summary>
+        ///// Creates a string cell; strings greater than 1024 chars will be truncated
+        ///// </summary>
+        ///// <param name="Value">A .Net string Value to be converted to a cell</param>
+        //public Cell(string Value)
+        //    : this(Value, true)
+        //{
+        //}
 
         /// <summary>
         /// Creats a BINARY cell
