@@ -243,7 +243,8 @@ namespace Pulse.Expressions.RecordExpressions
 
         public override AssociativeRecord EvaluateAssociative(FieldResolver Variants)
         {
-            return Variants[this._StoreName].GetRecord(this._ValueName);
+            AssociativeRecord r = Variants[this._StoreName].GetRecord(this._ValueName);
+            return new AssociativeRecord(r);
         }
 
         public override RecordExpression CloneOfMe()

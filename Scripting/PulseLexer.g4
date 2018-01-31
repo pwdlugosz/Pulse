@@ -126,9 +126,9 @@ LITERAL_BOOL
 LITERAL_BINARY
 	: '0' X (HEX HEX)*;
 LITERAL_DATETIME 
-	: '\'' DIGIT+ '-' DIGIT+ '-' DIGIT+ '\'' T 												// 'YYYY-MM-DD'T
-	| '\'' DIGIT+ '-' DIGIT+ '-' DIGIT+ ':' DIGIT+ ':' DIGIT+ ':' DIGIT+ '\'' T				// 'YYYY-MM-DD:HH:MM:SS'T
-	| '\'' DIGIT+ '-' DIGIT+ '-' DIGIT+ ':' DIGIT+ ':' DIGIT+ ':' DIGIT+ '.' DIGIT+ '\'' T	// 'YYYY-MM-DD:HH:MM:SS.LLLLLLLL'T
+	: '\'' DIGIT+ '-' DIGIT+ '-' DIGIT+ '\'' D T 												// 'YYYY-MM-DD'
+	| '\'' DIGIT+ '-' DIGIT+ '-' DIGIT+ ':' DIGIT+ ':' DIGIT+ ':' DIGIT+ '\'' D T				// 'YYYY-MM-DD:HH:MM:SS'
+	| '\'' DIGIT+ '-' DIGIT+ '-' DIGIT+ ':' DIGIT+ ':' DIGIT+ ':' DIGIT+ '.' DIGIT+ '\'' D T	// 'YYYY-MM-DD:HH:MM:SS.LLLLLLLL'
 	;
 LITERAL_SINGLE
 	: DIGIT+ '.' DIGIT+ F  // FLOAT
@@ -151,9 +151,9 @@ LITERAL_LONG
 	: DIGIT+ L 
 	;
 LITERAL_BSTRING
-	: B LITERAL_STRING;
+	: LITERAL_STRING B;
 LITERAL_CSTRING
-	: C? LITERAL_STRING;
+	: LITERAL_STRING C?;
 LITERAL_STRING 
 	: '\'' ( ~'\'' | '\'\'' )* '\'' // NORMAL STRING -> 'abcdef'
 	| '"' ( ~'"' | '""')* '"'		// NORMAL STRING -> "ABCDEF"

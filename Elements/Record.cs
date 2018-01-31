@@ -38,6 +38,16 @@ namespace Pulse.Elements
             this._data = Data;
         }
 
+        /// <summary>
+        /// Creates a new record by value
+        /// </summary>
+        /// <param name="Value"></param>
+        public Record(Record Value)
+        {
+            this._data = new Cell[Value.Count];
+            Array.Copy(Value._data, 0, this._data, 0, this._data.Length);
+        }
+        
         // Properties //
         /// <summary>
         /// The number of elements in the record
@@ -210,6 +220,14 @@ namespace Pulse.Elements
         }
 
         // Comparers //
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="R1"></param>
+        /// <param name="K1"></param>
+        /// <param name="R2"></param>
+        /// <param name="K2"></param>
+        /// <returns></returns>
         public static int Compare(Record R1, Key K1, Record R2, Key K2)
         {
 
@@ -227,6 +245,13 @@ namespace Pulse.Elements
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="R1"></param>
+        /// <param name="R2"></param>
+        /// <param name="K"></param>
+        /// <returns></returns>
         public static int Compare(Record R1, Record R2, Key K)
         {
 
@@ -241,6 +266,12 @@ namespace Pulse.Elements
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="R1"></param>
+        /// <param name="R2"></param>
+        /// <returns></returns>
         public static int Compare(Record R1, Record R2)
         {
 
@@ -257,6 +288,14 @@ namespace Pulse.Elements
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="R1"></param>
+        /// <param name="K1"></param>
+        /// <param name="R2"></param>
+        /// <param name="K2"></param>
+        /// <returns></returns>
         public static bool Equals(Record R1, Key K1, Record R2, Key K2)
         {
 
@@ -276,6 +315,12 @@ namespace Pulse.Elements
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="R1"></param>
+        /// <param name="R2"></param>
+        /// <returns></returns>
         public static bool Equals(Record R1, Record R2)
         {
 
@@ -560,8 +605,6 @@ namespace Pulse.Elements
             }
         }
 
-
-
     }
 
     public class AssociativeRecord : Record
@@ -584,6 +627,12 @@ namespace Pulse.Elements
         public AssociativeRecord(Schema Columns)
             : this(Columns, Columns.NullRecord)
         {
+        }
+
+        public AssociativeRecord(AssociativeRecord Value)
+            : base(Value)
+        {
+            this._Columns = Value.Columns;
         }
 
         public Schema Columns

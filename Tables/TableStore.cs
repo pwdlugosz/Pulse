@@ -766,7 +766,9 @@ namespace Pulse.Tables
 
             // Close all tables //
             foreach (string t in this._TableStore.Keys)
+            {
                 this.CloseTable(t);
+            }
 
         }
 

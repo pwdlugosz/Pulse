@@ -16,7 +16,6 @@ using Pulse.Elements.Structures;
 namespace Pulse.Libraries
 {
 
-
     public sealed class BaseLibrary : Library
     {
 
@@ -1442,6 +1441,5 @@ namespace Pulse.Libraries
         }
 
     }
-
 
 }

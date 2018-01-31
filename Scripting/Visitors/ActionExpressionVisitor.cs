@@ -200,6 +200,39 @@ namespace Pulse.Scripting
 
         }
 
+        public override ActionExpression VisitActionRecordUnitAssign(PulseParser.ActionRecordUnitAssignContext context)
+        {
+
+            string sName = ScriptingHelper.GetLibName(context.record_name());
+            string rName = ScriptingHelper.GetVarName(context.record_name());
+            string vName = context.IDENTIFIER().GetText();
+            Assignment logic = ScriptingHelper.GetAssignment(context.assignment());
+            ScalarExpression value = this._sFactory.Render(context.scalar_expression());
+
+            ActionExpression a = new ActionExpressionRecordMemberAssign(this._Host, this._Master, sName, rName, vName, value, logic);
+            this._Master = a;
+
+            return a;
+
+        }
+
+        public override ActionExpression VisitActionRecordUnitIncrement(PulseParser.ActionRecordUnitIncrementContext context)
+        {
+            string sName = ScriptingHelper.GetLibName(context.record_name());
+            string rName = ScriptingHelper.GetVarName(context.record_name());
+            string vName = context.IDENTIFIER().GetText();
+            CellAffinity q = this._sFactory.Map.Stores[sName].Records[rName].Columns.ColumnAffinity(vName);
+            ScalarExpression value = new ScalarExpressionConstant(null, CellValues.One(q));
+            Assignment logic = Assignment.PlusEquals;
+            if (context.increment().PLUS() == null)
+                logic = Assignment.MinusEquals;
+
+            ActionExpression a = new ActionExpressionRecordMemberAssign(this._Host, this._Master, sName, rName, vName, value, logic);
+            this._Master = a;
+
+            return a;
+        }
+
         public override ActionExpression VisitActionPrintScalar(PulseParser.ActionPrintScalarContext context)
         {
             ScalarExpression element = this._sFactory.Render(context.scalar_expression()[0]);
@@ -301,7 +334,7 @@ namespace Pulse.Scripting
             // Get the control var name //
             string Lib = ScriptingHelper.GetLibName(context.scalar_name());
             string Name = ScriptingHelper.GetVarName(context.scalar_name());
-
+            
             // If the library doesnt exist, then error out
             if (!this._sFactory.Map.StoreExists(Lib))
                 throw new Exception(string.Format("Library '{0}' does not exist", Lib));
@@ -376,6 +409,27 @@ namespace Pulse.Scripting
             this._Master = aei;
 
             return aei;
+
+        }
+
+        public override ActionExpression VisitActionCallSeq(PulseParser.ActionCallSeqContext context)
+        {
+            
+            // Pull the action //
+            string LibName = ScriptingHelper.GetLibName(context.scalar_name());
+            string MethodName = ScriptingHelper.GetVarName(context.scalar_name());
+            if (!this._Host.Libraries.Exists(LibName))
+                throw new Exception(string.Format("Library '{0}' does not exist", LibName));
+            ActionExpressionParameterized x = this._Host.Libraries[LibName].ActionLookup(MethodName);
+            ObjectFactory of = new ObjectFactory(this._Host, this._sFactory, this._mFactory, this._rFactory, this._tFactory);
+            foreach (PulseParser.ParamContext ctx in context.param())
+            {
+                Parameter p = of.Render(ctx);
+                x.AddParameter(p);
+            }
+
+            this._Master = x;
+            return x;
 
         }
 

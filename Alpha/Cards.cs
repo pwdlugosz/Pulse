@@ -292,8 +292,30 @@ namespace Pulse.Alpha
 
     }
 
+    //public class Hand
+    //{
 
+    //    public Hand()
+    //    {
+    //    }
 
+    //    public abstract void Encard(Card C);
+
+    //    public abstract void Discard();
+
+    //    public abstract IEnumerable<Card> Cards { get; }
+        
+
+    //}
+
+    //public class TexasHoldem
+    //{
+
+    //    public class TexasHoldemHand
+    //    {
+    //    }
+
+    //}
 
 }
 

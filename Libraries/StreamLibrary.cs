@@ -9,6 +9,7 @@ using Pulse.Expressions.MatrixExpressions;
 using Pulse.Expressions.RecordExpressions;
 using Pulse.Expressions.TableExpressions;
 using Pulse.Expressions.ActionExpressions;
+using Pulse.Tables;
 using Pulse.Elements;
 using System.IO;
 
@@ -160,6 +161,8 @@ namespace Pulse.Libraries
         public const string OPEN_WRITE = "OPEN_WRITE";
         public const string CLOSE = "CLOSE";
         public const string ADVANCE = "ADVANCE";
+        public const string WRITE_LINE = "WRITE_LINE";
+        public const string WRITE_BLOCK = "WRITE_BLOCK";
         public const string READ_LINE = "READ_LINE";
         public const string READ_BLOCK = "READ_BLOCK";
         public const string EOS = "EOS";
@@ -191,6 +194,8 @@ namespace Pulse.Libraries
 
                 case OPEN_READ: return new aeOPEN_READ(this._Host, this._Stream);
                 case OPEN_WRITE: return new aeOPEN_WRITE(this._Host, this._Stream);
+                case WRITE_LINE: return new aeWRITE_LINE(this._Host, this._Stream);
+                case WRITE_BLOCK: return new aeWRITE_BLOCK(this._Host, this._Stream);
                 case CLOSE: return new aeCLOSE(this._Host, this._Stream);
                 case ADVANCE: return new aeADVANCE(this._Host, this._Stream);
             
@@ -311,7 +316,7 @@ namespace Pulse.Libraries
             public override void Invoke(FieldResolver Variant)
             {
 
-                if (!this.CheckSigniture(ParameterAffinity.Scalar, ParameterAffinity.Scalar))
+                if (!this.CheckSigniture(ParameterAffinity.Scalar))
                     throw new Exception("Expecting two scalar parameters");
 
                 Cell Key = this._Parameters[0].Scalar.Evaluate(Variant);
@@ -335,7 +340,7 @@ namespace Pulse.Libraries
             public override void Invoke(FieldResolver Variant)
             {
 
-                if (!this.CheckSigniture(ParameterAffinity.Scalar, ParameterAffinity.Scalar))
+                if (!this.CheckSigniture(ParameterAffinity.Scalar))
                     throw new Exception("Expecting two scalar parameters");
 
                 Cell Key = this._Parameters[0].Scalar.Evaluate(Variant);
@@ -344,6 +349,81 @@ namespace Pulse.Libraries
                 {
                     string x = sr.ReadLine();
                 }
+
+            }
+
+        }
+
+        public sealed class aeWRITE_LINE : ActionExpressionParameterized
+        {
+
+            private StreamCache _Cache;
+
+            public aeWRITE_LINE(Host Host, StreamCache Cache)
+                : base(Host, null, WRITE_LINE, 1)
+            {
+                this._Cache = Cache;
+            }
+
+            public override void Invoke(FieldResolver Variant)
+            {
+
+                if (this.CheckSigniture(ParameterAffinity.Scalar, ParameterAffinity.Scalar))
+                {
+                    Cell Key = this._Parameters[0].Scalar.Evaluate(Variant);
+                    Cell c = this._Parameters[1].Scalar.Evaluate(Variant);
+                    this._Cache.GetWriter(Key).WriteLine(c.valueCSTRING);
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar, ParameterAffinity.Matrix))
+                {
+                    Cell Key = this._Parameters[0].Scalar.Evaluate(Variant);
+                    CellMatrix m = this._Parameters[1].Matrix.Evaluate(Variant);
+                    this._Cache.GetWriter(Key).WriteLine(m.ToString());
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar, ParameterAffinity.Record))
+                {
+                    Cell Key = this._Parameters[0].Scalar.Evaluate(Variant);
+                    Record r = this._Parameters[1].Record.Evaluate(Variant);
+                    this._Cache.GetWriter(Key).WriteLine(r.ToString());
+                }
+                else if (this.CheckSigniture(ParameterAffinity.Scalar, ParameterAffinity.Table))
+                {
+                    Cell Key = this._Parameters[0].Scalar.Evaluate(Variant);
+                    Table t = this._Parameters[1].Table.Select(Variant);
+                    using (RecordReader rr = t.OpenReader())
+                    {
+                        this._Cache.GetWriter(Key).WriteLine(rr.ReadNext().ToString());
+                    }
+                }
+
+
+
+            }
+
+        }
+
+        public sealed class aeWRITE_BLOCK : ActionExpressionParameterized
+        {
+
+            private StreamCache _Cache;
+
+            public aeWRITE_BLOCK(Host Host, StreamCache Cache)
+                : base(Host, null, WRITE_BLOCK, 1)
+            {
+                this._Cache = Cache;
+            }
+
+            public override void Invoke(FieldResolver Variant)
+            {
+
+                if (!this.CheckSigniture(ParameterAffinity.Scalar, ParameterAffinity.Scalar))
+                    throw new Exception("Expecting two scalar parameters");
+
+                Cell Key = this._Parameters[0].Scalar.Evaluate(Variant);
+                Cell Value = this._Parameters[1].Scalar.Evaluate(Variant);
+                byte[] buff = Value.valueBINARY;
+
+                this._Cache.GetWriter(Key).BaseStream.Write(buff, 0, buff.Length);
 
             }
 

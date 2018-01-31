@@ -21,7 +21,7 @@ action_expression
 	: K_NEW scalar_name ASSIGN scalar_expression 																# DeclareScalar
 	| K_NEW matrix_name ASSIGN matrix_expression 																# DeclareMatrix
 	| K_NEW record_name ASSIGN record_expression																# DeclareRecord
-	| K_NEW table_name ASSIGN LCURL type IDENTIFIER (COMMA type IDENTIFIER)* RCURL								# DeclareTable1
+	| K_NEW table_name ASSIGN LCURL type (K_AS | COLON)? IDENTIFIER (COMMA type (K_AS | COLON)? IDENTIFIER)* RCURL	# DeclareTable1
 	| K_NEW table_name ASSIGN table_expression																	# DeclareTable2
 	
 	| scalar_name assignment scalar_expression 																	# ActionScalarAssign
@@ -30,6 +30,8 @@ action_expression
 	| matrix_name LBRAC scalar_expression COMMA scalar_expression RBRAC increment 								# ActionMatrixUnit2DIncrement
 	| matrix_name LBRAC scalar_expression RBRAC assignment scalar_expression 									# ActionMatrixUnit1DAssign
 	| matrix_name LBRAC scalar_expression RBRAC increment 														# ActionMatrixUnit1DIncrement	
+	| record_name DOT IDENTIFIER assignment scalar_expression													# ActionRecordUnitAssign
+	| record_name DOT IDENTIFIER increment																		# ActionRecordUnitIncrement
 	
 	| K_PRINT scalar_expression (K_TO scalar_expression)? 														# ActionPrintScalar
 	| K_PRINT matrix_expression (K_TO scalar_expression)? 														# ActionPrintMatrix
@@ -39,8 +41,7 @@ action_expression
 	| table_name PLUS ASSIGN record_expression																	# ActionTableInsertRecord
 	| table_name PLUS ASSIGN table_expression																	# ActionTableInsertTable
 	
-	//| var_name LPAREN (expr (COMMA expr)*)? RPAREN											# ActionCallSeq
-	//| var_name LPAREN (parameter_name (COMMA parameter_name)*)? RPAREN						# ActionCallNamed
+	| scalar_name LPAREN ( param (COMMA param)*)? RPAREN															# ActionCallSeq
 	
 	/*
 		both <set> {} and <do> DO {}; are nested actions but only DO can be used in alone: <set> must be a child in an scalar_expression tree;

@@ -27,6 +27,7 @@ namespace Pulse
             Host Enviro = new Host();
             Enviro.Libraries.Allocate("CHRONO", new Libraries.ChronoLibrary(Enviro));
             Enviro.Libraries.Allocate("RANDOM", new Libraries.RandomLibrary(Enviro));
+            Enviro.Libraries.Allocate("STREAM", new Libraries.StreamLibrary(Enviro));
             ////Enviro.Libraries.Allocate("MATH", new Libraries.MathLibrary(Enviro));
             ////Enviro.Libraries.Allocate("TABLE", new Libraries.TableLibrary(Enviro));
             ////Enviro.Libraries.Allocate("FILE", new Libraries.LibraryFile(Enviro));
@@ -35,7 +36,7 @@ namespace Pulse
             Scripting.ScriptProcessor sp = new Scripting.ScriptProcessor(Enviro);
             string script = System.IO.File.ReadAllText(@"C:\Users\pwdlu_000\Documents\Pulse\Pulse\Scripting\TestScript.txt");
             sp.RenderAction(script);
-            //Enviro.ShutDown();
+            Enviro.ShutDown();
 
             
             Console.WriteLine("::::::::::::::::::::::::::::::::: Complete :::::::::::::::::::::::::::::::::");

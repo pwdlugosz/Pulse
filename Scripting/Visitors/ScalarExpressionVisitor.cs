@@ -444,7 +444,7 @@ namespace Pulse.Scripting
         public override ScalarExpression VisitLiteralBString(PulseParser.LiteralBStringContext context)
         {
             string s = context.GetText();
-            if (s.First() == 'b' || s.First() == 'B')
+            if (s.Last() == 'b' || s.Last() == 'B')
                 s = s.Substring(0, s.Length - 1);
             s = CleanString(s);
             return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.BSTRING));
@@ -453,6 +453,8 @@ namespace Pulse.Scripting
         public override ScalarExpression VisitLiteralCString(PulseParser.LiteralCStringContext context)
         {
             string s = context.GetText();
+            if (s.Last() == 'c' || s.Last() == 'C')
+                s = s.Substring(0, s.Length - 1);
             s = CleanString(s);
             return new ScalarExpressionConstant(this._Master, CellParser.Parse(s, CellAffinity.CSTRING));
         }
